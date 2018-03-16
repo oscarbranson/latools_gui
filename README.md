@@ -18,7 +18,9 @@ Using `develop` changes in the code automatically propagate through to the insta
 
 ## Documentation
 
-We're using [sphinx](http://www.sphinx-doc.org/en/master/). General structure is:
+We're using [sphinx](http://www.sphinx-doc.org/en/master/) with the [ReadTheDocs theme](https://github.com/rtfd/sphinx_rtd_theme) (you might need to install this via pip to build the docs).
+
+General docs structure is:
 
 ```bash
 docs/source
@@ -36,6 +38,8 @@ make html
 ```
 
 ... or whatever windows equivalent works with the `make.bat` file ...
+
+You can also compile it to [many other formats](http://www.sphinx-doc.org/en/stable/man/sphinx-build.html).
 
 Whenever you create a new file in the documentation, you have to enter it into the `index.rst` file, or it won't be built. For example:
 
