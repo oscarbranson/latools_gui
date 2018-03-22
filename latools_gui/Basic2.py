@@ -68,7 +68,7 @@ class ControlPanel(QWidget):
         super().__init__()
         layout = QHBoxLayout()
 
-        self.i = 1
+        self.i = 0 ## pane number
         
         self.bn = QPushButton(self)
         self.bp = QPushButton(self)
@@ -83,22 +83,24 @@ class ControlPanel(QWidget):
         self.ysd = QWidget()
         self.bnh = QWidget()
         self.hod = QWidget()
+        self.stack = QStackedWidget(self)
 
         self.mlkthui()
         self.ysdui()
         self.bnhui()
         self.hodui()
 
-        nextMove = self.nextcontrol()
-        
-        self.bn.clicked.connect(nextMove)
-        self.bp.clicked.connect(self.prevcontrol())
+       # nextMove = self.nextcontrol()
 
-        self.stack = QStackedWidget(self) ## Where stack is defined
+        
+         ## Where stack is defined
         self.stack.addWidget (self.mlkth)
         self.stack.addWidget (self.ysd)
         self.stack.addWidget (self.bnh)
         self.stack.addWidget (self.hod)
+
+        self.bn.clicked.connect(self.nextcontrol)
+        self.bp.clicked.connect(self.prevcontrol)
 
         self.setLayout(layout)
         layout.addWidget(self.bp)
@@ -107,12 +109,12 @@ class ControlPanel(QWidget):
 
     def nextcontrol(self):
         self.i = self.i + 1
-        self.stack.setCurrentIndex(i) 
-        ## Stack is never defined here
+        self.stack.setCurrentIndex(self.i) ## Constrain by qstack size
 
     def prevcontrol(self):
-        self.i = self.i - 1
-        self.stack.setCurrentIndex(i)
+        if (self.i > 0):
+            self.i = self.i - 1
+        self.stack.setCurrentIndex(self.i)
         
     def mlkthui(self):
         layout = QFormLayout()
