@@ -6,13 +6,21 @@
 Welcome to LAtools GUI's documentation!
 =======================================
 
+This will contain information on how to use the GUI, and how the GUI is designed and built.
+
 .. toctree::
+   :glob:
    :maxdepth: 1
-   :caption: Contents:
+   :caption: User Documentation
 
-   ./README.rst
-   ./sphinxGuide.rst
+   ./users/*
 
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :caption: Technical Documentation
+
+   ./backend/*
 
 Indices and tables
 ==================
