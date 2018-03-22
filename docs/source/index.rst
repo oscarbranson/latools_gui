@@ -7,10 +7,11 @@ Welcome to LAtools GUI's documentation!
 =======================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
-   ./info.rst
+   ./README.rst
+   ./sphinxGuide.rst
 
 
 Indices and tables
