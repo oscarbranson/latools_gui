@@ -2,7 +2,8 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QApplication
 ## Basic Widgets are located in PyQt5.Widgets
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import *
+
 
 class Button(QWidget):
     def __init__(self): ##Initialisation
