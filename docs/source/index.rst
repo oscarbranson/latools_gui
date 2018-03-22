@@ -6,12 +6,21 @@
 Welcome to LAtools GUI's documentation!
 =======================================
 
+This will contain information on how to use the GUI, and how the GUI is designed and built.
+
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :glob:
+   :maxdepth: 1
+   :caption: User Documentation
 
-   ./info.rst
+   ./users/*
 
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :caption: Technical Documentation
+
+   ./backend/*
 
 Indices and tables
 ==================
