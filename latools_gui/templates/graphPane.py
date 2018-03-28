@@ -3,6 +3,8 @@ from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
 from PyQt5.QtCore import Qt, QSize
 import sys 
 
+import GrapthTest
+
 class GraphPane():
 	"""
 	The lower section of the stage screens that displays the graphs produced by the stage controls.
@@ -32,7 +34,11 @@ class GraphPane():
 		# Here we temporarily use a fixed image of a graph in this space
 		self.graphImage = QLabel()
 		self.graphImage.setPixmap(QPixmap("graphics/rawdata_Sample-3_example.png"))
-		self.graphLayout.addWidget(self.graphImage)
+
+		# We create grapth from sample data in the data folder
+		self.graph = GrapthTest.GraphWindow()
+
+		self.graphLayout.addWidget(self.graph)
 
 		# GRAPH OPTIONS
 
