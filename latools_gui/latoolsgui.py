@@ -82,13 +82,13 @@ class MainWindow(QWidget):
 		self.establishStages()
 
 		# The stage objects are then produced
-		self.importStageObj = importStage.ImportStage(self.importStageLayout)
-		self.despikingStageObj = despikingStage.DespikingStage(self.despikingStageLayout)
-		self.autorangeStageObj = autorangeStage.AutorangeStage(self.autorangeStageLayout)
-		self.backgroundStageObj = backgroundStage.BackgroundStage(self.backgroundStageLayout)
-		self.ratioStageObj = ratioStage.RatioStage(self.ratioStageLayout)
-		self.calibrationStageObj = calibrationStage.CalibrationStage(self.calibrationStageLayout)
-		self.filteringStageObj = filteringStage.FilteringStage(self.filteringStageLayout)
+		self.importStageObj = importStage.ImportStage(self.importStageLayout, self.graphPaneObj)
+		self.despikingStageObj = despikingStage.DespikingStage(self.despikingStageLayout, self.graphPaneObj)
+		self.autorangeStageObj = autorangeStage.AutorangeStage(self.autorangeStageLayout, self.graphPaneObj)
+		self.backgroundStageObj = backgroundStage.BackgroundStage(self.backgroundStageLayout, self.graphPaneObj)
+		self.ratioStageObj = ratioStage.RatioStage(self.ratioStageLayout, self.graphPaneObj)
+		self.calibrationStageObj = calibrationStage.CalibrationStage(self.calibrationStageLayout, self.graphPaneObj)
+		self.filteringStageObj = filteringStage.FilteringStage(self.filteringStageLayout, self.graphPaneObj)
 
 		# The progress bar is added here. This will need to be hooked up with some functionality
 		self.progressBar = QProgressBar()

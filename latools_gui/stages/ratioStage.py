@@ -11,7 +11,9 @@ class RatioStage():
 	stage can be defined. They each build a Controls pane object and will later have access
 	to update the graph pane.
 	"""
-	def __init__(self, stageLayout):
+	def __init__(self, stageLayout, graphPaneObj):
+
+		self.graphPaneObj = graphPaneObj
 		
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
@@ -22,3 +24,11 @@ class RatioStage():
 			The internal standard is specified during data import, but can also be changed 
 			here by specifying internal_standard in ratio(). In this case, the internal 
 			standard is Ca43, so all analytes are divided by Ca43.""")
+
+		self.applyButton = QPushButton("APPLY")
+		self.applyButton.clicked.connect(self.pressedApplyButton)
+		self.stageControls.addApplyButton(self.applyButton)
+
+	def pressedApplyButton(self):
+		#Add apply button functionality
+		x = 1

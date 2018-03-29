@@ -68,10 +68,6 @@ class ControlsPane():
 		# We add a stretch to push down the apply button
 		self.controlStandardsLayout.addStretch(1)
 
-		# And add the apply button at the bottom
-		self.controlsApplyButton = QPushButton("APPLY")
-		self.controlStandardsLayout.addWidget(self.controlsApplyButton)
-		# !! The apply button functionality will be added, starting with a clicked.connect() call here
 
 	# The description info is passed to the object, starting with the title
 	def setTitle(self, title):
@@ -90,6 +86,9 @@ class ControlsPane():
 	def addOption(self, text, style):
 		self.controlOptions.append(QCheckBox(text))
 		self.controlOptionsLayout.addWidget(self.controlOptions[-1])
+
+	def addApplyButton(self, button):
+		self.controlStandardsLayout.addWidget(button)
 
 
 

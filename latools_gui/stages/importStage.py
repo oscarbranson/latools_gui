@@ -11,7 +11,9 @@ class ImportStage():
 	stage can be defined. They each build a Controls pane object and will later have access
 	to update the graph pane.
 	"""
-	def __init__(self, stageLayout):
+	def __init__(self, stageLayout, graphPaneObj):
+
+		self.graphPaneObj = graphPaneObj
 		
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
@@ -25,3 +27,11 @@ class ImportStage():
 		self.stageControls.addOption("config", 0)
 		self.stageControls.addOption("internal_standard", 0)
 		self.stageControls.addOption("srm_identifier", 0)
+
+		self.applyButton = QPushButton("APPLY")
+		self.applyButton.clicked.connect(self.pressedApplyButton)
+		self.stageControls.addApplyButton(self.applyButton)
+
+	def pressedApplyButton(self):
+		#Add apply button functionality
+		x = 1
