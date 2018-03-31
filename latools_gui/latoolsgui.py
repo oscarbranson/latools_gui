@@ -1,4 +1,14 @@
-from PyQt5.QtWidgets import * 
+""" This is the docstring for the latoolsgui.py module. It is pulled by autodoc
+to describe this module in the sphinx documentation.
+
+Every module should have a docstring at the very top of the file.  The
+module's docstring may extend over multiple lines.  If your docstring does
+extend over multiple lines, the closing three quotation marks must be on
+a line by itself, preferably preceded by a blank line.
+
+"""
+
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
 from PyQt5.QtCore import Qt, QSize
 import sys 
@@ -25,10 +35,39 @@ STAGES = ["import","despiking","autorange","background","ratio","calibration","f
 
 class MainWindow(QWidget):
 	"""
-	The main GUI window. 
-	All of the GUI functionality is built through this class.
+	A description of the class. The main GUI window. All of the GUI functionality is built through this class.
+
+	Parameters
+	----------
+	param1 : type
+		Description of parameter
+
+	Attributes
+	----------
+	attribute1 : type
+		Description of class attribute
+
 	"""
+
 	def __init__(self):
+		""" Summary line.
+
+		Extended description of function.
+
+		Parameters
+		----------
+		arg1 : int
+			Description of arg1
+		arg2 : str
+			Description of arg2
+
+		Returns
+		-------
+		bool
+			Description of return value
+
+		"""
+
 		super().__init__()
 		
 		# Determines where the offset for where the window appears on the screen.
@@ -40,6 +79,23 @@ class MainWindow(QWidget):
 		self.initUI()
 
 	def initUI(self):
+		""" Summary line.
+
+		Extended description of function.
+
+		Parameters
+		----------
+		arg1 : int
+			Description of arg1
+		arg2 : str
+			Description of arg2
+
+		Returns
+		-------
+		bool
+			Description of return value
+
+		"""
 
 		# principalLayout is a vertical box that runs down the entire window
 		self.principalLayout = QVBoxLayout(self)
@@ -113,6 +169,23 @@ class MainWindow(QWidget):
 	# This function is simply a section of the initialisation where a layout for each
 	# stage is created, and added to the stage stack
 	def establishStages(self):
+		""" Summary line.
+
+		Extended description of function.
+
+		Parameters
+		----------
+		arg1 : int
+			Description of arg1
+		arg2 : str
+			Description of arg2
+
+		Returns
+		-------
+		bool
+			Description of return value
+
+		"""
 
 		# First a widget is made, so that it can be added to the stage stack
 		self.importStageWidget = QWidget()
@@ -146,7 +219,10 @@ class MainWindow(QWidget):
 		self.stagesStack.addWidget(self.filteringStageWidget)
 
 # This is where the GUI is actually created and run.
-app = QApplication([])
-main = MainWindow()
-main.show()
-sys.exit(app.exec_())
+# Autodocs executes side effects when it imports modules to be read. Therefore the GUI must be created and
+# run in a conditional that only accepts the main routine.
+if __name__ == '__main__':
+	app = QApplication([])
+	main = MainWindow()
+	main.show()
+	sys.exit(app.exec_())
