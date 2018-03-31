@@ -3,7 +3,7 @@ from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
 from PyQt5.QtCore import Qt, QSize
 import sys 
 
-import GrapthTest
+import GrapthObject as Plot
 
 import latools.helpers as helpers
 import pyqtgraph as pg
@@ -40,7 +40,7 @@ class GraphPane():
 		# self.graphImage.setPixmap(QPixmap("graphics/rawdata_Sample-3_example.png"))
 
 		# This GraphTest class is now sent the project object
-		self.graph = GrapthTest.GraphWindow(project)
+		self.graph = Plot.GraphWindow(project)
 
 		self.graphLayout.addWidget(self.graph)
 		self.graph.setFixedSize(900,300)
