@@ -74,7 +74,7 @@ class ImportStage():
 									 internal_standard='Ca43',
 									 srm_identifier='STD')
 
-		self.graphPaneObj.initGraph()
+		self.graphPaneObj.updateGraph('rawdata')
 
 		self.navigationPaneObj.setRightEnabled()
 

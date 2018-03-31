@@ -48,6 +48,6 @@ class DespikingStage():
 		# Currently this function just runs this example.
 		# TO DO: Have this button cause the graph to actually update with the new analysis (in this case despiking)
 		self.project.eg.despike()
-		self.graphPaneObj.updateGraph()
+		self.graphPaneObj.updateGraph('despiked')
 		self.navigationPaneObj.setRightEnabled()
 

@@ -81,11 +81,7 @@ class GraphPane():
 	def addToLayout(self, stageLayout):
 		stageLayout.addWidget(self.graphFrame)
 
-	# A temporary function for initialising the graph
-	def initGraph(self):
-		self.graph.initGraph()
-
 	# TO DO: find a way to update the graph, either through passing the project object again, or by some
 	# other live-updating approach.
-	def updateGraph(self):
-		x = 1
+	def updateGraph(self, stage):
+		self.graph.update(None, stage)
