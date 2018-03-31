@@ -9,52 +9,52 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import *
 
 # We create the analyse object
-eg = la.analyse(data_folder='./data/',
-                config='DEFAULT',
-                internal_standard='Ca43',
-                srm_identifier='STD')
-
-# For testing purposes, the sample and stage is hard coded
-# And despiked
-sampleName = 'Sample-1'
-focusStage = 'rawdata'
-eg.despike()
-# We create the data object
-dat = eg.data[sampleName]
+#eg = la.analyse(data_folder='./data/',
+#				config='DEFAULT',
+#				internal_standard='Ca43',
+#				srm_identifier='STD')
 
 class GraphWindow(pg.GraphicsLayoutWidget):
 
-    def __init__(self):
-        super().__init__()
+	def __init__(self, project):
+		super().__init__()
+		self.project = project
+		# self.initGraph()
 
-        self.initGraph()
-        
-    def initGraph(self):
+	def initGraph(self):
 
-        # Add plot window to the layout
-        graph = self.addPlot(title=sampleName)
-        graph.setLogMode(x=False, y=True)
-        graph.setLabel('left', 'Counts')
-        graph.setLabel('bottom', 'Time', units='s')
+		# For testing purposes, the sample and stage is hard coded
+		# And despiked
+		sampleName = 'Sample-1'
+		focusStage = 'rawdata'
+		#self.project.eg.despike()
+		# We create the data object
+		dat = self.project.eg.data[sampleName]
 
-        # Add legend window to the layout
-        legend = self.addViewBox()
-        legend.setMaximumWidth(100)
-        l = pg.LegendItem()
-        l.setParentItem(legend)
-        l.anchor((0,0), (0,0))
+		# Add plot window to the layout
+		graph = self.addPlot(title=sampleName)
+		graph.setLogMode(x=False, y=True)
+		graph.setLabel('left', 'Counts')
+		graph.setLabel('bottom', 'Time', units='s')
 
-        # Get list of analytes (elements) from the data object
-        analytes = dat.analytes
+		# Add legend window to the layout
+		legend = self.addViewBox()
+		legend.setMaximumWidth(100)
+		l = pg.LegendItem()
+		l.setParentItem(legend)
+		l.anchor((0,0), (0,0))
 
-        # For each analyte: get x and y, and plot them
-        # Then add it to the legend
-        for a in analytes:
-            x = dat.Time
-            y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[focusStage][a])
-            y[y == 0] = np.nan
-            plt = graph.plot(x, y, pen=pg.mkPen(dat.cmap[a], width=2), label=a)
-            l.addItem(plt, a)
+		# Get list of analytes (elements) from the data object
+		analytes = dat.analytes
+
+		# For each analyte: get x and y, and plot them
+		# Then add it to the legend
+		for a in analytes:
+			x = dat.Time
+			y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[focusStage][a])
+			y[y == 0] = np.nan
+			plt = graph.plot(x, y, pen=pg.mkPen(dat.cmap[a], width=2), label=a)
+			l.addItem(plt, a)
 
 
 

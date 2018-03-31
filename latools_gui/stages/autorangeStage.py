@@ -1,7 +1,7 @@
-from PyQt5.QtWidgets import * 
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
 from PyQt5.QtCore import Qt, QSize
-import sys 
+import sys
 
 import templates.controlsPane as controlsPane
 
@@ -11,10 +11,12 @@ class AutorangeStage():
 	stage can be defined. They each build a Controls pane object and will later have access
 	to update the graph pane.
 	"""
-	def __init__(self, stageLayout, graphPaneObj):
 
+	def __init__(self, stageLayout, graphPaneObj, navigationPaneObj, project):
 		self.graphPaneObj = graphPaneObj
-		
+		self.navigationPaneObj = navigationPaneObj
+		self.project = project
+
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
 		self.stageControls.setTitle("Autorange")
@@ -24,8 +26,10 @@ class AutorangeStage():
 			remove physically unrealistic outliers from the data (i.e. higher than 
 			is physically possible based on your system setup).""")
 
-		self.stageControls.addOption("autorange option 1", 0)
-		self.stageControls.addOption("autorange option 2", 0)
+		self.optionsGrid = QGridLayout(self.stageControls.getOptionsWidget())
+		# self.optionsGrid.addWidget(QLabel("<b>Options</b>"), 0, 0)
+
+
 
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
@@ -33,5 +37,5 @@ class AutorangeStage():
 
 	def pressedApplyButton(self):
 		#Add apply button functionality
-		x = 1
+		self.navigationPaneObj.setRightEnabled()
 

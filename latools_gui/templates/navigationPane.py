@@ -29,13 +29,10 @@ class NavigationPane():
 		self.topBarLayout = QHBoxLayout(self.topBarFrame)
 
 		# We add a 'left' button for moving through the stages
-		self.leftButton = QPushButton("<-")
+		self.leftButton = QPushButton("⬅")
 		self.topBarLayout.addWidget(self.leftButton)
 		# The click functionality is defined in a method below.
 		self.leftButton.clicked.connect(self.leftButtonClick)
-
-		# As we're on step 1 to begin with, we deactivate the left button for now
-		self.leftButton.setEnabled(False)
 		
 		# We use a NavNameTags object to handle building, and highlighting the stage labels
 		self.nameTags = NavNameTags(self.topBarLayout)
@@ -44,9 +41,13 @@ class NavigationPane():
 		self.topBarLayout.addStretch(1)
 
 		# We add a right button
-		self.rightButton = QPushButton("->")
+		self.rightButton = QPushButton("➡")
 		self.rightButton.clicked.connect(self.rightButtonClick)
 		self.topBarLayout.addWidget(self.rightButton)
+
+		# As we won't be changing stages until the processing is complete, we disable the buttons
+		self.leftButton.setEnabled(False)
+		self.rightButton.setEnabled(False)
 	
 	# Defines what happens when the left button is clicked.
 	def leftButtonClick(self):
@@ -67,8 +68,7 @@ class NavigationPane():
 	# Just like the left button above, but for the right button.
 	def rightButtonClick(self):
 		self.stagesStack.setCurrentIndex(self.stagesStack.currentIndex() + 1)
-		if (self.stagesStack.currentIndex() == (len(self.STAGES) - 1)):
-			self.rightButton.setEnabled(False)
+		self.rightButton.setEnabled(False)
 		self.leftButton.setEnabled(True)
 		self.nameTags.setBold(self.stagesStack.currentIndex())
 
@@ -78,6 +78,12 @@ class NavigationPane():
 		self.nameSubsetLabel.setText("<span style=\"color:#779999; font-size:16px;\">"
 			"<b>" + title + ":</b> " + subset + "</span>")
 
+	# In order to prevent moving through stages without running the data processing, the right button
+	# is disabled by default, and enabled by the APPLY buttons in the Control panes.
+	def setRightEnabled(self):
+		# If we're not in the final stage, set the right button to enabled
+		if (self.stagesStack.currentIndex() != (len(self.STAGES) - 1)):
+			self.rightButton.setEnabled(True)
 
 class NavNameTags():
 	"""

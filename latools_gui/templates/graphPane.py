@@ -5,13 +5,17 @@ import sys
 
 import GrapthTest
 
+import latools.helpers as helpers
+import pyqtgraph as pg
+import numpy as np
+
 class GraphPane():
 	"""
 	The lower section of the stage screens that displays the graphs produced by the stage controls.
 	This is currently under development and simply shows how things will be displayed when the 
 	functionality is produced.
 	"""
-	def __init__(self):
+	def __init__(self, project):
 
 		# We make a frame for this section
 		self.graphFrame = QFrame()
@@ -32,13 +36,14 @@ class GraphPane():
 		# GRAPH IMAGE
 
 		# Here we temporarily use a fixed image of a graph in this space
-		self.graphImage = QLabel()
-		self.graphImage.setPixmap(QPixmap("graphics/rawdata_Sample-3_example.png"))
+		# self.graphImage = QLabel()
+		# self.graphImage.setPixmap(QPixmap("graphics/rawdata_Sample-3_example.png"))
 
-		# We create grapth from sample data in the data folder
-		self.graph = GrapthTest.GraphWindow()
+		# This GraphTest class is now sent the project object
+		self.graph = GrapthTest.GraphWindow(project)
 
 		self.graphLayout.addWidget(self.graph)
+		self.graph.setFixedSize(900,300)
 
 		# GRAPH OPTIONS
 
@@ -49,7 +54,6 @@ class GraphPane():
 
 		self.graphOptionsLabel = QLabel("Options")
 		# We add a minimum width to the layout via this label
-		self.graphOptionsLabel.setFixedWidth(180)
 		self.graphOptionsLayout.addWidget(self.graphOptionsLabel)
 
 		# We temporarily list a bunch of dummy options.
@@ -76,3 +80,12 @@ class GraphPane():
 	# Then, after they are added to the layout, this pane is added below the controls.
 	def addToLayout(self, stageLayout):
 		stageLayout.addWidget(self.graphFrame)
+
+	# A temporary function for initialising the graph
+	def initGraph(self):
+		self.graph.initGraph()
+
+	# TO DO: find a way to update the graph, either through passing the project object again, or by some
+	# other live-updating approach.
+	def updateGraph(self):
+		x = 1

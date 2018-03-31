@@ -11,10 +11,12 @@ class BackgroundStage():
 	stage can be defined. They each build a Controls pane object and will later have access
 	to update the graph pane.
 	"""
-	def __init__(self, stageLayout, graphPaneObj):
+	def __init__(self, stageLayout, graphPaneObj, navigationPaneObj, project):
 
 		self.graphPaneObj = graphPaneObj
-		
+		self.navigationPaneObj = navigationPaneObj
+		self.project = project
+
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
 		self.stageControls.setTitle("Background Correction")
@@ -25,7 +27,8 @@ class BackgroundStage():
 			Background calculation underlying the signal regions.
 			Background subtraction from the signal.""")
 
-		self.stageControls.addOption("on_mult", 0)
+		self.optionsGrid = QGridLayout(self.stageControls.getOptionsWidget())
+		# self.optionsGrid.addWidget(QLabel("<b>Options</b>"), 0, 0)
 
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
@@ -33,4 +36,4 @@ class BackgroundStage():
 
 	def pressedApplyButton(self):
 		#Add apply button functionality
-		x = 1
+		self.navigationPaneObj.setRightEnabled()

@@ -11,10 +11,11 @@ class CalibrationStage():
 	stage can be defined. They each build a Controls pane object and will later have access
 	to update the graph pane.
 	"""
-	def __init__(self, stageLayout, graphPaneObj):
-
+	def __init__(self, stageLayout, graphPaneObj, navigationPaneObj, project):
 		self.graphPaneObj = graphPaneObj
-		
+		self.navigationPaneObj = navigationPaneObj
+		self.project = project
+
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
 		self.stageControls.setTitle("Calibration")
@@ -24,8 +25,7 @@ class CalibrationStage():
 			the data. This is done by creating a calibration curve for each element based on SRMs 
 			measured throughout your analysis session, and a table of known SRM values.""")
 
-		self.stageControls.addOption("drift_correct", 0)
-		self.stageControls.addOption("srms_used", 0)
+
 
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
@@ -33,4 +33,4 @@ class CalibrationStage():
 
 	def pressedApplyButton(self):
 		#Add apply button functionality
-		x = 1
+		self.navigationPaneObj.setRightEnabled()

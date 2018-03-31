@@ -11,10 +11,11 @@ class RatioStage():
 	stage can be defined. They each build a Controls pane object and will later have access
 	to update the graph pane.
 	"""
-	def __init__(self, stageLayout, graphPaneObj):
-
+	def __init__(self, stageLayout, graphPaneObj, navigationPaneObj, project):
 		self.graphPaneObj = graphPaneObj
-		
+		self.navigationPaneObj = navigationPaneObj
+		self.project = project
+
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
 		self.stageControls.setTitle("Ratio Calculation")
@@ -31,4 +32,4 @@ class RatioStage():
 
 	def pressedApplyButton(self):
 		#Add apply button functionality
-		x = 1
+		self.navigationPaneObj.setRightEnabled()

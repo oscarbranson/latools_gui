@@ -30,21 +30,15 @@ class ControlsPane():
 		
 		# We fix the width and height
 		self.controlDescriptionBox.setFixedWidth(300)
-		self.controlDescriptionBox.setFixedHeight(160)
+		self.controlDescriptionBox.setFixedHeight(180)
 
 		# STEP OPTIONS SECTION
 
-		# We use a vertical layout
-		self.controlOptionsLayout = QVBoxLayout()
-		self.controlsLayout.addLayout(self.controlOptionsLayout)
+		self.optionsWidget = QWidget()
+		self.optionsWidget.setMaximumWidth(400)
+		self.controlsLayout.addWidget(self.optionsWidget)
 
-		# We align the content to the top
-		self.controlOptionsLayout.setAlignment(Qt.AlignTop)
-		self.controlOptionsLayout.addWidget(QLabel("<b>Options</b>"))
-
-		# Here we set up a list for the options. 
-		# The functionality around these options will be built soon.
-		self.controlOptions = []
+		# The actual options will be customised and added via method calls below
 
 		# STEP STANDARDS PANE
 
@@ -68,6 +62,8 @@ class ControlsPane():
 		# We add a stretch to push down the apply button
 		self.controlStandardsLayout.addStretch(1)
 
+	def getOptionsWidget(self):
+		return self.optionsWidget
 
 	# The description info is passed to the object, starting with the title
 	def setTitle(self, title):
@@ -83,12 +79,10 @@ class ControlsPane():
 	# The 'style' number here could refer to what kind of function is needed (checkbox/drop-down)
 	# But we will probably use something more robust given more specific knowledge of what is 
 	# needed here.
-	def addOption(self, text, style):
-		self.controlOptions.append(QCheckBox(text))
-		self.controlOptionsLayout.addWidget(self.controlOptions[-1])
 
 	def addApplyButton(self, button):
 		self.controlStandardsLayout.addWidget(button)
+
 
 
 

@@ -18,6 +18,8 @@ import stages.ratioStage as ratioStage
 import stages.calibrationStage as calibrationStage
 import stages.filteringStage as filteringStage
 
+import project.runningProject as runningProject
+
 # List the stages
 STAGES = ["import","despiking","autorange","background","ratio","calibration","filtering"]
 
@@ -60,6 +62,10 @@ class MainWindow(QWidget):
 		self.stageScreenLayout = QVBoxLayout(self.stageWidget)
 		self.mainStack.addWidget(self.stageWidget)
 
+		# We create an instance of a Running Project to store in one place all of the analysis that will be
+		# performed in this project
+		self.project = runningProject.RunningProject()
+
 		# We make a new stack here, that will move between the different stages.
 		# Only the Controls pane will actually be changing, but the graph pane could be added here also.
 		self.stagesStack = QStackedWidget()
@@ -75,20 +81,27 @@ class MainWindow(QWidget):
 
 		# Here we define the graph pane, so that it could be passed to the controls pane.
 		# However, we want it to sit below the controls, so it's not added to the layout yet.
-		self.graphPaneObj = graphPane.GraphPane()
+		self.graphPaneObj = graphPane.GraphPane(self.project)
 
 		# A function is used for building the different stage layouts, and adding them to the stage stack,
 		# just to keep this section brief.
 		self.establishStages()
 
 		# The stage objects are then produced
-		self.importStageObj = importStage.ImportStage(self.importStageLayout, self.graphPaneObj)
-		self.despikingStageObj = despikingStage.DespikingStage(self.despikingStageLayout, self.graphPaneObj)
-		self.autorangeStageObj = autorangeStage.AutorangeStage(self.autorangeStageLayout, self.graphPaneObj)
-		self.backgroundStageObj = backgroundStage.BackgroundStage(self.backgroundStageLayout, self.graphPaneObj)
-		self.ratioStageObj = ratioStage.RatioStage(self.ratioStageLayout, self.graphPaneObj)
-		self.calibrationStageObj = calibrationStage.CalibrationStage(self.calibrationStageLayout, self.graphPaneObj)
-		self.filteringStageObj = filteringStage.FilteringStage(self.filteringStageLayout, self.graphPaneObj)
+		self.importStageObj = importStage.ImportStage(
+			self.importStageLayout, self.graphPaneObj, self.navigationPaneObj, self.importStageWidget, self.project)
+		self.despikingStageObj = despikingStage.DespikingStage(
+			self.despikingStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+		self.autorangeStageObj = autorangeStage.AutorangeStage(
+			self.autorangeStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+		self.backgroundStageObj = backgroundStage.BackgroundStage(
+			self.backgroundStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+		self.ratioStageObj = ratioStage.RatioStage(
+			self.ratioStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+		self.calibrationStageObj = calibrationStage.CalibrationStage(
+			self.calibrationStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+		self.filteringStageObj = filteringStage.FilteringStage(
+			self.filteringStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
 
 		# The progress bar is added here. This will need to be hooked up with some functionality
 		self.progressBar = QProgressBar()
@@ -97,7 +110,6 @@ class MainWindow(QWidget):
 		#Finally, we call a method on the graphPane object to add it to the layout last.
 		self.graphPaneObj.addToLayout(self.stageScreenLayout)
 
-	
 	# This function is simply a section of the initialisation where a layout for each
 	# stage is created, and added to the stage stack
 	def establishStages(self):
