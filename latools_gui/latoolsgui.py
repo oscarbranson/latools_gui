@@ -24,6 +24,24 @@ import project.runningProject as runningProject
 STAGES = ["import","despiking","autorange","background","ratio","calibration","filtering"]
 
 class MainWindow(QWidget):
+	"""Summary line.
+
+    Extended description of function.
+
+    Parameters
+    ----------
+    arg1 : int
+        Description of arg1
+    arg2 : str
+        Description of arg2
+
+    Returns
+    -------
+    bool
+        Description of return value
+
+    """
+
 	"""
 	The main GUI window. 
 	All of the GUI functionality is built through this class.
@@ -146,7 +164,10 @@ class MainWindow(QWidget):
 		self.stagesStack.addWidget(self.filteringStageWidget)
 
 # This is where the GUI is actually created and run.
-app = QApplication([])
-main = MainWindow()
-main.show()
-sys.exit(app.exec_())
+# Autodocs executes side effects when it imports modules to be read. Therefore the GUI must be created and
+# run in a conditional that only accepts the main routine.
+if __name__ == '__main__':
+	app = QApplication([])
+	main = MainWindow()
+	main.show()
+	sys.exit(app.exec_())
