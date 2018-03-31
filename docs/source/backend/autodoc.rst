@@ -9,4 +9,4 @@ latoolsgui Main Module
 
 .. autoclass:: latoolsgui.MainWindow
 
-    .. automethod:: MainWindow.__all__
+    .. automethod:: MainWindow.__init__
