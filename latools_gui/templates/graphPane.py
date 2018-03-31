@@ -1,13 +1,12 @@
 from PyQt5.QtWidgets import * 
 from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
 from PyQt5.QtCore import Qt, QSize
-import sys 
-
-import GrapthObject as Plot
+import sys
 
 import latools.helpers as helpers
 import pyqtgraph as pg
 import numpy as np
+import uncertainties.unumpy as un
 
 class GraphPane():
 	"""
@@ -33,14 +32,10 @@ class GraphPane():
 		self.graphLayout = QHBoxLayout()
 		self.graphMainLayout.addLayout(self.graphLayout)
 
-		# GRAPH IMAGE
-
-		# Here we temporarily use a fixed image of a graph in this space
-		# self.graphImage = QLabel()
-		# self.graphImage.setPixmap(QPixmap("graphics/rawdata_Sample-3_example.png"))
+		# GRAPH
 
 		# This GraphTest class is now sent the project object
-		self.graph = Plot.GraphWindow(project)
+		self.graph = GraphWindow(project)
 
 		self.graphLayout.addWidget(self.graph)
 		self.graph.setFixedSize(900,300)
@@ -85,3 +80,53 @@ class GraphPane():
 	# other live-updating approach.
 	def updateGraph(self, stage):
 		self.graph.update(None, stage)
+
+class GraphWindow(pg.GraphicsLayoutWidget):
+
+	def __init__(self, project):
+		super().__init__()
+		self.project = project
+		# For testing purposes, the sample and stage is hard coded
+		self.sampleName = 'Sample-1'
+		self.focusStage = 'rawdata'
+		# Add plot window to the layout
+		graph = self.addPlot(title=self.sampleName)
+		graph.setLogMode(x=False, y=True)
+		graph.setLabel('left', 'Counts')
+		graph.setLabel('bottom', 'Time', units='s')
+
+		self.graph = graph
+
+		# Add legend window to the layout
+		legend = self.addViewBox()
+		legend.setMaximumWidth(100)
+
+		self.legend = legend
+
+		l = pg.LegendItem()
+		l.setParentItem(self.legend)
+		l.anchor((0,0), (0,0))
+
+		self.l = l
+
+	# Updates the graph based off Sample and Focustage name
+	def update(self, sample, stage):
+		# Clear existing plot
+		self.graph.clear()
+
+		# Set stage
+		self.focusStage = stage
+
+		# We create the data object
+		dat = self.project.eg.data[self.sampleName]
+		# Get list of analytes (elements) from the data object
+		analytes = dat.analytes
+
+		# For each analyte: get x and y, and plot them
+		# Then add it to the legend
+		for a in analytes:
+			x = dat.Time
+			y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][a])
+			y[y == 0] = np.nan
+			plt = self.graph.plot(x, y, pen=pg.mkPen(dat.cmap[a], width=2), label=a)
+			self.l.addItem(plt, a)
