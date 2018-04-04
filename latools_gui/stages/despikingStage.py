@@ -1,4 +1,10 @@
-from PyQt5.QtWidgets import * 
+""" Despiking stage module docstring is here.
+
+Lorem ipsum dolor sit amet
+
+"""
+
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
 from PyQt5.QtCore import Qt, QSize
 import sys 

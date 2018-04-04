@@ -52,15 +52,3 @@ Through pip:
     pip install latools
 
 `LAtools Repository <https://github.com/oscarbranson/latools>`_
-
-
-NumPy
-=========================================
-
-Does this actually require manual installation?
-
-
-Panda
-========================================
-
-Does this actually require manual installation?

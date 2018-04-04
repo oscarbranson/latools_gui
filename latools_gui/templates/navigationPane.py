@@ -1,4 +1,10 @@
-from PyQt5.QtWidgets import * 
+""" Navigation pane module docstring
+
+lorem ipsum dolor sit amet
+
+"""
+
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
 from PyQt5.QtCore import Qt, QSize
 import sys 

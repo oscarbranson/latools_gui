@@ -1,9 +1,6 @@
 ######################################
-Automatically Generated Documentation
+LAtools GUI - Main Module
 ######################################
-
-latoolsgui Main Module
-========================
 
 .. automodule:: latoolsgui
 
