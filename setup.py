@@ -15,7 +15,8 @@ setup(name='latools_gui',
                    'Programming Language :: Python :: 3',
                    ],
       install_requires=['latools',
-                       ],
+                        'PyQt5',
+                        'pyqtgraph'],
       # package_data={
       # },
       zip_safe=False)

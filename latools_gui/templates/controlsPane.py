@@ -73,7 +73,7 @@ class ControlsPane():
 	# And then the description text. There is work to be done to make this process
 	# cleaner, or automatic.
 	def setDescription(self, description):
-		self.controlDescriptionBox.insertHtml(description)
+		self.controlDescriptionBox.setHtml(description)
 
 	# This will be extended with actual funcitonality.
 	# The 'style' number here could refer to what kind of function is needed (checkbox/drop-down)
@@ -82,12 +82,3 @@ class ControlsPane():
 
 	def addApplyButton(self, button):
 		self.controlStandardsLayout.addWidget(button)
-
-
-
-
-
-
-
-
-
