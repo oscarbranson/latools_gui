@@ -81,33 +81,38 @@ class GraphPane():
 	def updateGraph(self, stage):
 		self.graph.update(None, stage)
 
-class GraphWindow(pg.GraphicsLayoutWidget):
+class GraphWindow(QWidget):
 
 	def __init__(self, project):
 		super().__init__()
 		self.project = project
+
+		layout = QHBoxLayout()
+
 		# For testing purposes, the sample and stage is hard coded
 		self.sampleName = 'Sample-1'
 		self.focusStage = 'rawdata'
 		# Add plot window to the layout
-		graph = self.addPlot(title=self.sampleName)
+		graph = pg.PlotWidget(title=self.sampleName)
 		graph.setLogMode(x=False, y=True)
 		graph.setLabel('left', 'Counts')
 		graph.setLabel('bottom', 'Time', units='s')
 
 		self.graph = graph
 
-		# Add legend window to the layout
-		legend = self.addViewBox()
-		legend.setMaximumWidth(100)
+		layout.addWidget(graph)
 
-		self.legend = legend
+		legend = QWidget()
+		legendLayout = QVBoxLayout()
+		legendLayout.setAlignment(Qt.AlignTop)
+		legend.setLayout(legendLayout)
+		legend.setMinimumWidth(100)
 
-		l = pg.LegendItem()
-		l.setParentItem(self.legend)
-		l.anchor((0,0), (0,0))
+		self.legend = legendLayout
 
-		self.l = l
+		layout.addWidget(legend)
+
+		self.setLayout(layout)
 
 	# Updates the graph based off Sample and Focustage name
 	def update(self, sample, stage):
@@ -125,8 +130,15 @@ class GraphWindow(pg.GraphicsLayoutWidget):
 		# For each analyte: get x and y, and plot them
 		# Then add it to the legend
 		for a in analytes:
+			legendEntry = QLabel(a)
+			legendEntry.setStyleSheet("""
+			.QLabel {
+				background-color: """+dat.cmap[a]+""";
+				}
+			""")
+			self.legend.addWidget(legendEntry)
+
 			x = dat.Time
 			y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][a])
 			y[y == 0] = np.nan
 			plt = self.graph.plot(x, y, pen=pg.mkPen(dat.cmap[a], width=2), label=a)
-			self.l.addItem(plt, a)
