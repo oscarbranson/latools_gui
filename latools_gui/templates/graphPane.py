@@ -118,6 +118,8 @@ class GraphWindow(QWidget):
 	def update(self, sample, stage):
 		# Clear existing plot
 		self.graph.clear()
+		for i in reversed(range(self.legend.count())):
+			self.legend.itemAt(i).widget().deleteLater()
 
 		# Set stage
 		self.focusStage = stage
