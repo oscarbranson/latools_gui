@@ -5,7 +5,7 @@ import sys
 
 import latools as la
 
-import templates.controlsPane as controlsPane
+from ..templates import controlsPane
 
 class ImportStage():
 	"""

@@ -14,21 +14,21 @@ from PyQt5.QtCore import Qt, QSize
 import sys 
 
 # Import the templates
-import templates.titleScreen as titleScreen
-import templates.navigationPane as navigationPane
-import templates.controlsPane as controlsPane
-import templates.graphPane as graphPane
+from templates import titleScreen
+from templates import navigationPane
+from templates import controlsPane
+from templates import graphPane
 
 # Import the stage information files
-import stages.importStage as importStage
-import stages.despikingStage as despikingStage
-import stages.autorangeStage as autorangeStage
-import stages.backgroundStage as backgroundStage
-import stages.ratioStage as ratioStage
-import stages.calibrationStage as calibrationStage
-import stages.filteringStage as filteringStage
+from stages import importStage
+from stages import despikingStage
+from stages import autorangeStage
+from stages import backgroundStage
+from stages import ratioStage
+from stages import calibrationStage
+from stages import filteringStage
 
-import project.runningProject as runningProject
+from project import runningProject
 
 # List the stages
 STAGES = ["import","despiking","autorange","background","ratio","calibration","filtering"]

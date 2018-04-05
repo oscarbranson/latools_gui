@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import * 
 from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
 from PyQt5.QtCore import Qt, QSize
-import sys 
+import sys
 
-import templates.controlsPane as controlsPane
+from ..templates import controlsPane
 
 class BackgroundStage():
 	"""
