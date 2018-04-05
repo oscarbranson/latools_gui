@@ -86,6 +86,7 @@ class GraphWindow(QWidget):
 	def __init__(self, project):
 		super().__init__()
 		self.project = project
+		self.exceptionList = []
 
 		layout = QHBoxLayout()
 
@@ -130,8 +131,14 @@ class GraphWindow(QWidget):
 		settingButtons.setMinimumWidth(150)
 
 		newwindowButton = QPushButton("New Window")
+		newwindowButton.hide()
 		newwindowButton.clicked.connect(self.makeWindow)
 		settingButtonsLayout.addWidget(newwindowButton)
+
+		updateButton = QPushButton("Update")
+		updateButton.hide()
+		updateButton.clicked.connect(self.updateButtonPressed)
+		settingButtonsLayout.addWidget(updateButton)
 
 		self.settingButtons = settingButtonsLayout
 
@@ -139,15 +146,24 @@ class GraphWindow(QWidget):
 
 		self.setLayout(layout)
 
-	# Updates the graph based off Sample and Focustage name
+	# Updates the graphs based off Sample and Focustage name
 	def updateMain(self, sample, stage):
+		self.exceptionList = []
 		self.update(self.graph, sample, stage)
+
+	def updateButtonPressed(self):
+		self.updateExceptions()
+		self.update(self.graph)
 
 	def update(self, targetGraph, sample=None, stage=None):
 		# Clear existing plot
 		targetGraph.clear()
 		for i in reversed(range(self.legend.count())):
 			self.legend.itemAt(i).widget().deleteLater()
+
+		# Show setting buttons
+		for i in (range(self.settingButtons.count())):
+			self.settingButtons.itemAt(i).widget().show()
 
 		# Set sample
 		if sample != None:
@@ -177,21 +193,31 @@ class GraphWindow(QWidget):
 		for a in analytes:
 			# Create legend entry for the element and add it to the legend widget
 			legendEntry = QCheckBox(a)
-			legendEntry.setChecked(True)
+			legendEntry.setChecked(False)
 			legendEntry.setStyleSheet("""
 			.QCheckBox {
 				background-color: """+dat.cmap[a]+""";
 				}
 			""")
+
+			if not a in self.exceptionList:
+				legendEntry.setChecked(True)
+
+				# Plot element from data onto the graph
+				x = dat.Time
+				y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][a])
+				y[y == 0] = np.nan
+				plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[a], width=2), label=a)
+
 			self.legend.addWidget(legendEntry)
-
-			# Plot element from data onto the graph
-			x = dat.Time
-			y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][a])
-			y[y == 0] = np.nan
-			plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[a], width=2), label=a)
-
+	
 	def makeWindow(self):
 		self.newWin = pg.PlotWidget(title=self.sampleName)
 		self.update(self.newWin)
 		self.newWin.show()
+
+	def updateExceptions(self):
+		self.exceptionList = []
+		for i in (range(self.legend.count())):
+			if not self.legend.itemAt(i).widget().isChecked():
+				self.exceptionList.append(self.legend.itemAt(i).widget().text())
