@@ -44,7 +44,7 @@ class GraphPane():
 
 		# We add a vertical layout, and align the content to the top
 		self.graphOptionsLayout = QVBoxLayout()
-		self.graphLayout.addLayout(self.graphOptionsLayout)
+		#self.graphLayout.addLayout(self.graphOptionsLayout)
 		self.graphOptionsLayout.setAlignment(Qt.AlignTop)
 
 		self.graphOptionsLabel = QLabel("Options")
@@ -79,7 +79,7 @@ class GraphPane():
 	# TO DO: find a way to update the graph, either through passing the project object again, or by some
 	# other live-updating approach.
 	def updateGraph(self, stage):
-		self.graph.update(None, stage)
+		self.graph.updateMain(None, stage)
 
 class GraphWindow(QWidget):
 
@@ -92,16 +92,26 @@ class GraphWindow(QWidget):
 		# For testing purposes, the sample and stage is hard coded
 		self.sampleName = 'Sample-1'
 		self.focusStage = 'rawdata'
+
+		# Add list of samples to the layout
+		samples = QWidget()
+		samplesLayout = QVBoxLayout()
+		samplesLayout.setAlignment(Qt.AlignTop)
+		samples.setLayout(samplesLayout)
+		samples.setMinimumWidth(100)
+
+		self.samples = samplesLayout
+
+		layout.addWidget(samples)
+
 		# Add plot window to the layout
 		graph = pg.PlotWidget(title=self.sampleName)
-		graph.setLogMode(x=False, y=True)
-		graph.setLabel('left', 'Counts')
-		graph.setLabel('bottom', 'Time', units='s')
 
 		self.graph = graph
 
 		layout.addWidget(graph)
 
+		# Add legend widget to the layout
 		legend = QWidget()
 		legendLayout = QVBoxLayout()
 		legendLayout.setAlignment(Qt.AlignTop)
@@ -112,35 +122,76 @@ class GraphWindow(QWidget):
 
 		layout.addWidget(legend)
 
+		# Add setting buttons to the layout
+		settingButtons = QWidget()
+		settingButtonsLayout = QVBoxLayout()
+		settingButtonsLayout.setAlignment(Qt.AlignTop)
+		settingButtons.setLayout(settingButtonsLayout)
+		settingButtons.setMinimumWidth(150)
+
+		newwindowButton = QPushButton("New Window")
+		newwindowButton.clicked.connect(self.makeWindow)
+		settingButtonsLayout.addWidget(newwindowButton)
+
+		self.settingButtons = settingButtonsLayout
+
+		layout.addWidget(settingButtons)
+
 		self.setLayout(layout)
 
 	# Updates the graph based off Sample and Focustage name
-	def update(self, sample, stage):
+	def updateMain(self, sample, stage):
+		self.update(self.graph, sample, stage)
+
+	def update(self, targetGraph, sample=None, stage=None):
 		# Clear existing plot
-		self.graph.clear()
+		targetGraph.clear()
 		for i in reversed(range(self.legend.count())):
 			self.legend.itemAt(i).widget().deleteLater()
 
+		# Set sample
+		if sample != None:
+			self.sampleName = sample
+
 		# Set stage
-		self.focusStage = stage
+		if stage != None:
+			self.focusStage = stage
 
 		# We create the data object
 		dat = self.project.eg.data[self.sampleName]
 		# Get list of analytes (elements) from the data object
 		analytes = dat.analytes
 
+		# Set graph settings
+		targetGraph.setLogMode(x=False, y=True)
+		ud = {'rawdata': 'counts',
+              'despiked': 'counts',
+              'bkgsub': 'background corrected counts',
+              'ratios': 'counts/{:s} count',
+              'calibrated': 'mol/mol {:s}'}
+		targetGraph.setLabel('left', ud[self.focusStage])
+		targetGraph.setLabel('bottom', 'Time', units='s')
+
 		# For each analyte: get x and y, and plot them
 		# Then add it to the legend
 		for a in analytes:
-			legendEntry = QLabel(a)
+			# Create legend entry for the element and add it to the legend widget
+			legendEntry = QCheckBox(a)
+			legendEntry.setChecked(True)
 			legendEntry.setStyleSheet("""
-			.QLabel {
+			.QCheckBox {
 				background-color: """+dat.cmap[a]+""";
 				}
 			""")
 			self.legend.addWidget(legendEntry)
 
+			# Plot element from data onto the graph
 			x = dat.Time
 			y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][a])
 			y[y == 0] = np.nan
-			plt = self.graph.plot(x, y, pen=pg.mkPen(dat.cmap[a], width=2), label=a)
+			plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[a], width=2), label=a)
+
+	def makeWindow(self):
+		self.newWin = pg.PlotWidget(title=self.sampleName)
+		self.update(self.newWin)
+		self.newWin.show()
