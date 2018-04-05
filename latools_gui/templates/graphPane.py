@@ -78,41 +78,53 @@ class GraphPane():
 
 	# TO DO: find a way to update the graph, either through passing the project object again, or by some
 	# other live-updating approach.
-	def updateGraph(self, stage):
-		self.graph.updateMain(None, stage)
+	def updateGraph(self, stage, importing=False):
+		# If importing new data
+		if importing:
+			self.graph.updateProjectDetails()
+		self.graph.updateMain(stage)
 
 class GraphWindow(QWidget):
 
 	def __init__(self, project):
 		super().__init__()
 		self.project = project
+
+		# List of elements not to be plotted
 		self.exceptionList = []
 
 		layout = QHBoxLayout()
 
-		# For testing purposes, the sample and stage is hard coded
-		self.sampleName = 'Sample-1'
+		# By default the focus stage is 'rawdata'
 		self.focusStage = 'rawdata'
 
 		# Add list of samples to the layout
+		###
 		samples = QWidget()
 		samplesLayout = QVBoxLayout()
 		samplesLayout.setAlignment(Qt.AlignTop)
 		samples.setLayout(samplesLayout)
-		samples.setMinimumWidth(100)
 
-		self.samples = samplesLayout
+		# Add List widget
+		sampleList = QListWidget()
+		samplesLayout.addWidget(sampleList)
+
+		self.sampleList = sampleList
 
 		layout.addWidget(samples)
+		###
 
 		# Add plot window to the layout
-		graph = pg.PlotWidget(title=self.sampleName)
+		###
+		graph = pg.PlotWidget()
 
 		self.graph = graph
 
 		layout.addWidget(graph)
+		###
 
 		# Add legend widget to the layout
+		###
 		legend = QWidget()
 		legendLayout = QVBoxLayout()
 		legendLayout.setAlignment(Qt.AlignTop)
@@ -122,19 +134,23 @@ class GraphWindow(QWidget):
 		self.legend = legendLayout
 
 		layout.addWidget(legend)
+		###
 
 		# Add setting buttons to the layout
+		###
 		settingButtons = QWidget()
 		settingButtonsLayout = QVBoxLayout()
 		settingButtonsLayout.setAlignment(Qt.AlignTop)
 		settingButtons.setLayout(settingButtonsLayout)
-		settingButtons.setMinimumWidth(150)
+		settingButtons.setMinimumWidth(125)
 
+		# Add new window button
 		newwindowButton = QPushButton("New Window")
 		newwindowButton.hide()
 		newwindowButton.clicked.connect(self.makeWindow)
 		settingButtonsLayout.addWidget(newwindowButton)
 
+		# Add Graph update button
 		updateButton = QPushButton("Update")
 		updateButton.hide()
 		updateButton.clicked.connect(self.updateButtonPressed)
@@ -143,18 +159,40 @@ class GraphWindow(QWidget):
 		self.settingButtons = settingButtonsLayout
 
 		layout.addWidget(settingButtons)
+		###
 
 		self.setLayout(layout)
 
-	# Updates the graphs based off Sample and Focustage name
-	def updateMain(self, sample, stage):
+
+	# Updates the project details when importing new data
+	def updateProjectDetails(self):
+		samples = []
+		for sample in self.project.eg.data:
+			samples.append(sample)
+		self.samples = samples
+		self.sampleName = samples[0]
+
+		self.sampleList.clear()
+		for sample in samples:
+			self.sampleList.addItem(sample)
+		self.sampleList.setCurrentItem(self.sampleList.item(0))
+
+	# Updates the main graph based off Focustage name and Sample name
+	def updateMain(self, stage):
 		self.exceptionList = []
-		self.update(self.graph, sample, stage)
+		self.update(self.graph, None, stage)
 
+	# When update button on the UI is pressed
 	def updateButtonPressed(self):
+		# Updates exceptions list based off checked elements
 		self.updateExceptions()
-		self.update(self.graph)
+		# sets current sample to selected sample
+		selectedSamples = self.sampleList.selectedItems()
+		selectedSample = selectedSamples[0]
+		# Updates the graph
+		self.update(self.graph, selectedSample.text())
 
+	# Updates target graph using given parameters and current settings
 	def update(self, targetGraph, sample=None, stage=None):
 		# Clear existing plot
 		targetGraph.clear()
@@ -179,6 +217,7 @@ class GraphWindow(QWidget):
 		analytes = dat.analytes
 
 		# Set graph settings
+		targetGraph.setTitle(self.sampleName)
 		targetGraph.setLogMode(x=False, y=True)
 		ud = {'rawdata': 'counts',
               'despiked': 'counts',
@@ -200,6 +239,7 @@ class GraphWindow(QWidget):
 				}
 			""")
 
+			# If element is not excepted, set it as checked in the legend and plot it
 			if not a in self.exceptionList:
 				legendEntry.setChecked(True)
 
@@ -211,11 +251,14 @@ class GraphWindow(QWidget):
 
 			self.legend.addWidget(legendEntry)
 	
+	# Creates new window which contains a copy of the current main graph
 	def makeWindow(self):
 		self.newWin = pg.PlotWidget(title=self.sampleName)
+		self.newWin.setWindowTitle("LAtools Graph")
 		self.update(self.newWin)
 		self.newWin.show()
 
+	# Updates a list of excepted elements based off currently checked elements
 	def updateExceptions(self):
 		self.exceptionList = []
 		for i in (range(self.legend.count())):
