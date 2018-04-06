@@ -3,7 +3,7 @@ from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
 from PyQt5.QtCore import Qt, QSize
 import sys 
 
-from ..templates import controlsPane
+import templates.controlsPane as controlsPane
 
 class CalibrationStage():
 	"""
