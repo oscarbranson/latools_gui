@@ -107,6 +107,7 @@ class GraphWindow(QWidget):
 
 		# Add List widget
 		sampleList = QListWidget()
+		sampleList.itemClicked.connect(self.swapSample)
 		samplesLayout.addWidget(sampleList)
 
 		self.sampleList = sampleList
@@ -150,12 +151,6 @@ class GraphWindow(QWidget):
 		newwindowButton.clicked.connect(self.makeWindow)
 		settingButtonsLayout.addWidget(newwindowButton)
 
-		# Add Graph update button
-		updateButton = QPushButton("Update")
-		updateButton.hide()
-		updateButton.clicked.connect(self.updateButtonPressed)
-		settingButtonsLayout.addWidget(updateButton)
-
 		self.settingButtons = settingButtonsLayout
 
 		layout.addWidget(settingButtons)
@@ -177,20 +172,31 @@ class GraphWindow(QWidget):
 			self.sampleList.addItem(sample)
 		self.sampleList.setCurrentItem(self.sampleList.item(0))
 
-	# Updates the main graph based off Focustage name and Sample name
-	def updateMain(self, stage):
-		self.exceptionList = []
-		self.update(self.graph, None, stage)
-
-	# When update button on the UI is pressed
-	def updateButtonPressed(self):
-		# Updates exceptions list based off checked elements
-		self.updateExceptions()
+	# Swap currently viewed sample
+	def swapSample(self):
 		# sets current sample to selected sample
 		selectedSamples = self.sampleList.selectedItems()
 		selectedSample = selectedSamples[0]
 		# Updates the graph
 		self.update(self.graph, selectedSample.text())
+
+	# updates graph to remove current excepted elements
+	def updateExceptions(self):
+
+		# Updates a list of excepted elements based off currently checked elements
+		self.exceptionList = []
+		for i in (range(self.legend.count())):
+			if not self.legend.itemAt(i).widget().isChecked():
+				self.exceptionList.append(self.legend.itemAt(i).widget().text())
+		
+		# Updates the graph
+		self.update(self.graph)
+		
+
+	# Updates the main graph based off Focustage name and Sample name
+	def updateMain(self, stage):
+		self.exceptionList = []
+		self.update(self.graph, None, stage)
 
 	# Updates target graph using given parameters and current settings
 	def update(self, targetGraph, sample=None, stage=None):
@@ -249,6 +255,7 @@ class GraphWindow(QWidget):
 				y[y == 0] = np.nan
 				plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[a], width=2), label=a)
 
+			legendEntry.stateChanged.connect(self.updateExceptions)
 			self.legend.addWidget(legendEntry)
 	
 	# Creates new window which contains a copy of the current main graph
@@ -257,10 +264,3 @@ class GraphWindow(QWidget):
 		self.newWin.setWindowTitle("LAtools Graph")
 		self.update(self.newWin)
 		self.newWin.show()
-
-	# Updates a list of excepted elements based off currently checked elements
-	def updateExceptions(self):
-		self.exceptionList = []
-		for i in (range(self.legend.count())):
-			if not self.legend.itemAt(i).widget().isChecked():
-				self.exceptionList.append(self.legend.itemAt(i).widget().text())
