@@ -2,6 +2,21 @@
 
 I've set up a framework for an installable Python package with documentation.
 
+## *Important*
+
+Make sure you're using the `gui` branch of `latools`. I'm adding features to this to support GUI development in this project.
+
+To install, clone the repo, check out the `gui` branch, and install it in development mode:
+
+```bash
+git clone https://github.com/oscarbranson/latools.git
+git checkout gui
+python setup.py develop
+```
+
+If you need to change anything in the `gui` branch you can either do it yourself and submit a pull request, or raise an issue in the `latools` repo and I'll get to it asap.
+
+
 ## Python Package
 All code should go inside the `latools_gui` subdirectory. A python package is any directory that contains an `__init__.py`, which is run when you import the package.
 
