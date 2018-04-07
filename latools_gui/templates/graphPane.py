@@ -82,13 +82,14 @@ class GraphPane():
 		# If importing new data
 		if importing:
 			self.graph.updateProjectDetails()
-		self.graph.updateMain(stage)
+		self.graph.updateGraphs(None, stage)
 
 class GraphWindow(QWidget):
 
 	def __init__(self, project):
 		super().__init__()
 		self.project = project
+		self.graphs = []
 
 		# List of elements not to be plotted
 		self.exceptionList = []
@@ -119,7 +120,7 @@ class GraphWindow(QWidget):
 		###
 		graph = pg.PlotWidget()
 
-		self.graph = graph
+		self.graphs.append(graph)
 
 		layout.addWidget(graph)
 		###
@@ -178,25 +179,25 @@ class GraphWindow(QWidget):
 		selectedSamples = self.sampleList.selectedItems()
 		selectedSample = selectedSamples[0]
 		# Updates the graph
-		self.update(self.graph, selectedSample.text())
+		self.updateGraphs(selectedSample.text())
 
 	# updates graph to remove current excepted elements
 	def updateExceptions(self):
 
-		# Updates a list of excepted elements based off currently checked elements
+		# Updates a list of excepted elements based off currently checked elements 
 		self.exceptionList = []
 		for i in (range(self.legend.count())):
 			if not self.legend.itemAt(i).widget().isChecked():
 				self.exceptionList.append(self.legend.itemAt(i).widget().text())
 		
 		# Updates the graph
-		self.update(self.graph)
+		self.updateGraphs()
 		
 
-	# Updates the main graph based off Focustage name and Sample name
-	def updateMain(self, stage):
-		self.exceptionList = []
-		self.update(self.graph, None, stage)
+	# Updates graphs based off Focustage name and Sample name
+	def updateGraphs(self, sample=None, stage=None):
+		for graph in self.graphs:
+			self.update(graph, sample, stage)
 
 	# Updates target graph using given parameters and current settings
 	def update(self, targetGraph, sample=None, stage=None):
@@ -260,7 +261,8 @@ class GraphWindow(QWidget):
 	
 	# Creates new window which contains a copy of the current main graph
 	def makeWindow(self):
-		self.newWin = pg.PlotWidget(title=self.sampleName)
-		self.newWin.setWindowTitle("LAtools Graph")
-		self.update(self.newWin)
-		self.newWin.show()
+		newWin = pg.PlotWidget(title=self.sampleName)
+		newWin.setWindowTitle("LAtools Graph")
+		self.graphs.append(newWin)
+		self.updateGraphs()
+		newWin.show()
