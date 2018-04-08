@@ -30,12 +30,13 @@ class ControlsPane():
 		
 		# We fix the width and height
 		self.controlDescriptionBox.setFixedWidth(300)
-		self.controlDescriptionBox.setFixedHeight(180)
+
+		self.controlsFrame.setFixedHeight(200)
 
 		# STEP OPTIONS SECTION
 
 		self.optionsWidget = QWidget()
-		self.optionsWidget.setMaximumWidth(400)
+		self.optionsWidget.setMinimumWidth(400)
 		self.controlsLayout.addWidget(self.optionsWidget)
 
 		# The actual options will be customised and added via method calls below
@@ -47,17 +48,17 @@ class ControlsPane():
 		self.controlStandardsLayout = QVBoxLayout()
 		self.controlsLayout.addLayout(self.controlStandardsLayout)
 		self.controlStandardsLayout.setAlignment(Qt.AlignTop)
-		self.controlStandardsLayout.addWidget(QLabel("Standards"))
+		#self.controlStandardsLayout.addWidget(QLabel("Standards"))
 
 		# Dummy options temporarily:
-		self.standardsCheck1 = QCheckBox("Standard 1")
-		self.controlStandardsLayout.addWidget(self.standardsCheck1)
+		#self.standardsCheck1 = QCheckBox("Standard 1")
+		#self.controlStandardsLayout.addWidget(self.standardsCheck1)
 
-		self.standardsCheck2 = QCheckBox("Standard 2")
-		self.controlStandardsLayout.addWidget(self.standardsCheck2)
+		#self.standardsCheck2 = QCheckBox("Standard 2")
+		#self.controlStandardsLayout.addWidget(self.standardsCheck2)
 
-		self.standardsCheck3 = QCheckBox("Standard 3")
-		self.controlStandardsLayout.addWidget(self.standardsCheck3)
+		#self.standardsCheck3 = QCheckBox("Standard 3")
+		#self.controlStandardsLayout.addWidget(self.standardsCheck3)
 
 		# We add a stretch to push down the apply button
 		self.controlStandardsLayout.addStretch(1)

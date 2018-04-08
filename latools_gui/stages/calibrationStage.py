@@ -25,6 +25,30 @@ class CalibrationStage():
 			the data. This is done by creating a calibration curve for each element based on SRMs 
 			measured throughout your analysis session, and a table of known SRM values.""")
 
+		self.optionsGrid = QGridLayout(self.stageControls.getOptionsWidget())
+
+		self.drift_correctOption = QCheckBox("drift_correct")
+		self.drift_correctOption.setChecked(True)
+		self.optionsGrid.addWidget(self.drift_correctOption, 0, 0, 2, 0)
+
+		self.scrollWindow = QScrollArea()
+		self.scrollLayout = QVBoxLayout(self.scrollWindow)
+		self.scrollWindowWidget = QWidget()
+		self.scrollWindow.setWidget(self.scrollWindowWidget)
+
+		self.scrollLayout.addWidget(QCheckBox("NIST610"))
+		self.scrollLayout.addWidget(QCheckBox("NIST612"))
+		self.scrollLayout.addWidget(QCheckBox("NIST614"))
+
+		self.optionsGrid.addWidget(self.scrollWindowWidget, 1, 0)
+
+		self.zero_interceptOption = QCheckBox("zero_intercept")
+		self.zero_interceptOption.setChecked(True)
+		self.optionsGrid.addWidget(self.zero_interceptOption, 2, 0)
+
+		self.n_minOption = QLineEdit("10")
+		self.optionsGrid.addWidget(QLabel("n_min"), 3, 0)
+		self.optionsGrid.addWidget(self.n_minOption, 3, 1)
 
 
 		self.applyButton = QPushButton("APPLY")

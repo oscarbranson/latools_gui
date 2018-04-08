@@ -23,6 +23,7 @@ class GraphPane():
 
 		# We use a vertical layout for the pane as a whole
 		self.graphMainLayout = QVBoxLayout(self.graphFrame)
+		self.graphMainLayout.stretch(1)
 
 		# We add a label
 		self.graphName = QLabel("<b>Data subset name:</b> details of the data visualisation type")
@@ -38,7 +39,8 @@ class GraphPane():
 		self.graph = GraphWindow(project)
 
 		self.graphLayout.addWidget(self.graph)
-		self.graph.setFixedSize(900,300)
+		self.graph.setMinimumWidth(900)
+		self.graph.setMinimumHeight(300)
 
 		# GRAPH OPTIONS
 
@@ -76,8 +78,7 @@ class GraphPane():
 	def addToLayout(self, stageLayout):
 		stageLayout.addWidget(self.graphFrame)
 
-	# TO DO: find a way to update the graph, either through passing the project object again, or by some
-	# other live-updating approach.
+	# Updates the graph
 	def updateGraph(self, stage, importing=False):
 		# If importing new data
 		if importing:
@@ -108,6 +109,7 @@ class GraphWindow(QWidget):
 
 		# Add List widget
 		sampleList = QListWidget()
+		sampleList.setMaximumWidth(100)
 		sampleList.itemClicked.connect(self.swapSample)
 		samplesLayout.addWidget(sampleList)
 
@@ -122,7 +124,7 @@ class GraphWindow(QWidget):
 
 		self.graphs.append(graph)
 
-		layout.addWidget(graph)
+		layout.addWidget(graph, 1)
 		###
 
 		# Add legend widget to the layout
