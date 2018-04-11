@@ -1,3 +1,5 @@
+""" A stage of the program that defines and executes one step of the data-processing """
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
 from PyQt5.QtCore import Qt, QSize
@@ -7,17 +9,35 @@ import templates.controlsPane as controlsPane
 
 class AutorangeStage():
 	"""
-	Currently, each stage has a class where the details and functionality unique to the
-	stage can be defined. They each build a Controls pane object and will later have access
-	to update the graph pane.
+	Each stage has its own Controls Pane, where it defines a description and the unique options for that
+	step of the data-processing. It updates the graph pane based on the modifications that are made to the
+	project.
 	"""
 
 	def __init__(self, stageLayout, graphPaneObj, navigationPaneObj, project):
+		"""
+		Initialising creates and customises a Controls Pane for this stage.
+
+		Parameters
+		----------
+		stageLayout : QVBoxLayout
+			The layout for the entire stage screen, that the Controls Pane will be added to.
+		graphPaneObj : GraphPane
+			A reference to the Graph Pane that will sit at the bottom of the stage screen and display
+			updates t the graph, produced by the processing defined in the stage.
+		navigationPaneObj : NavigationPane
+			A reference to the Navigation Pane so that the right button can be enabled by completing the stage.
+		project : RunningProject
+			A reference to the project object which contains all of the information unique to this project,
+			including the latools analyse object that the stages will update.
+		"""
 		self.graphPaneObj = graphPaneObj
 		self.navigationPaneObj = navigationPaneObj
 		self.project = project
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
+
+		# We set the title and description for the stage
 
 		self.stageControls.setTitle("Autorange")
 
@@ -32,7 +52,11 @@ class AutorangeStage():
 			remove physically unrealistic outliers from the data (i.e. higher than 
 			is physically possible based on your system setup).""")
 
+		# The space for the stage options is provided by the Controls Pane.
+
 		self.optionsGrid = QGridLayout(self.stageControls.getOptionsWidget())
+
+		# We define the stage options and add them to the Controls Pane
 
 		self.analyteBox = QComboBox()
 		self.analyteBox.addItem("total_counts")
@@ -72,12 +96,17 @@ class AutorangeStage():
 		self.logTransformCheck.setChecked(True)
 		self.optionsGrid.addWidget(self.logTransformCheck, 3, 2, 1, 2)
 
+		# We create the button for the right-most section of the Controls Pane.
+
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
 
 	def pressedApplyButton(self):
-
+		"""
+		The functionality for the Apply button.
+		It takes the options edited in by the Controls Pane and applies them to the latools analyse object.
+		"""
 		self.project.eg.autorange(analyte=self.analyteBox.currentText(),
 								gwin= int(self.gwinEdit.text()),
 								swin= int(self.swinEdit.text()),
@@ -88,4 +117,6 @@ class AutorangeStage():
 								transform=self.logTransformCheck.isChecked())
 
 		self.graphPaneObj.updateGraph(None)
+
+		# When the stage's processing is complete, the right button is enabled for the next stage.
 		self.navigationPaneObj.setRightEnabled()

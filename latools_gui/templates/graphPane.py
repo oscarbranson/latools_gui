@@ -1,4 +1,7 @@
-from PyQt5.QtWidgets import * 
+""" Builds and updates the graph, and displays it at the bottom of the stages screen.
+"""
+
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
 from PyQt5.QtCore import Qt, QSize
 import sys
@@ -11,11 +14,18 @@ import uncertainties.unumpy as un
 class GraphPane():
 	"""
 	The lower section of the stage screens that displays the graphs produced by the stage controls.
-	This is currently under development and simply shows how things will be displayed when the 
-	functionality is produced.
+	All of the stages share the one Graph Pane instance.
 	"""
 	def __init__(self, project):
+		"""
+		Initialising builds the graph pane and prepares it to display data when the stages activate it.
 
+		Parameters
+		----------
+		project : RunningProject
+			This object contains all of the information unique to the current project.
+			The stages update the project object and the graph displays its current state.
+		"""
 		# We make a frame for this section
 		self.graphFrame = QFrame()
 		self.graphFrame.setFrameShape(QFrame.StyledPanel)
@@ -35,47 +45,23 @@ class GraphPane():
 
 		# GRAPH
 
-		# This GraphTest class is now sent the project object
+		# The project object is sent to the GraphWindow object
 		self.graph = GraphWindow(project)
 
+		#  We add the graph to the pane and set minimum dimensions
 		self.graphLayout.addWidget(self.graph)
 		self.graph.setMinimumWidth(900)
 		self.graph.setMinimumHeight(300)
 
-		# GRAPH OPTIONS
-
-		# We add a vertical layout, and align the content to the top
-		self.graphOptionsLayout = QVBoxLayout()
-		#self.graphLayout.addLayout(self.graphOptionsLayout)
-		self.graphOptionsLayout.setAlignment(Qt.AlignTop)
-
-		self.graphOptionsLabel = QLabel("Options")
-		# We add a minimum width to the layout via this label
-		self.graphOptionsLayout.addWidget(self.graphOptionsLabel)
-
-		# We temporarily list a bunch of dummy options.
-		self.graphCheck1 = QCheckBox("Option 1")
-		self.graphOptionsLayout.addWidget(self.graphCheck1)
-
-		self.graphCheck2 = QCheckBox("Option 2")
-		self.graphOptionsLayout.addWidget(self.graphCheck2)
-
-		self.graphCheck3 = QCheckBox("Option 3")
-		self.graphOptionsLayout.addWidget(self.graphCheck3)
-
-		self.graphCheck4 = QCheckBox("Option 4")
-		self.graphOptionsLayout.addWidget(self.graphCheck4)
-
-		self.graphCheck5 = QCheckBox("Option 5")
-		self.graphOptionsLayout.addWidget(self.graphCheck5)
-
-		self.graphCheck6 = QCheckBox("Option 6")
-		self.graphOptionsLayout.addWidget(self.graphCheck6)
-
-	# This addToLayout method is used so that the graph frame can be defined early,
-	# and therefore, passed to the controls objects so that they can access it.
-	# Then, after they are added to the layout, this pane is added below the controls.
 	def addToLayout(self, stageLayout):
+		""" Adds the graph to the stage layout. It is a function so that this can occur after the rest of the
+			stage screens are built.
+
+			Parameters
+			----------
+			stagelayout : QVBoxLayout
+				The layout for the stage screen that the graph pane will be added to the bottom of.
+		"""
 		stageLayout.addWidget(self.graphFrame)
 
 	# Updates the graph

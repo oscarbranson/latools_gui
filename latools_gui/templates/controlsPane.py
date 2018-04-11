@@ -1,16 +1,25 @@
-from PyQt5.QtWidgets import * 
+""" Builds a pane below the navigation bar that displays information on the current stage, and houses the
+	options that control the functionality of the stage.
+"""
+
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
 from PyQt5.QtCore import Qt, QSize
 import sys 
 
 class ControlsPane():
 	"""
-	Provides the control pane for each stage to customise, and move between.
-	A lot of functionality potential will be added to this class, which may require some 
-	restructuring.
+	Each stage has its own Controls Pane that houses the information and options unique to that stage.
 	"""
 	def __init__(self, stageLayout):
+		"""
+		Initialising builds the pane and prepares it for options to be added by the stage object.
 
+		Parameters
+		----------
+		stageLayout : QVBoxLayout
+			The layout for the entire stage screen, that the Controls Pane will add itself to.
+		"""
 		# We make a frame for the panel
 		self.controlsFrame = QFrame()
 		self.controlsFrame.setFrameShape(QFrame.StyledPanel)
@@ -30,56 +39,60 @@ class ControlsPane():
 		
 		# We fix the width and height
 		self.controlDescriptionBox.setFixedWidth(300)
-
 		self.controlsFrame.setFixedHeight(200)
 
-		# STEP OPTIONS SECTION
-
+		# We create a widget to house the stage options. These will be filled in via function calls from
+		# the stage object.
 		self.optionsWidget = QWidget()
 		self.optionsWidget.setMinimumWidth(400)
 		self.controlsLayout.addWidget(self.optionsWidget)
 
-		# The actual options will be customised and added via method calls below
-
-		# STEP STANDARDS PANE
-
-		# Similar to the options pane above, the functionality around this
-		# will be defined and added soon.
+		# The layout for the right-most section where the Apply button(s) will be added.
 		self.controlStandardsLayout = QVBoxLayout()
 		self.controlsLayout.addLayout(self.controlStandardsLayout)
 		self.controlStandardsLayout.setAlignment(Qt.AlignTop)
-		#self.controlStandardsLayout.addWidget(QLabel("Standards"))
-
-		# Dummy options temporarily:
-		#self.standardsCheck1 = QCheckBox("Standard 1")
-		#self.controlStandardsLayout.addWidget(self.standardsCheck1)
-
-		#self.standardsCheck2 = QCheckBox("Standard 2")
-		#self.controlStandardsLayout.addWidget(self.standardsCheck2)
-
-		#self.standardsCheck3 = QCheckBox("Standard 3")
-		#self.controlStandardsLayout.addWidget(self.standardsCheck3)
 
 		# We add a stretch to push down the apply button
 		self.controlStandardsLayout.addStretch(1)
 
 	def getOptionsWidget(self):
+		""" Allows the stage object to receive the widget for the options section, so that they can add
+			stage options to this directly, and have them displayed.
+
+			Returns
+			-------
+			QWidget
+				The widget that the stage options can be added to directly.
+		"""
 		return self.optionsWidget
 
-	# The description info is passed to the object, starting with the title
 	def setTitle(self, title):
+		""" Populates the description box with the stage title
+
+			Parameters
+			----------
+			title : str
+				The title to be displayed
+		"""
 		self.controlDescriptionBox.insertHtml("<span style=\"color:#779999; "
 			"font-size:24px;\"><b>" + title + "</b></span><br><br>")
 
-	# And then the description text. There is work to be done to make this process
-	# cleaner, or automatic.
 	def setDescription(self, description):
+		""" Populates the description box with the stage description
+
+			Parameters
+			----------
+			description : str
+				The description to be displayed
+		"""
 		self.controlDescriptionBox.setHtml(description)
 
-	# This will be extended with actual funcitonality.
-	# The 'style' number here could refer to what kind of function is needed (checkbox/drop-down)
-	# But we will probably use something more robust given more specific knowledge of what is 
-	# needed here.
-
 	def addApplyButton(self, button):
+		""" Adds a button to the right-most section of the Controls pane
+
+			Parameters
+			----------
+			button : QPushButton
+				A button to be added to the right-most layout
+		"""
 		self.controlStandardsLayout.addWidget(button)

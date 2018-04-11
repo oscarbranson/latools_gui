@@ -1,8 +1,4 @@
-""" Despiking stage module docstring is here.
-
-Lorem ipsum dolor sit amet
-
-"""
+""" A stage of the program that defines and executes one step of the data-processing """
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
@@ -13,17 +9,35 @@ import templates.controlsPane as controlsPane
 
 class DespikingStage():
 	"""
-	Currently, each stage has a class where the details and functionality unique to the
-	stage can be defined. They each build a Controls pane object and will later have access
-	to update the graph pane.
+	Each stage has its own Controls Pane, where it defines a description and the unique options for that
+	step of the data-processing. It updates the graph pane based on the modifications that are made to the
+	project.
 	"""
 	def __init__(self, stageLayout, graphPaneObj, navigationPaneObj, project):
+		"""
+		Initialising creates and customises a Controls Pane for this stage.
+
+		Parameters
+		----------
+		stageLayout : QVBoxLayout
+			The layout for the entire stage screen, that the Controls Pane will be added to.
+		graphPaneObj : GraphPane
+			A reference to the Graph Pane that will sit at the bottom of the stage screen and display
+			updates t the graph, produced by the processing defined in the stage.
+		navigationPaneObj : NavigationPane
+			A reference to the Navigation Pane so that the right button can be enabled by completing the stage.
+		project : RunningProject
+			A reference to the project object which contains all of the information unique to this project,
+			including the latools analyse object that the stages will update.
+		"""
 
 		self.graphPaneObj = graphPaneObj
 		self.navigationPaneObj = navigationPaneObj
 		self.project = project
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
+
+		# We set the title and description for the stage
 
 		self.stageControls.setTitle("Data De-spiking")
 
@@ -32,8 +46,11 @@ class DespikingStage():
 			remove physically unrealistic outliers from the data (i.e. higher than 
 			is physically possible based on your system setup).""")
 
-		# We create a grid layout for options within the widget displayed in the controls layout
+		# The space for the stage options is provided by the Controls Pane.
+
 		self.optionsGrid = QHBoxLayout(self.stageControls.getOptionsWidget())
+
+		# We define the stage options and add them to the Controls Pane
 
 		self.pane1Frame = QFrame()
 		self.pane1Frame.setFrameShape(QFrame.StyledPanel)
@@ -79,7 +96,8 @@ class DespikingStage():
 		self.pane2Layout.addWidget(QLabel("maxiter"), 3, 0)
 		self.pane2Layout.addWidget(self.pane2Maxiter, 3, 1)
 
-		# We define the apply button and its function here, and pass it to stageControls to be displayed
+		# We create the button for the right-most section of the Controls Pane.
+
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)

@@ -1,12 +1,4 @@
-""" This is the docstring for the latoolsgui.py module. It is pulled by autodoc
-to describe this module in the sphinx documentation.
-
-Every module should have a docstring at the very top of the file.  The
-module's docstring may extend over multiple lines.  If your docstring does
-extend over multiple lines, the closing three quotation marks must be on
-a line by itself, preferably preceded by a blank line.
-
-"""
+""" This is the main module that builds all aspects of the latools program and runs the GUI."""
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
@@ -31,71 +23,28 @@ from stages import filteringStage
 from project import runningProject
 
 # List the stages
-STAGES = ["import","despiking","autorange","background","ratio","calibration","filtering"]
+STAGES = ["Import","De-Spiking","Autorange","Background","Ratio","Calibration","Filtering"]
 
 class MainWindow(QWidget):
 	"""
-	A description of the class. The main GUI window. All of the GUI functionality is built through this class.
-
-	Parameters
-	----------
-	param1 : type
-		Description of parameter
-
-	Attributes
-	----------
-	attribute1 : type
-		Description of class attribute
-
+	The main GUI window. All of the GUI functionality is built through this class.
 	"""
 
 	def __init__(self):
-		""" Summary line.
-
-		Extended description of function.
-
-		Parameters
-		----------
-		arg1 : int
-			Description of arg1
-		arg2 : str
-			Description of arg2
-
-		Returns
-		-------
-		bool
-			Description of return value
-
-		"""
+		""" The initialisation method creates the window and then runs the UI initialisation. """
 
 		super().__init__()
 		
 		# Determines where the offset for where the window appears on the screen.
 		# Moves the window 200px to the right, and 50px down
-		self.move(200, 50)
+		self.move(200, 0)
 		self.setWindowTitle("LAtools")
 		
 		# We move on to build the UI
 		self.initUI()
 
 	def initUI(self):
-		""" Summary line.
-
-		Extended description of function.
-
-		Parameters
-		----------
-		arg1 : int
-			Description of arg1
-		arg2 : str
-			Description of arg2
-
-		Returns
-		-------
-		bool
-			Description of return value
-
-		"""
+		""" Creates instances of all screens and stages of the program, and controls movement between them. """
 
 		# principalLayout is a vertical box that runs down the entire window
 		self.principalLayout = QVBoxLayout(self)
@@ -139,53 +88,7 @@ class MainWindow(QWidget):
 		# However, we want it to sit below the controls, so it's not added to the layout yet.
 		self.graphPaneObj = graphPane.GraphPane(self.project)
 
-		# A function is used for building the different stage layouts, and adding them to the stage stack,
-		# just to keep this section brief.
-		self.establishStages()
-
-		# The stage objects are then produced
-		self.importStageObj = importStage.ImportStage(
-			self.importStageLayout, self.graphPaneObj, self.navigationPaneObj, self.importStageWidget, self.project)
-		self.despikingStageObj = despikingStage.DespikingStage(
-			self.despikingStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
-		self.autorangeStageObj = autorangeStage.AutorangeStage(
-			self.autorangeStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
-		self.backgroundStageObj = backgroundStage.BackgroundStage(
-			self.backgroundStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
-		self.ratioStageObj = ratioStage.RatioStage(
-			self.ratioStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
-		self.calibrationStageObj = calibrationStage.CalibrationStage(
-			self.calibrationStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
-		self.filteringStageObj = filteringStage.FilteringStage(
-			self.filteringStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
-
-		# The progress bar is added here. This will need to be hooked up with some functionality
-		self.progressBar = QProgressBar()
-		self.stageScreenLayout.addWidget(self.progressBar)
-
-		#Finally, we call a method on the graphPane object to add it to the layout last.
-		self.graphPaneObj.addToLayout(self.stageScreenLayout)
-
-	# This function is simply a section of the initialisation where a layout for each
-	# stage is created, and added to the stage stack
-	def establishStages(self):
-		""" Summary line.
-
-		Extended description of function.
-
-		Parameters
-		----------
-		arg1 : int
-			Description of arg1
-		arg2 : str
-			Description of arg2
-
-		Returns
-		-------
-		bool
-			Description of return value
-
-		"""
+		# A layout for each stage is created, and added to the stage stack
 
 		# First a widget is made, so that it can be added to the stage stack
 		self.importStageWidget = QWidget()
@@ -217,6 +120,29 @@ class MainWindow(QWidget):
 		self.filteringStageWidget = QWidget()
 		self.filteringStageLayout = QVBoxLayout(self.filteringStageWidget)
 		self.stagesStack.addWidget(self.filteringStageWidget)
+
+		# The stage objects are then produced
+		self.importStageObj = importStage.ImportStage(
+			self.importStageLayout, self.graphPaneObj, self.navigationPaneObj, self.importStageWidget, self.project)
+		self.despikingStageObj = despikingStage.DespikingStage(
+			self.despikingStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+		self.autorangeStageObj = autorangeStage.AutorangeStage(
+			self.autorangeStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+		self.backgroundStageObj = backgroundStage.BackgroundStage(
+			self.backgroundStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+		self.ratioStageObj = ratioStage.RatioStage(
+			self.ratioStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+		self.calibrationStageObj = calibrationStage.CalibrationStage(
+			self.calibrationStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+		self.filteringStageObj = filteringStage.FilteringStage(
+			self.filteringStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+
+		# The progress bar is added here. This will need to be hooked up with some functionality
+		self.progressBar = QProgressBar()
+		self.stageScreenLayout.addWidget(self.progressBar)
+
+		#Finally, we call a method on the graphPane object to add it to the layout last.
+		self.graphPaneObj.addToLayout(self.stageScreenLayout)
 
 # This is where the GUI is actually created and run.
 # Autodocs executes side effects when it imports modules to be read. Therefore the GUI must be created and

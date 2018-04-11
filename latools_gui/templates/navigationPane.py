@@ -1,7 +1,4 @@
-""" Navigation pane module docstring
-
-lorem ipsum dolor sit amet
-
+""" Builds a pane at the top of the stages screen that displays the stages and controls movement through them.
 """
 
 from PyQt5.QtWidgets import *
@@ -12,9 +9,21 @@ import sys
 class NavigationPane():
 	"""
 	The pane that runs across the top of the stages screen, containing the project title, 
-	the names of the stages, and left and right buttons for movign between stages.
+	the names of the stages, and navigation buttons for moving between stages.
 	"""
 	def __init__(self, stagesStack, STAGES, stagesScreenLayout):
+		"""
+		Initialising builds and displays the pane.
+
+		Parameters
+		----------
+		stagesStack : QStackedWidget
+			The stack for the stage screens, used for switching from one stage to the next.
+		STAGES : [str]
+			A list of the stages to be displayed and moved between
+		stagesScreenLayout : QVBoxLayout
+			The layout for the stages screen, which the navigation pane will be added to the top of.
+		"""
 
 		# A reference to the stack containing all of the different stages is provided,
 		# so that the buttons can control movement between the stages.
@@ -30,9 +39,9 @@ class NavigationPane():
 
 		# Here we set up a horizontal layout for our top bar
 		# We use a Qframe for the padding
-		self.topBarFrame = QFrame()
-		stagesScreenLayout.addWidget(self.topBarFrame)
-		self.topBarLayout = QHBoxLayout(self.topBarFrame)
+		self.topBarWidget = QWidget()
+		stagesScreenLayout.addWidget(self.topBarWidget)
+		self.topBarLayout = QHBoxLayout(self.topBarWidget)
 
 		# We add a 'left' button for moving through the stages
 		self.leftButton = QPushButton("⬅")
@@ -41,7 +50,7 @@ class NavigationPane():
 		self.leftButton.clicked.connect(self.leftButtonClick)
 		
 		# We use a NavNameTags object to handle building, and highlighting the stage labels
-		self.nameTags = NavNameTags(self.topBarLayout)
+		self.nameTags = NavNameTags(self.topBarLayout, STAGES)
 
 		# After our steps we add a stretch that will push our right button to the side
 		self.topBarLayout.addStretch(1)
@@ -55,9 +64,9 @@ class NavigationPane():
 		self.leftButton.setEnabled(False)
 		self.rightButton.setEnabled(False)
 	
-	# Defines what happens when the left button is clicked.
 	def leftButtonClick(self):
-		
+		""" Controls what happens when the left button is pressed. """
+
 		# The stage stack is decremented
 		self.stagesStack.setCurrentIndex(self.stagesStack.currentIndex() - 1)
 		
@@ -71,22 +80,30 @@ class NavigationPane():
 		# We send the current stage index to the nameTags object to handle the highlighting.
 		self.nameTags.setBold(self.stagesStack.currentIndex())
 
-	# Just like the left button above, but for the right button.
 	def rightButtonClick(self):
+		""" Controls what happens when the right button is pressed. """
 		self.stagesStack.setCurrentIndex(self.stagesStack.currentIndex() + 1)
 		self.rightButton.setEnabled(False)
 		self.leftButton.setEnabled(True)
 		self.nameTags.setBold(self.stagesStack.currentIndex())
 
-	# Here we use a method to build the title. The two strings are combined with some css code
-	# to provide display style functionality.
 	def setProjectTitle(self, title, subset):
+		""" Populates the project title section with the title
+
+			Parameters
+			----------
+			title : str
+				The title of this project
+			subset : str
+				The name of the subset being worked on
+		"""
 		self.nameSubsetLabel.setText("<span style=\"color:#779999; font-size:16px;\">"
 			"<b>" + title + ":</b> " + subset + "</span>")
 
-	# In order to prevent moving through stages without running the data processing, the right button
-	# is disabled by default, and enabled by the APPLY buttons in the Control panes.
 	def setRightEnabled(self):
+		""" To prevent moving through stages without running the data processing, the right button is
+			only enabled by the stages once the Apply button has been successfully pressed.
+		"""
 		# If we're not in the final stage, set the right button to enabled
 		if (self.stagesStack.currentIndex() != (len(self.STAGES) - 1)):
 			self.rightButton.setEnabled(True)
@@ -94,13 +111,22 @@ class NavigationPane():
 class NavNameTags():
 	"""
 	A simple class that handles what stage names are displayed across the navigation bar, 
-	and which one should be highlighted.
+	and which one should be highlighted currently.
 	"""
-	def __init__(self, layout):
+	def __init__(self, layout, STAGES):
+		"""
+		Initialising displays the stage names across the navigation bar.
 
-		# The horizontal layout is passed along so that we can add the labels.
+		Parameters
+		----------
+		layout : QHBoxLayout
+			The layout that the stage names will be housed in.
+		STAGES : [str]
+			A list of the stages to be displayed and moved between
+		"""
+
 		self.layout = layout
-		self.stageNames = ["Import","De-Spiking","Autorange","Background","Ratio","Calibration","Filtering"]
+		self.stageNames = STAGES
 
 		# We start with an empty list of labels, and add them based on the strings above
 		self.stageLabels = []
@@ -119,6 +145,14 @@ class NavNameTags():
 		self.stageLabels[0].setText("<b><u>" + self.stageNames[0] + "</u></b>")
 
 	def setBold(self, index):
+		"""
+		When a stage is changed, this function updates the stage labels so that the correct one is highlighted.
+
+		Parameters
+		----------
+		index : int
+			The index of the stage now being shown.
+		"""
 		# When a stage is changed we set all the labels to not highlighted...
 		for i in range(len(self.stageNames)):
 			self.stageLabels[i].setText(self.stageNames[i])

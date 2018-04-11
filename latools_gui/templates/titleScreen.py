@@ -1,16 +1,25 @@
-from PyQt5.QtWidgets import * 
+""" Builds and displays the title screen for the program where a new project is started, or an existing project
+	is continued with.
+"""
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
 from PyQt5.QtCore import Qt, QSize
 import sys 
 
 class TitleScreen():
 	"""
-	The screen that shows up at the beginning of the program. 
-	At the moment it is just a button to start the demo project, but more functionality 
-	will be added for opening and creating new projects.
+	The screen that shows up at the beginning of the program and allows a user to define a new project,
+	or continue an existing one.
 	"""
 	def __init__(self, stack):
-		
+		"""
+		Initialising builds and displays the screen.
+
+		Parameters
+		----------
+		stack : QStackedWidget
+			The stack for the main program, used for switching from the title screen to the stage screen.
+		"""
 		# We create a widget to hold the entire screen
 		self.mainWidget = QWidget()
 
@@ -57,11 +66,21 @@ class TitleScreen():
 		self.bottomSpacer = QSpacerItem(0, 150, QSizePolicy.Minimum, QSizePolicy.Expanding) 
 		self.mainLayout.addItem(self.bottomSpacer)
 
-	# We provide the widget that the screen is contained in, so that it can be added to the
-	# main stack in latoolsgui
 	def getPane(self):
+		"""
+		Provides the widget that the screen is contained in, so that it can be added to the
+		main stack in latoolsgui
+
+		Returns
+		-------
+		mainWidget : QWidget
+			The widget that the houses the title screen.
+		"""
 		return(self.mainWidget)
 
-	# Currently, clicking the next button sets the main stack to index 1: the stages screen
 	def nextButtonClick(self):
+		"""
+		The functionality for the 'next' button. Currently, this sets the main stack to
+		index 1: the stages screen
+		"""
 		self.parentStack.setCurrentIndex(1)
