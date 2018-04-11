@@ -66,14 +66,40 @@ class GraphPane():
 
 	# Updates the graph
 	def updateGraph(self, stage, importing=False):
+		""" Updates all currently active graphs. Call this function whenever the graphs need to be updated
+			to reflect new settings
+
+			Parameters
+			----------
+			stage : String
+				The name of the stage you want the graph to display for the current dataset
+			importing: Boolean
+				This determines whether or not to update graph's settings (available samples, etc).
+				By default this is set to False.
+
+		"""
 		# If importing new data
 		if importing:
 			self.graph.updateProjectDetails()
 		self.graph.updateGraphs(None, stage)
 
 class GraphWindow(QWidget):
+	"""
+	Widget that contains a PyQtGraph plot, all the settings that control it, and a new window button
+	that creates a clone graph
 
+	"""
 	def __init__(self, project):
+		"""	Initialises an empty PyQtGraph plot, containers for all graph settings, a new window button
+		that is initially hidden till data is set
+
+		Parameters
+		----------
+		project : RunningProject
+			This object contains all of the information unique to the current project.
+			The stages update the project object and the graph displays its current state.
+
+		"""
 		super().__init__()
 		self.project = project
 		self.graphs = []
@@ -150,6 +176,10 @@ class GraphWindow(QWidget):
 
 	# Updates the project details when importing new data
 	def updateProjectDetails(self):
+		"""
+		Updates the list of available samples from the dataset viewable on the graph
+
+		"""
 		samples = []
 		for sample in self.project.eg.data:
 			samples.append(sample)
@@ -163,6 +193,9 @@ class GraphWindow(QWidget):
 
 	# Swap currently viewed sample
 	def swapSample(self):
+		"""
+		Grabs the name of the currently selected sample and passes it to the "updateGraphs" function
+		"""
 		# sets current sample to selected sample
 		selectedSamples = self.sampleList.selectedItems()
 		selectedSample = selectedSamples[0]
@@ -171,7 +204,10 @@ class GraphWindow(QWidget):
 
 	# updates graph to remove current excepted elements
 	def updateExceptions(self):
-
+		"""
+		Clears the current list of excluded elements of the legend, updates this list to reflect current settings,
+		then updates the graph
+		"""
 		# Updates a list of excepted elements based off currently checked elements 
 		self.exceptionList = []
 		for i in (range(self.legend.count())):
@@ -184,11 +220,29 @@ class GraphWindow(QWidget):
 
 	# Updates graphs based off Focustage name and Sample name
 	def updateGraphs(self, sample=None, stage=None):
+		"""
+		Calls the function "update" to all current graphs
+		"""
 		for graph in self.graphs:
 			self.update(graph, sample, stage)
 
 	# Updates target graph using given parameters and current settings
 	def update(self, targetGraph, sample=None, stage=None):
+		"""	Updates target graph by clearing its plots, then plotting data from the project not excluded by the
+		list of excluded elements
+
+		Parameters
+		----------
+		targetGraph : PlotWidget
+			A PyQtGraph Plot Widget, the graph to be updated
+		sample : String
+			Name of the sample whose data is being plotted from the dataset. This is None by default.
+			Last updated sample is plotted if this is None.
+		stage : String
+			Name of the stage that is being plotted from the dataset. This is None by default.
+			Last updated stage is plotted if this is None.
+		
+		"""
 		# Clear existing plot
 		targetGraph.clear()
 		for i in reversed(range(self.legend.count())):
@@ -249,6 +303,9 @@ class GraphWindow(QWidget):
 	
 	# Creates new window which contains a copy of the current main graph
 	def makeWindow(self):
+		"""
+		Creates a new graph that is opened as an external window
+		"""
 		newWin = pg.PlotWidget(title=self.sampleName)
 		newWin.setWindowTitle("LAtools Graph")
 		self.graphs.append(newWin)
