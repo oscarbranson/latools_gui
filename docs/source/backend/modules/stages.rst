@@ -24,19 +24,18 @@ outside of the data manipulations they perform on the main data. The layout, des
 each stage can all be modified within their respective __init__ method.
 
 Stages can be removed, though this is done at the cost of losing key functionality within the LAtools process. To
-remove a stage, its instantiation in the initUI method of MainWindow should be removed, and it should not be
-established in the establishStages method. Lastly it should be removed from the list of stages at the top of
-the latoolsgui module.
+remove a stage, its instantiation in the initUI method of MainWindow should be removed. Lastly it should be removed
+from the list of stages at the top of the latoolsgui module.
 
 
 Addition
 ====================================
 
 If the existing stages are not enough, new ones can be added following the same design. A stage should have a
-class defined within a separate module which the MainWindow in latoolsgui instantiates in its initUI method. The stage
-should also be established within the establishStages method of MainWindow, using the same format as the others.
-Lastly the stage should be added to the list of stages at the top of the latoolsgui module.
-
+class defined within a separate module which the MainWindow in latoolsgui instantiates in its initUI method.
+In order, a stage should have a QVBoxLayout made for it from a QWidget, which is added to the stagesStack. Then
+an instance of the stage class is created and passed a pointer to that layout. Lastly the stage should be
+added to the list of stages at the top of the latoolsgui module.
 
 
 Stages
