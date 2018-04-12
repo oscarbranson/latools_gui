@@ -26,3 +26,7 @@ graphPane, the graphical representation of the data is displayed using PyQtGraph
 Every template and stage object created by the MainWindow is passed requisite information about the rest of
 the program as required by design upon creation. This primarily includes pointers to other templates, as well as
 a runningProject object, which stores information about the program as a whole.
+
+The runningProject is where the actual data that is being graphed and manipulated is stored. The attribute *eg* is
+an instantiation of the *analyse* class within the LATools package which imports the data and contains methods
+for manipulating it. Stages within the LATools GUI call the methods of *eg* through the runningProject.
