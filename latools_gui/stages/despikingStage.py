@@ -103,7 +103,7 @@ class DespikingStage():
 		self.stageControls.addApplyButton(self.applyButton)
 
 	def pressedApplyButton(self):
-
+		""" Applies a despiking filter to the project data when a button is pressed. """
 
 		localExponent = None
 		if (self.pane1Exponent.text() != ""):

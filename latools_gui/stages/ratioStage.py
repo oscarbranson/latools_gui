@@ -65,6 +65,7 @@ class RatioStage():
 		self.stageControls.addApplyButton(self.applyButton)
 
 	def pressedApplyButton(self):
+		""" Ratios the project data with a given standard when a button is pressed. """
 
 		mystandard = None
 		if self.internal_standardOption.currentText() != "None":

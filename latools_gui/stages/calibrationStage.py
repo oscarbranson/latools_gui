@@ -79,6 +79,7 @@ class CalibrationStage():
 		self.stageControls.addApplyButton(self.applyButton)
 
 	def pressedApplyButton(self):
+		""" Calibrates the project data when a button is pressed. """
 
 		#self.project.eg.calibrate(analytes=None,
 		#						drift_correct=self.drift_correctOption.isChecked(),
@@ -89,4 +90,5 @@ class CalibrationStage():
 		self.navigationPaneObj.setRightEnabled()
 
 	def pressedReloadButton(self):
+		""" Performs a reload when the button is pressed. """
 		x = 1

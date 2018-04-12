@@ -87,6 +87,7 @@ class ImportStage():
 		self.stageControls.addApplyButton(self.applyButton)
 
 	def pressedApplyButton(self):
+		""" Imports data into the project when the apply button is pressed. """
 		#Add apply button functionality
 
 		# TO DO: Deal safely with incorrect data_folder
@@ -101,6 +102,7 @@ class ImportStage():
 		self.navigationPaneObj.setRightEnabled()
 
 	def findDataButtonClicked(self):
+		""" Opens a file dialog to find a file directory for data import when a button is pressed. """
 
 		self.fileLocation = QFileDialog.getExistingDirectory(self.importStageWidget, 'Open file', '/home')
 		self.fileLocationLine.setText(self.fileLocation)

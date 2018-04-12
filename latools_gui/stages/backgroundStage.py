@@ -137,6 +137,10 @@ class BackgroundStage():
 
 
 	def pressedCalcButton(self):
+		""" Applies a background calculation on the project data when a button is pressed, making sure there are
+		no illegal inputs.
+
+		"""
 
 		if (self.currentlyMethod1):
 
@@ -213,14 +217,17 @@ class BackgroundStage():
 		self.subtractButton.setEnabled(True)
 
 	def pressedPopupButton(self):
+		""" Creates a popup for the background calculation when a button is pressed. """
 		# TO DO: ADD POPUP FUNCTIONALITY
 		self.navigationPaneObj.setRightEnabled()
 
 	def pressedSubtractButton(self):
+		""" Subtracts an existing background calculation from the project data when a button is pressed. """
 		self.project.eg.bkg_subtract(analytes=None, errtype='stderr', focus='despiked')
 		self.subtractButton.setEnabled(False)
 
 	def methodUpdate(self):
+		""" Updates the current method. """
 		if (self.currentlyMethod1):
 			self.methodWidget1.setParent(None)
 			self.optionsGrid.addWidget(self.methodWidget2, 1, 0, 1, 2)
@@ -230,6 +237,7 @@ class BackgroundStage():
 		self.currentlyMethod1 = not self.currentlyMethod1
 
 	def bkgUpdate(self):
+		""" Updates the background stage. """
 		if (self.bkg_filterOption.isChecked()):
 			self.optionsGrid.addWidget(self.bkgWidget, 3, 1, 1, 2)
 		else:
