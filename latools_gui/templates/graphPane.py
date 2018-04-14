@@ -146,7 +146,6 @@ class GraphWindow(QWidget):
 		setting = QWidget()
 		settingLayout = QVBoxLayout()
 		setting.setLayout(settingLayout)
-		setting.setMinimumWidth(125)
 
 		# Add legend widget to the settings
 		###
@@ -226,15 +225,15 @@ class GraphWindow(QWidget):
 		
 
 	# Updates graphs based off Focustage name and Sample name
-	def updateGraphs(self, sample=None, stage=None):
+	def updateGraphs(self, sample=None, stage=None, legendHighlight=None):
 		"""
 		Calls the function "update" to all current graphs
 		"""
 		for graph in self.graphs:
-			self.update(graph, sample, stage)
+			self.updateGraph(graph, sample, stage, legendHighlight)
 
 	# Updates target graph using given parameters and current settings
-	def update(self, targetGraph, sample=None, stage=None):
+	def updateGraph(self, targetGraph, sample=None, stage=None, legendHighlight=None):
 		"""	Updates target graph by clearing its plots, then plotting data from the project not excluded by the
 		list of excluded elements
 
@@ -256,6 +255,8 @@ class GraphWindow(QWidget):
 
 		# Clear existing plot
 		targetGraph.clear()
+		
+		# Clear legend
 		for i in reversed(range(legend.count())):
 			legend.itemAt(i).widget().deleteLater()
 
@@ -270,7 +271,7 @@ class GraphWindow(QWidget):
 		if stage != None:
 			self.focusStage = stage
 
-		# We create the data object
+		# We get the data object from the project
 		dat = self.project.eg.data[self.sampleName]
 		# Get list of analytes (elements) from the data object
 		analytes = dat.analytes
@@ -292,8 +293,13 @@ class GraphWindow(QWidget):
 			# Create legend entry for the element and add it to the legend widget
 			legendEntry = QCheckBox(a)
 			legendEntry.setChecked(False)
+			if legendHighlight == a:
+				textColour = "white"
+			else:
+				textColour = "black"
 			legendEntry.setStyleSheet("""
 			.QCheckBox {
+				color: """+textColour+""";
 				background-color: """+dat.cmap[a]+""";
 				}
 			""")
@@ -306,7 +312,9 @@ class GraphWindow(QWidget):
 				x = dat.Time
 				y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][a])
 				y[y == 0] = np.nan
-				plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[a], width=2), label=a)
+				plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[a], width=2), label=a, name=a)
+				plt.curve.setClickable(True)
+				plt.sigClicked.connect(self.onClickPlot)
 
 			legendEntry.stateChanged.connect(self.updateExceptions)
 			legend.addWidget(legendEntry)
@@ -314,6 +322,18 @@ class GraphWindow(QWidget):
 		# Set legend to be scrollable
 		self.scroll.setWidget(self.legend)
 	
+	def onClickPlot(self, item):
+		"""	This function is called when a line on the graph is clicked
+
+			Parameters
+			----------
+			item : pg.plotDataItem
+				The plotDataItem that was clicked
+
+		"""
+		self.currentItem = item
+		self.updateGraphs(None, None, self.currentItem.name())
+
 	# Creates new window which contains a copy of the current main graph
 	def makeWindow(self):
 		"""
