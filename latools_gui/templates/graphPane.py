@@ -132,6 +132,8 @@ class GraphWindow(QWidget):
 
 		# Add plot window to the layout
 		###
+		pg.setConfigOption('background', 'w')
+		pg.setConfigOption('foreground', 'k')
 		graph = pg.PlotWidget()
 
 		self.graphs.append(graph)
@@ -139,36 +141,41 @@ class GraphWindow(QWidget):
 		layout.addWidget(graph, 1)
 		###
 
-		# Add legend widget to the layout
+		# Add setting to the layout
+		###
+		setting = QWidget()
+		settingLayout = QVBoxLayout()
+		setting.setLayout(settingLayout)
+		setting.setMinimumWidth(125)
+
+		# Add legend widget to the settings
 		###
 		legend = QWidget()
 		legendLayout = QVBoxLayout()
 		legendLayout.setAlignment(Qt.AlignTop)
 		legend.setLayout(legendLayout)
-		legend.setMinimumWidth(100)
+		legend.setMinimumWidth(setting.width())
 
-		self.legend = legendLayout
+		scroll = QScrollArea()
+		scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+		scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+		scroll.setWidgetResizable(False)
 
-		layout.addWidget(legend)
+		self.legend = legend
+		self.scroll = scroll
+
+		settingLayout.addWidget(scroll)
 		###
-
-		# Add setting buttons to the layout
-		###
-		settingButtons = QWidget()
-		settingButtonsLayout = QVBoxLayout()
-		settingButtonsLayout.setAlignment(Qt.AlignTop)
-		settingButtons.setLayout(settingButtonsLayout)
-		settingButtons.setMinimumWidth(125)
 
 		# Add new window button
 		newwindowButton = QPushButton("New Window")
 		newwindowButton.hide()
 		newwindowButton.clicked.connect(self.makeWindow)
-		settingButtonsLayout.addWidget(newwindowButton)
+		settingLayout.addWidget(newwindowButton)
 
-		self.settingButtons = settingButtonsLayout
+		self.setting = settingLayout
 
-		layout.addWidget(settingButtons)
+		layout.addWidget(setting)
 		###
 
 		self.setLayout(layout)
@@ -210,9 +217,9 @@ class GraphWindow(QWidget):
 		"""
 		# Updates a list of excepted elements based off currently checked elements 
 		self.exceptionList = []
-		for i in (range(self.legend.count())):
-			if not self.legend.itemAt(i).widget().isChecked():
-				self.exceptionList.append(self.legend.itemAt(i).widget().text())
+		for i in (range(self.legend.layout().count())):
+			if not self.legend.layout().itemAt(i).widget().isChecked():
+				self.exceptionList.append(self.legend.layout().itemAt(i).widget().text())
 		
 		# Updates the graph
 		self.updateGraphs()
@@ -243,14 +250,17 @@ class GraphWindow(QWidget):
 			Last updated stage is plotted if this is None.
 		
 		"""
+
+		# Get legend layout
+		legend = self.legend.layout()
+
 		# Clear existing plot
 		targetGraph.clear()
-		for i in reversed(range(self.legend.count())):
-			self.legend.itemAt(i).widget().deleteLater()
+		for i in reversed(range(legend.count())):
+			legend.itemAt(i).widget().deleteLater()
 
 		# Show setting buttons
-		for i in (range(self.settingButtons.count())):
-			self.settingButtons.itemAt(i).widget().show()
+		self.setting.itemAt(1).widget().show()
 
 		# Set sample
 		if sample != None:
@@ -299,7 +309,10 @@ class GraphWindow(QWidget):
 				plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[a], width=2), label=a)
 
 			legendEntry.stateChanged.connect(self.updateExceptions)
-			self.legend.addWidget(legendEntry)
+			legend.addWidget(legendEntry)
+
+		# Set legend to be scrollable
+		self.scroll.setWidget(self.legend)
 	
 	# Creates new window which contains a copy of the current main graph
 	def makeWindow(self):
