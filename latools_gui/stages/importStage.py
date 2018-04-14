@@ -1,12 +1,8 @@
 """ A stage of the program that defines and executes one step of the data-processing """
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
-from PyQt5.QtCore import Qt, QSize
-import sys 
-
 import latools as la
-
+import inspect
 import templates.controlsPane as controlsPane
 
 class ImportStage():
@@ -38,14 +34,16 @@ class ImportStage():
 		self.importStageWidget = importStageWidget
 		self.fileLocation = ""
 		self.project = project
+		self.importListener = None
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
-		self.stageControls.setTitle("Import Data")
+		# We capture the default parameters for this stage's function call
+		self.defaultParams = self.stageControls.getDefaultParameters(inspect.signature(la.analyse))
 
 		# We set the title and description for the stage
 
-		self.stageControls.setDescription("""
+		self.stageControls.setDescription("Import Data", """
 			This imports all the data files within the data/ folder into an latools.analyse 
 			object called eg, along with several parameters describing the dataset and how 
 			it should be imported:""")
@@ -72,11 +70,11 @@ class ImportStage():
 		self.optionsGrid.addWidget(QLabel("config"), 1,0)
 		self.optionsGrid.addWidget(self.configOption, 1,1)
 
-		self.srm_identifierOption = QLineEdit()
+		self.srm_identifierOption = QLineEdit(self.defaultParams['srm_identifier'])
 		self.optionsGrid.addWidget(QLabel("SRM identifier"), 2, 0)
 		self.optionsGrid.addWidget(self.srm_identifierOption, 2, 1)
 
-		self.file_extensionOption = QLineEdit()
+		self.file_extensionOption = QLineEdit(self.defaultParams['extension'])
 		self.optionsGrid.addWidget(QLabel("file extension"), 3, 0)
 		self.optionsGrid.addWidget(self.file_extensionOption, 3, 1)
 
@@ -101,10 +99,14 @@ class ImportStage():
 
 		self.navigationPaneObj.setRightEnabled()
 
+		if not self.importListener is None:
+			self.importListener.dataImported()
+
 	def findDataButtonClicked(self):
 		""" Opens a file dialog to find a file directory for data import when a button is pressed. """
 
 		self.fileLocation = QFileDialog.getExistingDirectory(self.importStageWidget, 'Open file', '/home')
 		self.fileLocationLine.setText(self.fileLocation)
 
-
+	def setImportListener(self, importListener):
+		self.importListener = importListener

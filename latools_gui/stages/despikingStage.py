@@ -1,10 +1,8 @@
 """ A stage of the program that defines and executes one step of the data-processing """
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
-from PyQt5.QtCore import Qt, QSize
-import sys 
-
+import latools as la
+import inspect
 import templates.controlsPane as controlsPane
 
 class DespikingStage():
@@ -37,11 +35,12 @@ class DespikingStage():
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
+		# We capture the default parameters for this stage's function call
+		self.defaultParams = self.stageControls.getDefaultParameters(inspect.signature(la.analyse.despike))
+
 		# We set the title and description for the stage
 
-		self.stageControls.setTitle("Data De-spiking")
-
-		self.stageControls.setDescription("""
+		self.stageControls.setDescription("Data De-spiking", """
 			The first step in data reduction is the ‘de-spike’ the raw data to 
 			remove physically unrealistic outliers from the data (i.e. higher than 
 			is physically possible based on your system setup).""")
@@ -60,17 +59,16 @@ class DespikingStage():
 		self.optionsGrid.addWidget(self.pane1Frame)
 
 		self.pane1expdecayOption = QCheckBox("exponential decay despike")
-		self.pane1expdecayOption.setChecked(True)
+		self.pane1expdecayOption.setChecked(self.defaultParams['expdecay_despiker'] == 'True')
 		self.pane1Layout.addWidget(self.pane1expdecayOption, 0, 0, 1, 0)
 
-		self.pane1Exponent = QLineEdit()
+		self.pane1Exponent = QLineEdit(self.defaultParams['exponent'])
 		self.pane1Layout.addWidget(QLabel("exponent"), 1, 0)
 		self.pane1Layout.addWidget(self.pane1Exponent, 1, 1)
 
-		self.pane1Maxiter = QLineEdit("4")
-		self.pane1Layout.addWidget(QLabel("maxiter"), 2, 0)
-		self.pane1Layout.addWidget(self.pane1Maxiter, 2, 1)
-
+		#self.pane1Maxiter = QLineEdit(self.defaultParams('maxiter'))
+		#self.pane1Layout.addWidget(QLabel("maxiter"), 2, 0)
+		#self.pane1Layout.addWidget(self.pane1Maxiter, 2, 1)
 
 		# Second pane
 		self.pane2Frame = QFrame()
@@ -81,18 +79,18 @@ class DespikingStage():
 		self.optionsGrid.addWidget(self.pane2Frame)
 
 		self.pane2NoiseOption = QCheckBox("noise despike")
-		self.pane2NoiseOption.setChecked(True)
+		self.pane2NoiseOption.setChecked(self.defaultParams['noise_despiker'] == 'True')
 		self.pane2Layout.addWidget(self.pane2NoiseOption, 0, 0, 1, 0)
 
-		self.pane2win = QLineEdit("3")
+		self.pane2win = QLineEdit(self.defaultParams['win'])
 		self.pane2Layout.addWidget(QLabel("\'win\'"), 1, 0)
 		self.pane2Layout.addWidget(self.pane2win, 1, 1)
 
-		self.pane2nlim = QLineEdit("12")
+		self.pane2nlim = QLineEdit(self.defaultParams['nlim'])
 		self.pane2Layout.addWidget(QLabel("nlim"), 2, 0)
 		self.pane2Layout.addWidget(self.pane2nlim, 2, 1)
 
-		self.pane2Maxiter = QLineEdit("4")
+		self.pane2Maxiter = QLineEdit(self.defaultParams['maxiter'])
 		self.pane2Layout.addWidget(QLabel("maxiter"), 3, 0)
 		self.pane2Layout.addWidget(self.pane2Maxiter, 3, 1)
 
@@ -113,14 +111,13 @@ class DespikingStage():
 		if (self.pane2win.text() != ""):
 			localWin = float(self.pane2win.text())
 
-		localNlim = 12
+		localNlim = 12.0
 		if (self.pane2nlim.text() != ""):
-			localNlim = int(self.pane2nlim.text())
+			localNlim = float(self.pane2nlim.text())
 
 		localMaxiter = 4
-		if (self.pane1Maxiter.text() != ""):
-			localMaxiter = int(self.pane1Maxiter.text())
-
+		if (self.pane2Maxiter.text() != ""):
+			localMaxiter = int(self.pane2Maxiter.text())
 
 		self.project.eg.despike(expdecay_despiker=self.pane1expdecayOption.isChecked(),
 								exponent=localExponent,

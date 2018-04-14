@@ -1,10 +1,8 @@
 """ A stage of the program that defines and executes one step of the data-processing """
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
-from PyQt5.QtCore import Qt, QSize
-import sys 
-
+import latools as la
+import inspect
 import templates.controlsPane as controlsPane
 
 class CalibrationStage():
@@ -36,37 +34,49 @@ class CalibrationStage():
 		self.project = project
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
+		self.srmfile = None
+
+		# We capture the default parameters for this stage's function call
+		self.defaultParams = self.stageControls.getDefaultParameters(inspect.signature(la.analyse.calibrate))
 
 		# We set the title and description for the stage
 
-		self.stageControls.setTitle("Calibration")
-
-		self.stageControls.setDescription("""
+		self.stageControls.setDescription("Calibration", """
 			Once all your data are normalised to an internal standard, you’re ready to calibrate 
 			the data. This is done by creating a calibration curve for each element based on SRMs 
 			measured throughout your analysis session, and a table of known SRM values.""")
 
 		# The space for the stage options is provided by the Controls Pane.
-		self.optionsGrid = QGridLayout(self.stageControls.getOptionsWidget())
+		self.optionsHBox = QHBoxLayout(self.stageControls.getOptionsWidget())
+
+		self.optionsLeftWidget = QWidget()
+		self.optionsLeft = QGridLayout(self.optionsLeftWidget)
+		self.optionsHBox.addWidget(self.optionsLeftWidget)
+
+		self.optionsRightWidget = QWidget()
+		self.optionsRightWidget.setMinimumWidth(90)
+		self.optionsRight = QVBoxLayout(self.optionsRightWidget)
+		self.optionsHBox.addWidget(self.optionsRightWidget)
 
 		# We define the stage options and add them to the Controls Pane
 
 		self.drift_correctOption = QCheckBox("drift_correct")
-		self.drift_correctOption.setChecked(True)
-		self.optionsGrid.addWidget(self.drift_correctOption, 0, 0, 1, 2)
+		self.drift_correctOption.setChecked(self.defaultParams['drift_correct'] == 'True')
+		self.optionsLeft.addWidget(self.drift_correctOption, 0, 0, 1, 2)
 
-		self.optionsGrid.addWidget(QLabel("srms_used"), 1, 0)
-		self.optionsGrid.addWidget(QCheckBox("NIST610"), 1, 1)
-		self.optionsGrid.addWidget(QCheckBox("NIST612"), 1, 2)
-		self.optionsGrid.addWidget(QCheckBox("NIST614"), 1, 3)
+		self.optionsRight.addWidget(QLabel("srms_used"))
+		self.optionsRight.addWidget(QCheckBox("NIST610"))
+		self.optionsRight.addWidget(QCheckBox("NIST612"))
+		self.optionsRight.addWidget(QCheckBox("NIST614"))
+		self.optionsRight.addStretch(1)
 
 		self.zero_interceptOption = QCheckBox("zero_intercept")
-		self.zero_interceptOption.setChecked(True)
-		self.optionsGrid.addWidget(self.zero_interceptOption, 2, 0)
+		self.zero_interceptOption.setChecked(self.defaultParams['zero_intercept'] == 'True')
+		self.optionsLeft.addWidget(self.zero_interceptOption, 1, 0)
 
-		self.n_minOption = QLineEdit("10")
-		self.optionsGrid.addWidget(QLabel("n_min"), 3, 0)
-		self.optionsGrid.addWidget(self.n_minOption, 3, 1)
+		self.n_minOption = QLineEdit(self.defaultParams['n_min'])
+		self.optionsLeft.addWidget(QLabel("n_min"), 2, 0)
+		self.optionsLeft.addWidget(self.n_minOption, 2, 1)
 
 		self.reloadButton = QPushButton("Reload SRM")
 		self.reloadButton.clicked.connect(self.pressedReloadButton)
@@ -81,14 +91,17 @@ class CalibrationStage():
 	def pressedApplyButton(self):
 		""" Calibrates the project data when a button is pressed. """
 
-		#self.project.eg.calibrate(analytes=None,
-		#						drift_correct=self.drift_correctOption.isChecked(),
-		#						srms_used=['NIST610', 'NIST612', 'NIST614'],
-		#						zero_intercept=self.zero_interceptOption.isChecked(),
-		#						n_min=int(self.n_minOption.text()))
+		self.project.eg.calibrate(analytes=None,
+								drift_correct=self.drift_correctOption.isChecked(),
+								srms_used=['NIST610', 'NIST612', 'NIST614'],
+								zero_intercept=self.zero_interceptOption.isChecked(),
+								n_min=int(self.n_minOption.text()))
 
 		self.navigationPaneObj.setRightEnabled()
 
 	def pressedReloadButton(self):
 		""" Performs a reload when the button is pressed. """
 		x = 1
+
+	def updateStageInfo(self):
+		srmfile = self.project.eg.srmfile

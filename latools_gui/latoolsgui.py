@@ -137,12 +137,28 @@ class MainWindow(QWidget):
 		self.filteringStageObj = filteringStage.FilteringStage(
 			self.filteringStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
 
+		# Object that allows updates to stages to occur after the data is imported
+		importListener = ImportListener(self.autorangeStageObj, self.ratioStageObj, self.calibrationStageObj)
+		self.importStageObj.setImportListener(importListener)
+
 		# The progress bar is added here. This will need to be hooked up with some functionality
 		self.progressBar = QProgressBar()
 		self.stageScreenLayout.addWidget(self.progressBar)
 
 		#Finally, we call a method on the graphPane object to add it to the layout last.
 		self.graphPaneObj.addToLayout(self.stageScreenLayout)
+
+class ImportListener():
+	def __init__(self, autorangeStage, ratioStage, calibrationStage):
+		self.autorangeStage = autorangeStage
+		self.ratioStage = ratioStage
+		self.calibrationStage = calibrationStage
+
+	def dataImported(self):
+		self.autorangeStage.updateStageInfo()
+		self.ratioStage.updateStageInfo()
+		self.calibrationStage.updateStageInfo()
+
 
 # This is where the GUI is actually created and run.
 # Autodocs executes side effects when it imports modules to be read. Therefore the GUI must be created and
