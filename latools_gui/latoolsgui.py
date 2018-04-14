@@ -1,14 +1,13 @@
 """ This is the main module that builds all aspects of the latools program and runs the GUI."""
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
+from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, QSize
 import sys 
 
 # Import the templates
 from templates import titleScreen
 from templates import navigationPane
-from templates import controlsPane
 from templates import graphPane
 
 # Import the stage information files
@@ -25,7 +24,7 @@ from project import runningProject
 # List the stages
 STAGES = ["Import","De-Spiking","Autorange","Background","Ratio","Calibration","Filtering"]
 
-class MainWindow(QWidget):
+class MainWindow(QMainWindow):
 	"""
 	The main GUI window. All of the GUI functionality is built through this class.
 	"""
@@ -46,8 +45,21 @@ class MainWindow(QWidget):
 	def initUI(self):
 		""" Creates instances of all screens and stages of the program, and controls movement between them. """
 
+		self.mainWidget = QWidget()
+
 		# principalLayout is a vertical box that runs down the entire window
-		self.principalLayout = QVBoxLayout(self)
+		self.principalLayout = QVBoxLayout(self.mainWidget)
+
+		self.setCentralWidget(self.mainWidget)
+
+		openFile = QAction(QIcon('open.png'), 'Open', self)
+		openFile.setShortcut('Ctrl+O')
+		openFile.setStatusTip('Open new File')
+		#openFile.triggered.connect()
+
+		menubar = self.menuBar()
+		fileMenu = menubar.addMenu('&File')
+		fileMenu.addAction(openFile)
 
 		# mainStack moves between views that occupy the entire window
 		self.mainStack = QStackedWidget()
