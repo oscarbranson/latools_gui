@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
 		super().__init__()
 		
 		# Determines where the offset for where the window appears on the screen.
-		# Moves the window 200px to the right, and 50px down
+		# Moves the window x pixels to the right, and y pixels down
 		self.move(200, 0)
 		self.setWindowTitle("LAtools")
 		
@@ -46,20 +46,13 @@ class MainWindow(QMainWindow):
 		""" Creates instances of all screens and stages of the program, and controls movement between them. """
 
 		self.mainWidget = QWidget()
+		self.setCentralWidget(self.mainWidget)
 
 		# principalLayout is a vertical box that runs down the entire window
 		self.principalLayout = QVBoxLayout(self.mainWidget)
 
-		self.setCentralWidget(self.mainWidget)
-
-		openFile = QAction(QIcon('open.png'), 'Open', self)
-		openFile.setShortcut('Ctrl+O')
-		openFile.setStatusTip('Open new File')
-		#openFile.triggered.connect()
-
-		menubar = self.menuBar()
-		fileMenu = menubar.addMenu('&File')
-		fileMenu.addAction(openFile)
+		# The file menu is produced here
+		self.initFileMenu()
 
 		# mainStack moves between views that occupy the entire window
 		self.mainStack = QStackedWidget()
@@ -89,9 +82,6 @@ class MainWindow(QMainWindow):
 
 		# We create one navigation pane object (The horizontal bar across the top)
 		self.navigationPaneObj = navigationPane.NavigationPane(self.stagesStack, STAGES, self.stageScreenLayout)
-
-		# And we send it the project name to display. Currently this is hardwired for the demonstration project
-		self.navigationPaneObj.setProjectTitle("Demonstration Project", "Demonstration subset")
 		
 		# Now we add the stages stack to the layout, so that it sits below the top navigation bar.
 		self.stageScreenLayout.addWidget(self.stagesStack)
@@ -149,9 +139,13 @@ class MainWindow(QMainWindow):
 		self.filteringStageObj = filteringStage.FilteringStage(
 			self.filteringStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
 
-		# Object that allows updates to stages to occur after the data is imported
-		importListener = ImportListener(self.autorangeStageObj, self.ratioStageObj, self.calibrationStageObj)
+		# Object that allows updates to stages to occur during runtime
+		importListener = ImportListener(self.autorangeStageObj,
+										self.ratioStageObj,
+										self.calibrationStageObj,
+										self.navigationPaneObj)
 		self.importStageObj.setImportListener(importListener)
+		self.titleScreenObj.setImportListener(importListener)
 
 		# The progress bar is added here. This will need to be hooked up with some functionality
 		self.progressBar = QProgressBar()
@@ -160,16 +154,56 @@ class MainWindow(QMainWindow):
 		#Finally, we call a method on the graphPane object to add it to the layout last.
 		self.graphPaneObj.addToLayout(self.stageScreenLayout)
 
+	def initFileMenu(self):
+		""" Builds and displays the file menu"""
+
+		saveFile = QAction(QIcon('save.png'), 'Save', self)
+		saveFile.setShortcut('Ctrl+S')
+		saveFile.setStatusTip('Save your project')
+		# saveFile.triggered.connect()
+
+		loadFile = QAction(QIcon('open.png'), 'Load', self)
+		#loadFile.setShortcut('Ctrl+L')
+		loadFile.setStatusTip('Load File')
+		# loadFile.triggered.connect()
+
+		exitAct = QAction(QIcon('exit.png'), 'Exit', self)
+		exitAct.setShortcut('Ctrl+Q')
+		exitAct.setStatusTip('Exit application')
+		exitAct.triggered.connect(qApp.quit)
+
+		menubar = self.menuBar()
+		fileMenu = menubar.addMenu('&File')
+		fileMenu.addAction(saveFile)
+		fileMenu.addAction(loadFile)
+		fileMenu.addAction(exitAct)
+
+		makeConfig = QAction(QIcon('open.png'), 'Make', self)
+		makeConfig.setStatusTip('Make a new configuration')
+		# makeConfig.triggered.connect()
+
+		configMenu = menubar.addMenu('&Configuration')
+		configMenu.addAction(makeConfig)
+
+
 class ImportListener():
-	def __init__(self, autorangeStage, ratioStage, calibrationStage):
+	""" Handles the passing of information between modules during runtime """
+
+	def __init__(self, autorangeStage, ratioStage, calibrationStage, navigationPane):
 		self.autorangeStage = autorangeStage
 		self.ratioStage = ratioStage
 		self.calibrationStage = calibrationStage
+		self.navigationPane = navigationPane
 
 	def dataImported(self):
 		self.autorangeStage.updateStageInfo()
 		self.ratioStage.updateStageInfo()
 		self.calibrationStage.updateStageInfo()
+
+	def setTitle(self, title):
+		# Sends the project name to the navigation pane to display
+		self.navigationPane.setProjectTitle(title, "")
+
 
 
 # This is where the GUI is actually created and run.

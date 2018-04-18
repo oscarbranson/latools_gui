@@ -51,7 +51,7 @@ class RatioStage():
 		# We define the stage options and add them to the Controls Pane
 
 		self.internal_standardOption = QComboBox()
-		self.internal_standardOption.addItem("None")
+		# self.internal_standardOption.addItem("None")
 		self.optionsGrid.addWidget(QLabel("internal_standard"), 0, 0)
 		self.optionsGrid.addWidget(self.internal_standardOption, 0, 1)
 
@@ -75,3 +75,4 @@ class RatioStage():
 	def updateStageInfo(self):
 		for analyte in self.project.eg.analytes:
 			self.internal_standardOption.addItem(str(analyte))
+		self.internal_standardOption.addItem("None")

@@ -1,6 +1,8 @@
 """ A stage of the program that defines and executes one step of the data-processing """
 
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QDesktopServices
+from PyQt5.QtCore import QUrl
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
@@ -101,7 +103,11 @@ class CalibrationStage():
 
 	def pressedReloadButton(self):
 		""" Performs a reload when the button is pressed. """
-		x = 1
+
+		url = QUrl.fromLocalFile(self.srmfile)
+		QDesktopServices.openUrl(url)
+
+		print(self.srmfile)
 
 	def updateStageInfo(self):
-		srmfile = self.project.eg.srmfile
+		self.srmfile = self.project.eg.srmfile

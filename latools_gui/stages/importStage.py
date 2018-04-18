@@ -88,19 +88,26 @@ class ImportStage():
 		""" Imports data into the project when the apply button is pressed. """
 		#Add apply button functionality
 
-		# TO DO: Deal safely with incorrect data_folder
+		try:
+			self.project.eg = la.analyse(data_folder=self.fileLocationLine.text(),
+										 config=self.configOption.currentText(),
+										 extension=self.file_extensionOption.text(),
+										 srm_identifier=self.srm_identifierOption.text())
 
-		self.project.eg = la.analyse(data_folder=self.fileLocationLine.text(),
-									 config=self.configOption.currentText(),
-									 extension=self.file_extensionOption.text(),
-									 srm_identifier=self.srm_identifierOption.text())
+			self.graphPaneObj.updateGraph('rawdata', True)
 
-		self.graphPaneObj.updateGraph('rawdata', True)
+			self.navigationPaneObj.setRightEnabled()
 
-		self.navigationPaneObj.setRightEnabled()
+			if not self.importListener is None:
+				self.importListener.dataImported()
+		except:
+			print("An error occured")
 
-		if not self.importListener is None:
-			self.importListener.dataImported()
+			errorBox = QMessageBox.critical(self.importStageWidget,
+											"Error loading data files",
+											"An error occurred while attempting to load the data files. \n" +
+											"Please check that the specified data folder contains the correct data files",
+											QMessageBox.Ok)
 
 	def findDataButtonClicked(self):
 		""" Opens a file dialog to find a file directory for data import when a button is pressed. """
