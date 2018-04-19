@@ -102,24 +102,32 @@ class DespikingStage():
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
 
+		self.loadTest = QPushButton("TEST LOAD")
+		self.loadTest.clicked.connect(self.loadApplication)
+		self.stageControls.addApplyButton(self.loadTest)
+
 	def pressedApplyButton(self):
 
 
 		localExponent = None
 		if (self.pane1Exponent.text() != ""):
 			localExponent = float(self.pane1Exponent.text())
+		self.project.updateSetting("exponent", localExponent)
 
 		localWin = 3
 		if (self.pane2win.text() != ""):
 			localWin = float(self.pane2win.text())
+		self.project.updateSetting("win", localWin)
 
 		localNlim = 12
 		if (self.pane2nlim.text() != ""):
 			localNlim = int(self.pane2nlim.text())
+		self.project.updateSetting("nlim", localNlim)
 
 		localMaxiter = 4
 		if (self.pane1Maxiter.text() != ""):
 			localMaxiter = int(self.pane1Maxiter.text())
+		self.project.updateSetting("maxiter", localMaxiter)
 
 
 		self.project.eg.despike(expdecay_despiker=self.pane1expdecayOption.isChecked(),
@@ -132,4 +140,48 @@ class DespikingStage():
 
 		self.graphPaneObj.updateGraph('despiked')
 		self.navigationPaneObj.setRightEnabled()
+
+	def loadApplication(self):
+
+                """ Load preconfigured data into fields
+
+                Load project field states
+                Updates GUI from project
+                Cloned for all stages?
+
+                Currently unused, left in as an example. Can be deleted if not wanted.
+
+                Attributes
+                ----------
+                localExponent : float
+                        LATools' despiking 'exponent'
+                localWin: float
+                        LATools' despiking 'win'
+                localNlim : float
+                        LATools' despiking 'nlim'
+
+                """
+		
+		localExponent = 0.0
+		#print ('local exponent defaulted')
+		if self.project.dataDictionary['exponent'] is not None:
+			#print ('exponent value found!')
+			localExponent = self.project.dataDictionary['exponent']
+			#print (localExponent)
+		self.pane1Exponent.setText(str(localExponent))
+		#print ('exponent set as ' + str(localExponent))
+		
+		localWin = 3.0
+		if self.project.dataDictionary['win'] is not None:
+			localWin = self.project.dataDictionary['win']
+			#print ('localWin read as ' + str(localWin))
+		self.pane2win.setText(str(localWin))
+		#print ('localWin set as ' + str(localWin))
+
+		localNlim = 12
+		if self.project.dataDictionary['nlim'] is not None:
+			localNlim = self.project.dataDictionary['nlim']
+			#print ('nlim read as ' + str(localNlim))
+		self.pane2nlim.setText(str(localNlim))
+		#print ('nlim set as ' + str(localNlim))
 
