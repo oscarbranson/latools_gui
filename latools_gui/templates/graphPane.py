@@ -325,12 +325,32 @@ class GraphWindow(QWidget):
 			legendEntry.stateChanged.connect(self.updateExceptions)
 			legend.addWidget(legendEntry)
 
+		if self.focusStage == 'bkgsub':
+			subtracts = []
+			begin = dat.bkgrng[0][0]
+			end = None
+			for values in dat.sigrng:
+				for value in values:
+					if begin == None:
+						begin = value
+					elif end == None:
+						end = value
+					else:
+						subtracts.append([begin, end])
+						begin = value
+						end = None
+			end = dat.bkgrng[-1][1]
+			subtracts.append([begin, end])
+
+			for lims in subtracts:
+				self.addRegion(targetGraph, lims, pg.mkBrush(self.backgroundColour))
+
 		# Add highlighted regions to the graph
 		if self.ranges:
 			for lims in dat.bkgrng:
-				self.addRegion(targetGraph, lims)
+				self.addRegion(targetGraph, lims, pg.mkBrush((0,0,0,25)))
 			for lims in dat.sigrng:
-				self.addRegion(targetGraph, lims)
+				self.addRegion(targetGraph, lims, pg.mkBrush((0,0,0,25)))
 			
 
 
@@ -349,8 +369,8 @@ class GraphWindow(QWidget):
 		self.currentItem = item
 		self.updateGraphs(ranges=self.ranges, legendHighlight=self.currentItem.name())
 
-	def addRegion(self, targetGraph, lims):
-		region = pg.LinearRegionItem(values=lims, brush=pg.mkBrush((0,0,0,25)), movable=False)
+	def addRegion(self, targetGraph, lims, brush):
+		region = pg.LinearRegionItem(values=lims, brush=brush, movable=False)
 		region.lines[0].setPen(pg.mkPen((0,0,0,0)))
 		region.lines[1].setPen(pg.mkPen((0,0,0,0)))
 		targetGraph.addItem(region)
