@@ -111,12 +111,12 @@ class RunningProject():
 			Leads to its directory.
 			Default not advised.
 		name : str
-                        Name of loaded file
-                        Points to established format
-                        Should leave as default?
+			Name of loaded file
+			Points to established format
+			Should leave as default?
 		"""
 
-		if path is None:
+		if path is None: #these are for testing don't mind them
 			path = 'data_export/minimal_export/'
 			#path = 'exp/'
 		if os.path.isdir(path):
@@ -124,18 +124,18 @@ class RunningProject():
 				rlog = f.readlines()
 			hashind = [i for i, n in enumerate(rlog) if '#' in n]
 			self.dataDictionary = {}
-			#print (i)
+			#"borrowed" from oscar's code
 			logread = re.compile('([a-z_]+) :: args=(\(.*\)) kwargs=(\{.*\})')
 			
-			#a = eval(logread.match(log[hashind[1] + 1]).groups()[-1])
 			for l in rlog[hashind[1] + 2:]:
 				fname, args, kwargs = logread.match(l).groups()
-				self.dataDictionary.update(**eval(kwargs))
+				temp = {} #could be optimised.
+				temp.update(**eval(kwargs))
+				for key, value in temp.items():
+					self.dataDictionary[fname+'.'+key] = value
 					
-			#print (a)
-			#self.dataDictionary = a
-			#print (self.dataDictionary)
+
 			print ('loading done')
 		else:
-			print ("git rekt")  #not a formal error message
+			print ('file not found')  
 
