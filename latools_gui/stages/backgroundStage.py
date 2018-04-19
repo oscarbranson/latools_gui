@@ -1,10 +1,8 @@
 """ A stage of the program that defines and executes one step of the data-processing """
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
-from PyQt5.QtCore import Qt, QSize
-import sys
-
+import latools as la
+import inspect
 import templates.controlsPane as controlsPane
 
 class BackgroundStage():
@@ -37,11 +35,16 @@ class BackgroundStage():
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
+		# We capture the default parameters for this stage's function call
+		self.defaultWeightParams = self.stageControls.getDefaultParameters(
+			inspect.signature(la.analyse.bkg_calc_weightedmean))
+
+		self.defaultInterParams = self.stageControls.getDefaultParameters(
+			inspect.signature(la.analyse.bkg_calc_interp1d))
+
 		# We set the title and description for the stage
 
-		self.stageControls.setTitle("Background Correction")
-
-		self.stageControls.setDescription("""
+		self.stageControls.setDescription("Background Correction", """
 			The de-spiked data must now be background-corrected. This involves three steps:
 			Signal and background identification.
 			Background calculation underlying the signal regions.
@@ -65,15 +68,15 @@ class BackgroundStage():
 		self.methodWidget1 = QWidget()
 		self.methodLayout1 = QGridLayout(self.methodWidget1)
 
-		self.weight_fwhmOption = QLineEdit()
+		self.weight_fwhmOption = QLineEdit(self.defaultWeightParams['weight_fwhm'])
 		self.methodLayout1.addWidget(QLabel("weight_fwhm"), 0, 0)
 		self.methodLayout1.addWidget(self.weight_fwhmOption, 0, 1)
 
-		self.n_minOption = QLineEdit("20")
+		self.n_minOption = QLineEdit(self.defaultWeightParams['n_min'])
 		self.methodLayout1.addWidget(QLabel("n_min"), 0, 2)
 		self.methodLayout1.addWidget(self.n_minOption, 0, 3)
 
-		self.n_maxOption = QLineEdit()
+		self.n_maxOption = QLineEdit(self.defaultWeightParams['n_max'])
 		self.methodLayout1.addWidget(QLabel("n_max"), 0, 4)
 		self.methodLayout1.addWidget(self.n_maxOption, 0, 5)
 
@@ -85,25 +88,26 @@ class BackgroundStage():
 		self.methodWidget2 = QWidget()
 		self.methodLayout2 = QGridLayout(self.methodWidget2)
 
-		self.kindOption = QLineEdit("1")
+		self.kindOption = QLineEdit(self.defaultInterParams['kind'])
 		self.methodLayout2.addWidget(QLabel("kind"), 0, 0)
 		self.methodLayout2.addWidget(self.kindOption, 0, 1)
 
-		self.n_minOption2 = QLineEdit("10")
+		self.n_minOption2 = QLineEdit(self.defaultInterParams['n_min'])
 		self.methodLayout2.addWidget(QLabel("n_min"), 0, 2)
 		self.methodLayout2.addWidget(self.n_minOption2, 0, 3)
 
-		self.n_maxOption2 = QLineEdit()
+		self.n_maxOption2 = QLineEdit(self.defaultInterParams['n_max'])
 		self.methodLayout2.addWidget(QLabel("n_max"), 0, 4)
 		self.methodLayout2.addWidget(self.n_maxOption2, 0, 5)
 
 		# Add the universal options
-		self.cstepOption = QLineEdit()
+		self.cstepOption = QLineEdit(self.defaultWeightParams['cstep'])
 		self.optionsGrid.addWidget(QLabel("cstep"), 2, 0)
 		self.optionsGrid.addWidget(self.cstepOption, 2, 1, 1, 1)
 
 		self.bkg_filterOption = QCheckBox("bkg_filter")
 		self.optionsGrid.addWidget(self.bkg_filterOption, 3, 0)
+		self.bkg_filterOption.setChecked(self.defaultWeightParams['bkg_filter'] == 'True')
 
 		# We set up a click function for the checkbox
 		self.bkg_filterOption.stateChanged.connect(self.bkgUpdate)
@@ -112,13 +116,20 @@ class BackgroundStage():
 		self.bkgWidget = QWidget()
 		self.bkgLayout = QGridLayout(self.bkgWidget)
 
-		self.f_winOption = QLineEdit("7")
-		self.bkgLayout.addWidget(QLabel("f_win"), 0, 0)
+		self.f_winOption = QLineEdit(self.defaultWeightParams['f_win'])
+		self.f_winLabel = QLabel("f_win")
+		self.bkgLayout.addWidget(self.f_winLabel, 0, 0)
 		self.bkgLayout.addWidget(self.f_winOption, 0, 1)
 
-		self.f_n_limOption = QLineEdit("3")
-		self.bkgLayout.addWidget(QLabel("f_n_lim"), 0, 2)
+		self.f_n_limOption = QLineEdit(self.defaultWeightParams['f_n_lim'])
+		self.f_n_limLabel = QLabel("f_n_lim")
+		self.bkgLayout.addWidget(self.f_n_limLabel, 0, 2)
 		self.bkgLayout.addWidget(self.f_n_limOption, 0, 3)
+
+		self.optionsGrid.addWidget(self.bkgWidget, 3, 1)
+
+		self.f_winOption.setVisible(False)
+		self.f_n_limOption.setVisible(False)
 
 		# We create the buttons for the right-most section of the Controls Pane.
 
@@ -137,6 +148,10 @@ class BackgroundStage():
 
 
 	def pressedCalcButton(self):
+		""" Applies a background calculation on the project data when a button is pressed, making sure there are
+		no illegal inputs.
+
+		"""
 
 		if (self.currentlyMethod1):
 
@@ -209,18 +224,25 @@ class BackgroundStage():
 											f_win=myf_win,
 											f_n_lim=myf_n_lim)
 
-		self.navigationPaneObj.setRightEnabled()
+
 		self.subtractButton.setEnabled(True)
 
 	def pressedPopupButton(self):
+		""" Creates a popup for the background calculation when a button is pressed. """
 		# TO DO: ADD POPUP FUNCTIONALITY
 		self.navigationPaneObj.setRightEnabled()
 
 	def pressedSubtractButton(self):
+		""" Subtracts an existing background calculation from the project data when a button is pressed. """
 		self.project.eg.bkg_subtract(analytes=None, errtype='stderr', focus='despiked')
-		self.subtractButton.setEnabled(False)
+
+		print(list(self.project.eg.data['STD-1'].data.keys()))
+		self.graphPaneObj.updateGraph('bkgsub', ranges=True)
+
+		self.navigationPaneObj.setRightEnabled()
 
 	def methodUpdate(self):
+		""" Updates the current method. """
 		if (self.currentlyMethod1):
 			self.methodWidget1.setParent(None)
 			self.optionsGrid.addWidget(self.methodWidget2, 1, 0, 1, 2)
@@ -230,7 +252,9 @@ class BackgroundStage():
 		self.currentlyMethod1 = not self.currentlyMethod1
 
 	def bkgUpdate(self):
-		if (self.bkg_filterOption.isChecked()):
-			self.optionsGrid.addWidget(self.bkgWidget, 3, 1, 1, 2)
+		if self.bkg_filterOption.isChecked():
+			self.f_winOption.setVisible(True)
+			self.f_n_limOption.setVisible(True)
 		else:
-			self.bkgWidget.setParent(None)
+			self.f_winOption.setVisible(False)
+			self.f_n_limOption.setVisible(False)

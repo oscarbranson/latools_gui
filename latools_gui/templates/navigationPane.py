@@ -2,9 +2,6 @@
 """
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
-from PyQt5.QtCore import Qt, QSize
-import sys 
 
 class NavigationPane():
 	"""
@@ -98,7 +95,7 @@ class NavigationPane():
 				The name of the subset being worked on
 		"""
 		self.nameSubsetLabel.setText("<span style=\"color:#779999; font-size:16px;\">"
-			"<b>" + title + ":</b> " + subset + "</span>")
+			"<b>" + title + "</b> " + subset + "</span>")
 
 	def setRightEnabled(self):
 		""" To prevent moving through stages without running the data processing, the right button is

@@ -66,26 +66,18 @@ class ControlsPane():
 		"""
 		return self.optionsWidget
 
-	def setTitle(self, title):
-		""" Populates the description box with the stage title
+	def setDescription(self, title, description):
+		""" Populates the description box with the stage description
 
 			Parameters
 			----------
 			title : str
 				The title to be displayed
-		"""
-		self.controlDescriptionBox.insertHtml("<span style=\"color:#779999; "
-			"font-size:24px;\"><b>" + title + "</b></span><br><br>")
-
-	def setDescription(self, description):
-		""" Populates the description box with the stage description
-
-			Parameters
-			----------
 			description : str
 				The description to be displayed
 		"""
-		self.controlDescriptionBox.setHtml(description)
+		self.controlDescriptionBox.setHtml("<span style=\"color:#779999; "
+			"font-size:18px;\"><b>" + title + "</b></span><br><br>" + description)
 
 	def addApplyButton(self, button):
 		""" Adds a button to the right-most section of the Controls pane
@@ -96,3 +88,13 @@ class ControlsPane():
 				A button to be added to the right-most layout
 		"""
 		self.controlStandardsLayout.addWidget(button)
+
+	def getDefaultParameters(self, sig):
+		params = {}
+		for key in sig.parameters:
+			params[key] = sig.parameters.get(key).default
+			if (params[key] == None):
+				params[key] = ""
+			else:
+				params[key] = str(params[key])
+		return params

@@ -39,9 +39,7 @@ class FilteringStage():
 
 		# We set the title and description for the stage
 
-		self.stageControls.setTitle("Data Selection and Filtering")
-
-		self.stageControls.setDescription("""
+		self.stageControls.setDescription("Data Selection and Filtering", """
 			The data are now background corrected, normalised to an internal standard, and 
 			calibrated. Now we can get into some of the new features of latools, and start 
 			thinking about data filtering.""")

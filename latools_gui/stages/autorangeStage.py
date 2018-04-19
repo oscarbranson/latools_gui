@@ -1,10 +1,8 @@
 """ A stage of the program that defines and executes one step of the data-processing """
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
-from PyQt5.QtCore import Qt, QSize
-import sys
-
+import latools as la
+import inspect
 import templates.controlsPane as controlsPane
 
 class AutorangeStage():
@@ -37,11 +35,12 @@ class AutorangeStage():
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
+		# We capture the default parameters for this stage's function call
+		self.defaultParams = self.stageControls.getDefaultParameters(inspect.signature(la.analyse.autorange))
+
 		# We set the title and description for the stage
 
-		self.stageControls.setTitle("Autorange")
-
-		self.stageControls.setDescription("""
+		self.stageControls.setDescription("Autorange", """
 			The first step in data reduction is the ‘de-spike’ the raw data to 
 			remove physically unrealistic outliers from the data (i.e. higher than 
 			is physically possible based on your system setup).
@@ -60,19 +59,18 @@ class AutorangeStage():
 
 		self.analyteBox = QComboBox()
 		self.analyteBox.addItem("total_counts")
-		self.analyteBox.addItem("Others (to fill)")
 		self.optionsGrid.addWidget(QLabel("analyte"), 0, 0)
 		self.optionsGrid.addWidget(self.analyteBox, 0, 1)
 
-		self.gwinEdit = QLineEdit("5")
+		self.gwinEdit = QLineEdit(self.defaultParams['gwin'])
 		self.optionsGrid.addWidget(QLabel("gwin"), 1, 0)
 		self.optionsGrid.addWidget(self.gwinEdit, 1, 1)
 
-		self.swinEdit = QLineEdit("3")
+		self.swinEdit = QLineEdit(self.defaultParams['swin'])
 		self.optionsGrid.addWidget(QLabel("swin"), 2, 0)
 		self.optionsGrid.addWidget(self.swinEdit, 2, 1)
 
-		self.winEdit = QLineEdit("20")
+		self.winEdit = QLineEdit(self.defaultParams['win'])
 		self.optionsGrid.addWidget(QLabel("win"), 3, 0)
 		self.optionsGrid.addWidget(self.winEdit, 3, 1)
 
@@ -88,12 +86,12 @@ class AutorangeStage():
 		self.optionsGrid.addWidget(self.off_multEdit1, 1, 3)
 		self.optionsGrid.addWidget(self.off_multEdit2, 1, 4)
 
-		self.nbinEdit = QLineEdit("10")
+		self.nbinEdit = QLineEdit(self.defaultParams['nbin'])
 		self.optionsGrid.addWidget(QLabel("nbin"), 2, 2)
 		self.optionsGrid.addWidget(self.nbinEdit, 2, 3, 1, 2)
 
 		self.logTransformCheck = QCheckBox("log transform")
-		self.logTransformCheck.setChecked(True)
+		self.logTransformCheck.setChecked(self.defaultParams['transform'] == 'True')
 		self.optionsGrid.addWidget(self.logTransformCheck, 3, 2, 1, 2)
 
 		# We create the button for the right-most section of the Controls Pane.
@@ -116,7 +114,15 @@ class AutorangeStage():
 								nbin=int(self.nbinEdit.text()),
 								transform=self.logTransformCheck.isChecked())
 
-		self.graphPaneObj.updateGraph(None)
+		print(list(self.project.eg.data['STD-1'].data.keys()))
+		#print(self.project.eg.data['STD-1'].bkgrng)
+		#print(self.project.eg.data['STD-1'].sigrng)
+		
+		self.graphPaneObj.updateGraph(ranges=True)
 
 		# When the stage's processing is complete, the right button is enabled for the next stage.
 		self.navigationPaneObj.setRightEnabled()
+
+	def updateStageInfo(self):
+		for analyte in self.project.eg.analytes:
+			self.analyteBox.addItem(str(analyte))

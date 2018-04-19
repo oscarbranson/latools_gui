@@ -1,34 +1,37 @@
+""" This module needs a top level docstring.
+
+"""
+
 import os
 import time
 import json
 import latools
 import re
 
+
 class RunningProject():
-	"""
-	This class is intended to house everything that is specific to one project.
+	""" This class is intended to house everything that is specific to one project.
+
 	When a project is created or loaded, this class is what is created or loaded.
 	The instance of this class is passed to each stage.
 	Currently it just contains a class variable which is later assigned as the la.analyse object.
+
+	Attributes
+	----------
+		dataDictionary : dict
+			A dictionary meant to store var pairs.
+			Defined by calls from outside stages' needs.
 	"""
 
-	
 	def __init__(self):
 		""" Initialise a blank unaltered state.
 
 		Creates tabula rasa project state.
-
-		Attributes
-		----------
-		dataDictionary : dict
-			A dictionary meant to store var pairs.
-			Defined by calls from outside stages' needs.
 		"""
-		
 		self.eg = None
 		self.dataDictionary = {}
 
-	def updateSetting (self, key, value):
+	def updateSetting(self, key, value):
 		""" The call to update variables stored within
 
 		To change or add new data to be saved,
@@ -43,11 +46,6 @@ class RunningProject():
 		"""
 
 		self.dataDictionary[key] = value
-
-	#def massUpdate(self, path):
-		
-		
-					   
 
 	def readSetting(self, key):
 		""" Recall the variables stored within the dict
@@ -68,10 +66,8 @@ class RunningProject():
 
 		if key in self.dataDictionary:
 
-			print ('key found, value: ' + self.dataDictionary[key])
 			return self.dataDictionary[key]
 		else:
-			print ('key not found')
 			return None
 
 	def saveProject(self, path = None, name = 'default.sav'):
@@ -92,10 +88,9 @@ class RunningProject():
 		if path is None:
 			path = 'projects/'
 		if not os.path.isdir(path):
-		       os.mkdir(path)
+			os.mkdir(path)
 
 		header = ['# Sample save file for testing purposes created %s\n' % (time.strftime('%Y:%m:%d %H:%M:%S)'))]
-		
 
 		with open(path + name, 'w') as f:
 			f.write('\n'.join(header))
@@ -144,6 +139,3 @@ class RunningProject():
 		else:
 			print ("git rekt")  #not a formal error message
 
-#a = RunningProject()
-#a.loadProject()
-#print (a.readSetting('exponent'))

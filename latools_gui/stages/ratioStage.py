@@ -39,9 +39,7 @@ class RatioStage():
 
 		# We set the title and description for the stage
 
-		self.stageControls.setTitle("Ratio Calculation")
-
-		self.stageControls.setDescription("""
+		self.stageControls.setDescription("Ratio Calculation", """
 			Next, you must normalise your data to an internal standard
 			The internal standard is specified during data import, but can also be changed 
 			here by specifying internal_standard in ratio(). In this case, the internal 
@@ -53,8 +51,7 @@ class RatioStage():
 		# We define the stage options and add them to the Controls Pane
 
 		self.internal_standardOption = QComboBox()
-		self.internal_standardOption.addItem("None")
-		self.internal_standardOption.addItem("(Add others here)")
+		# self.internal_standardOption.addItem("None")
 		self.optionsGrid.addWidget(QLabel("internal_standard"), 0, 0)
 		self.optionsGrid.addWidget(self.internal_standardOption, 0, 1)
 
@@ -65,11 +62,17 @@ class RatioStage():
 		self.stageControls.addApplyButton(self.applyButton)
 
 	def pressedApplyButton(self):
+		""" Ratios the project data with a given standard when a button is pressed. """
 
 		mystandard = None
 		if self.internal_standardOption.currentText() != "None":
 			mystandard = self.internal_standardOption.currentText()
 
-		#self.project.eg.ratio(internal_standard=mystandard)
+		self.project.eg.ratio(internal_standard=mystandard)
 
 		self.navigationPaneObj.setRightEnabled()
+
+	def updateStageInfo(self):
+		for analyte in self.project.eg.analytes:
+			self.internal_standardOption.addItem(str(analyte))
+		self.internal_standardOption.addItem("None")
