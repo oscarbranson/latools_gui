@@ -65,7 +65,7 @@ class GraphPane():
 		stageLayout.addWidget(self.graphFrame)
 
 	# Updates the graph
-	def updateGraph(self, stage, importing=False):
+	def updateGraph(self, stage=None, ranges=False, importing=False):
 		""" Updates all currently active graphs. Call this function whenever the graphs need to be updated
 			to reflect new settings
 
@@ -81,7 +81,7 @@ class GraphPane():
 		# If importing new data
 		if importing:
 			self.graph.updateProjectDetails()
-		self.graph.updateGraphs(None, stage)
+		self.graph.updateGraphs(stage=stage, ranges=ranges)
 
 class GraphWindow(QWidget):
 	"""
@@ -103,6 +103,7 @@ class GraphWindow(QWidget):
 		super().__init__()
 		self.project = project
 		self.graphs = []
+		self.regions = False
 
 		# List of elements not to be plotted
 		self.exceptionList = []
@@ -132,7 +133,9 @@ class GraphWindow(QWidget):
 
 		# Add plot window to the layout
 		###
-		pg.setConfigOption('background', 'w')
+		self.backgroundColour = 'w'
+
+		pg.setConfigOption('background', self.backgroundColour)
 		pg.setConfigOption('foreground', 'k')
 		graph = pg.PlotWidget()
 
@@ -149,19 +152,21 @@ class GraphWindow(QWidget):
 
 		# Add legend widget to the settings
 		###
-		legend = QWidget()
-		legendLayout = QVBoxLayout()
-		legendLayout.setAlignment(Qt.AlignTop)
-		legend.setLayout(legendLayout)
-		legend.setMinimumWidth(setting.width())
 
 		scroll = QScrollArea()
 		scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 		scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 		scroll.setWidgetResizable(False)
 
-		self.legend = legend
 		self.scroll = scroll
+
+		legend = QWidget()
+		legendLayout = QVBoxLayout()
+		legendLayout.setAlignment(Qt.AlignTop)
+		legend.setLayout(legendLayout)
+		legend.setMinimumWidth(180)
+
+		self.legend = legend
 
 		settingLayout.addWidget(scroll)
 		###
@@ -206,7 +211,7 @@ class GraphWindow(QWidget):
 		selectedSamples = self.sampleList.selectedItems()
 		selectedSample = selectedSamples[0]
 		# Updates the graph
-		self.updateGraphs(selectedSample.text())
+		self.updateGraphs(sample=selectedSample.text(), ranges=self.ranges)
 
 	# updates graph to remove current excepted elements
 	def updateExceptions(self):
@@ -221,14 +226,15 @@ class GraphWindow(QWidget):
 				self.exceptionList.append(self.legend.layout().itemAt(i).widget().text())
 		
 		# Updates the graph
-		self.updateGraphs()
+		self.updateGraphs(ranges=self.ranges)
 		
 
 	# Updates graphs based off Focustage name and Sample name
-	def updateGraphs(self, sample=None, stage=None, legendHighlight=None):
+	def updateGraphs(self, sample=None, stage=None, ranges=False, legendHighlight=None):
 		"""
 		Calls the function "update" to all current graphs
 		"""
+		self.ranges = ranges
 		for graph in self.graphs:
 			self.updateGraph(graph, sample, stage, legendHighlight)
 
@@ -289,35 +295,44 @@ class GraphWindow(QWidget):
 
 		# For each analyte: get x and y, and plot them
 		# Then add it to the legend
-		for a in analytes:
+		for element in analytes:
 			# Create legend entry for the element and add it to the legend widget
-			legendEntry = QCheckBox(a)
+			legendEntry = QCheckBox(element)
 			legendEntry.setChecked(False)
-			if legendHighlight == a:
+			if legendHighlight == element:
 				textColour = "white"
 			else:
 				textColour = "black"
 			legendEntry.setStyleSheet("""
 			.QCheckBox {
 				color: """+textColour+""";
-				background-color: """+dat.cmap[a]+""";
+				background-color: """+dat.cmap[element]+""";
 				}
 			""")
 
 			# If element is not excepted, set it as checked in the legend and plot it
-			if not a in self.exceptionList:
+			if not element in self.exceptionList:
 				legendEntry.setChecked(True)
 
 				# Plot element from data onto the graph
 				x = dat.Time
-				y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][a])
+				y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][element])
 				y[y == 0] = np.nan
-				plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[a], width=2), label=a, name=a)
+				plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[element], width=2), label=element, name=element)
 				plt.curve.setClickable(True)
 				plt.sigClicked.connect(self.onClickPlot)
 
 			legendEntry.stateChanged.connect(self.updateExceptions)
 			legend.addWidget(legendEntry)
+
+		# Add highlighted regions to the graph
+		if self.ranges:
+			for lims in dat.bkgrng:
+				self.addRegion(targetGraph, lims)
+			for lims in dat.sigrng:
+				self.addRegion(targetGraph, lims)
+			
+
 
 		# Set legend to be scrollable
 		self.scroll.setWidget(self.legend)
@@ -332,7 +347,13 @@ class GraphWindow(QWidget):
 
 		"""
 		self.currentItem = item
-		self.updateGraphs(None, None, self.currentItem.name())
+		self.updateGraphs(ranges=self.ranges, legendHighlight=self.currentItem.name())
+
+	def addRegion(self, targetGraph, lims):
+		region = pg.LinearRegionItem(values=lims, brush=pg.mkBrush((0,0,0,25)), movable=False)
+		region.lines[0].setPen(pg.mkPen((0,0,0,0)))
+		region.lines[1].setPen(pg.mkPen((0,0,0,0)))
+		targetGraph.addItem(region)
 
 	# Creates new window which contains a copy of the current main graph
 	def makeWindow(self):
@@ -342,5 +363,6 @@ class GraphWindow(QWidget):
 		newWin = pg.PlotWidget(title=self.sampleName)
 		newWin.setWindowTitle("LAtools Graph")
 		self.graphs.append(newWin)
-		self.updateGraphs()
+
+		self.updateGraphs(ranges=self.ranges)
 		newWin.show()

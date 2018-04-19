@@ -114,7 +114,11 @@ class AutorangeStage():
 								nbin=int(self.nbinEdit.text()),
 								transform=self.logTransformCheck.isChecked())
 
-		self.graphPaneObj.updateGraph(None)
+		print(list(self.project.eg.data['STD-1'].data.keys()))
+		#print(self.project.eg.data['STD-1'].bkgrng)
+		#print(self.project.eg.data['STD-1'].sigrng)
+		
+		self.graphPaneObj.updateGraph(ranges=True)
 
 		# When the stage's processing is complete, the right button is enabled for the next stage.
 		self.navigationPaneObj.setRightEnabled()

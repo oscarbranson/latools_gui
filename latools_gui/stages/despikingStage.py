@@ -127,6 +127,7 @@ class DespikingStage():
 								exponentplot=False,
 								maxiter=localMaxiter)
 
+		print(list(self.project.eg.data['STD-1'].data.keys()))
 		self.graphPaneObj.updateGraph('despiked')
 		self.navigationPaneObj.setRightEnabled()
 

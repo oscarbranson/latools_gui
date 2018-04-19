@@ -94,7 +94,7 @@ class ImportStage():
 										 extension=self.file_extensionOption.text(),
 										 srm_identifier=self.srm_identifierOption.text())
 
-			self.graphPaneObj.updateGraph('rawdata', True)
+			self.graphPaneObj.updateGraph(stage='rawdata', importing=True)
 
 			self.navigationPaneObj.setRightEnabled()
 
