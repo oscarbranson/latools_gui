@@ -234,7 +234,7 @@ class BackgroundStage():
 
 	def pressedSubtractButton(self):
 		""" Subtracts an existing background calculation from the project data when a button is pressed. """
-		self.project.eg.bkg_subtract(analytes=None, errtype='stderr', focus='despiked')
+		self.project.eg.bkg_subtract(analytes=None, errtype='stderr', focus_stage='despiked')
 
 		print(list(self.project.eg.data['STD-1'].data.keys()))
 		self.graphPaneObj.updateGraph('bkgsub', ranges=True)
