@@ -141,6 +141,16 @@ class GraphWindow(QWidget):
 
 		self.sampleList = sampleList
 
+		# log-scale check box
+		yLogCheckBox = QCheckBox()
+		yLogCheckBox.setMaximumWidth(100)
+		yLogCheckBox.setText('log(y)')
+		yLogCheckBox.setChecked(True)
+		yLogCheckBox.stateChanged.connect(self.updateLogScale)
+		samplesLayout.addWidget(yLogCheckBox)
+
+		self.yLogCheckBox = yLogCheckBox
+
 		layout.addWidget(samples)
 		###
 
@@ -246,7 +256,10 @@ class GraphWindow(QWidget):
 		
 		# Updates the graph
 		self.updateGraphs(ranges=self.ranges)
-		
+	
+	def updateLogScale(self):
+		for graph in self.graphs:
+			graph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
 
 	# Updates graphs based off Focustage name and Sample name
 	def updateGraphs(self, sample=None, stage=None, ranges=False, legendHighlight=None):
@@ -320,8 +333,8 @@ class GraphWindow(QWidget):
 		analytes = dat.analytes
 
 		# Set graph settings
-		targetGraph.setTitle(self.sampleName)
-		targetGraph.setLogMode(x=False, y=True)
+		# targetGraph.setTitle(self.sampleName)
+		targetGraph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
 		ud = {'rawdata': 'counts',
               'despiked': 'counts',
               'bkgsub': 'background corrected counts',
@@ -354,8 +367,8 @@ class GraphWindow(QWidget):
 				# Plot element from data onto the graph
 				x = dat.Time
 				y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][element])
-				y[y == 0] = np.nan
-				plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[element], width=2), label=element, name=element)
+				# y[y <= 0] = np.nan
+				plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[element], width=2), label=element, name=element, connect='finite')
 				plt.curve.setClickable(True)
 				plt.sigClicked.connect(self.onClickPlot)
 
@@ -366,9 +379,9 @@ class GraphWindow(QWidget):
 			self.addRegion(targetGraph, lims, pg.mkBrush(self.backgroundColour))
 
 		# Add highlighted regions to the graph
-		if self.ranges:
+		if self.ranges and self.focusStage in ['rawdata', 'despiked']:
 			for lims in dat.bkgrng:
-				self.addRegion(targetGraph, lims, pg.mkBrush((0,0,0,25)))
+				self.addRegion(targetGraph, lims, pg.mkBrush((255,0,0,25)))
 			for lims in dat.sigrng:
 				self.addRegion(targetGraph, lims, pg.mkBrush((0,0,0,25)))
 			
