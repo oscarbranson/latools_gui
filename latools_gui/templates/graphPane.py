@@ -346,9 +346,9 @@ class GraphWindow(QWidget):
 		# 		self.addRegion(targetGraph, lims, pg.mkBrush(self.backgroundColour))
 
 		# Add highlighted regions to the graph
-		if self.ranges:
+		if self.ranges and self.focusStage in ['rawdata', 'despiked']:
 			for lims in dat.bkgrng:
-				self.addRegion(targetGraph, lims, pg.mkBrush((0,0,0,25)))
+				self.addRegion(targetGraph, lims, pg.mkBrush((255,0,0,25)))
 			for lims in dat.sigrng:
 				self.addRegion(targetGraph, lims, pg.mkBrush((0,0,0,25)))
 			
