@@ -224,6 +224,7 @@ class BackgroundStage():
 											f_win=myf_win,
 											f_n_lim=myf_n_lim)
 
+		self.graphPaneObj.updateGraphDetails(bkgSub=True)
 
 		self.subtractButton.setEnabled(True)
 
