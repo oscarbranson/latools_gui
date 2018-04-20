@@ -317,33 +317,33 @@ class GraphWindow(QWidget):
 				# Plot element from data onto the graph
 				x = dat.Time
 				y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][element])
-				y[y == 0] = np.nan
-				plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[element], width=2), label=element, name=element)
+				y[y <= 0] = np.nan
+				plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[element], width=2), label=element, name=element, connect='finite')
 				plt.curve.setClickable(True)
 				plt.sigClicked.connect(self.onClickPlot)
 
 			legendEntry.stateChanged.connect(self.updateExceptions)
 			legend.addWidget(legendEntry)
 
-		if self.focusStage == 'bkgsub':
-			subtracts = []
-			begin = dat.bkgrng[0][0]
-			end = None
-			for values in dat.sigrng:
-				for value in values:
-					if begin == None:
-						begin = value
-					elif end == None:
-						end = value
-					else:
-						subtracts.append([begin, end])
-						begin = value
-						end = None
-			end = dat.bkgrng[-1][1]
-			subtracts.append([begin, end])
+		# if self.focusStage == 'bkgsub':
+		# 	subtracts = []
+		# 	begin = dat.bkgrng[0][0]
+		# 	end = None
+		# 	for values in dat.sigrng:
+		# 		for value in values:
+		# 			if begin == None:
+		# 				begin = value
+		# 			elif end == None:
+		# 				end = value
+		# 			else:
+		# 				subtracts.append([begin, end])
+		# 				begin = value
+		# 				end = None
+		# 	end = dat.bkgrng[-1][1]
+		# 	subtracts.append([begin, end])
 
-			for lims in subtracts:
-				self.addRegion(targetGraph, lims, pg.mkBrush(self.backgroundColour))
+		# 	for lims in subtracts:
+		# 		self.addRegion(targetGraph, lims, pg.mkBrush(self.backgroundColour))
 
 		# Add highlighted regions to the graph
 		if self.ranges:
