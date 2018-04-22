@@ -11,7 +11,7 @@ class ImportStage():
 	step of the data-processing. It updates the graph pane based on the modifications that are made to the
 	project.
 	"""
-	def __init__(self, stageLayout, graphPaneObj, navigationPaneObj, importStageWidget, project):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, importStageWidget, project):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -22,15 +22,17 @@ class ImportStage():
 		graphPaneObj : GraphPane
 			A reference to the Graph Pane that will sit at the bottom of the stage screen and display
 			updates t the graph, produced by the processing defined in the stage.
-		navigationPaneObj : NavigationPane
-			A reference to the Navigation Pane so that the right button can be enabled by completing the stage.
+		progressPaneObj : ProgressPane
+			A reference to the Progress Pane so that the right button can be enabled by completing the stage.
+		importStageWidget : QWidget
+			A reference to this stage's widget in order to manage popup windows
 		project : RunningProject
 			A reference to the project object which contains all of the information unique to this project,
 			including the latools analyse object that the stages will update.
 		"""
 
 		self.graphPaneObj = graphPaneObj
-		self.navigationPaneObj = navigationPaneObj
+		self.progressPaneObj = progressPaneObj
 		self.importStageWidget = importStageWidget
 		self.fileLocation = ""
 		self.project = project
@@ -64,10 +66,10 @@ class ImportStage():
 		self.fileLocationLine.setReadOnly(True)
 
 		self.configOption = QComboBox()
-		self.configOption.addItem("DEFAULT")
-		self.configOption.addItem("REPRODUCE")
-		self.configOption.addItem("UCD-AGILENT")
-		self.configOption.addItem("USC-ELEMENT")
+		# The configOption values are added based on the read_latoolscfg values
+		for key in dict(la.config.read_latoolscfg()[1]):
+			self.configOption.addItem(key)
+
 		self.optionsGrid.addWidget(QLabel("config"), 1,0)
 		self.optionsGrid.addWidget(self.configOption, 1,1)
 		self.configOption.setToolTip("The configuration option")
@@ -101,7 +103,7 @@ class ImportStage():
 			self.graphPaneObj.updateGraphDetails(importing=True)
 			self.graphPaneObj.updateGraph(stage='rawdata')
 
-			self.navigationPaneObj.setRightEnabled()
+			self.progressPaneObj.setRightEnabled()
 
 			if not self.importListener is None:
 				self.importListener.dataImported()

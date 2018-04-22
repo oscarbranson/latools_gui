@@ -3,7 +3,7 @@
 
 from PyQt5.QtWidgets import *
 
-class NavigationPane():
+class NavigationPane:
 	"""
 	The pane that runs across the top of the stages screen, containing the project title, 
 	the names of the stages, and navigation buttons for moving between stages.
@@ -39,50 +39,12 @@ class NavigationPane():
 		self.topBarWidget = QWidget()
 		stagesScreenLayout.addWidget(self.topBarWidget)
 		self.topBarLayout = QHBoxLayout(self.topBarWidget)
-
-		# We add a 'left' button for moving through the stages
-		self.leftButton = QPushButton("⬅")
-		self.topBarLayout.addWidget(self.leftButton)
-		# The click functionality is defined in a method below.
-		self.leftButton.clicked.connect(self.leftButtonClick)
 		
 		# We use a NavNameTags object to handle building, and highlighting the stage labels
 		self.nameTags = NavNameTags(self.topBarLayout, STAGES)
 
 		# After our steps we add a stretch that will push our right button to the side
 		self.topBarLayout.addStretch(1)
-
-		# We add a right button
-		self.rightButton = QPushButton("➡")
-		self.rightButton.clicked.connect(self.rightButtonClick)
-		self.topBarLayout.addWidget(self.rightButton)
-
-		# As we won't be changing stages until the processing is complete, we disable the buttons
-		self.leftButton.setEnabled(False)
-		self.rightButton.setEnabled(False)
-	
-	def leftButtonClick(self):
-		""" Controls what happens when the left button is pressed. """
-
-		# The stage stack is decremented
-		self.stagesStack.setCurrentIndex(self.stagesStack.currentIndex() - 1)
-		
-		# If we're now on the first stage, we disable the left button.
-		if (self.stagesStack.currentIndex() == 0):
-			self.leftButton.setEnabled(False)
-
-		# The right button should be enabled
-		self.rightButton.setEnabled(True)
-
-		# We send the current stage index to the nameTags object to handle the highlighting.
-		self.nameTags.setBold(self.stagesStack.currentIndex())
-
-	def rightButtonClick(self):
-		""" Controls what happens when the right button is pressed. """
-		self.stagesStack.setCurrentIndex(self.stagesStack.currentIndex() + 1)
-		self.rightButton.setEnabled(False)
-		self.leftButton.setEnabled(True)
-		self.nameTags.setBold(self.stagesStack.currentIndex())
 
 	def setProjectTitle(self, title, subset):
 		""" Populates the project title section with the title
@@ -97,13 +59,8 @@ class NavigationPane():
 		self.nameSubsetLabel.setText("<span style=\"color:#779999; font-size:16px;\">"
 			"<b>" + title + "</b> " + subset + "</span>")
 
-	def setRightEnabled(self):
-		""" To prevent moving through stages without running the data processing, the right button is
-			only enabled by the stages once the Apply button has been successfully pressed.
-		"""
-		# If we're not in the final stage, set the right button to enabled
-		if (self.stagesStack.currentIndex() != (len(self.STAGES) - 1)):
-			self.rightButton.setEnabled(True)
+	def setStage(self, index):
+		self.nameTags.setBold(index)
 
 class NavNameTags():
 	"""
@@ -155,9 +112,4 @@ class NavNameTags():
 			self.stageLabels[i].setText(self.stageNames[i])
 		# And then highlight the current stage
 		self.stageLabels[index].setText("<b><u>" + self.stageNames[index] + "</u></b>")
-
-
-
-
-
 

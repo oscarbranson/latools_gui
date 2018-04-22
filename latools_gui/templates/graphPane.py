@@ -2,9 +2,7 @@
 """
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
-from PyQt5.QtCore import Qt, QSize
-import sys
+from PyQt5.QtCore import Qt
 
 import latools.helpers as helpers
 import pyqtgraph as pg
@@ -31,17 +29,9 @@ class GraphPane():
 		self.graphFrame.setFrameShape(QFrame.StyledPanel)
 		self.graphFrame.setFrameShadow(QFrame.Raised)
 
-		# We use a vertical layout for the pane as a whole
-		self.graphMainLayout = QVBoxLayout(self.graphFrame)
-		self.graphMainLayout.stretch(1)
-
-		# We add a label
-		self.graphName = QLabel("<b>Data subset name:</b> details of the data visualisation type")
-		self.graphMainLayout.addWidget(self.graphName)
-
-		# We use a horizontal layout for the content
-		self.graphLayout = QHBoxLayout()
-		self.graphMainLayout.addLayout(self.graphLayout)
+		# We use a horizontal layout for the pane
+		self.graphLayout = QHBoxLayout(self.graphFrame)
+		self.graphLayout.stretch(1)
 
 		# GRAPH
 
