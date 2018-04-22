@@ -57,6 +57,7 @@ class ImportStage():
 		self.findDataButton.setMaximumWidth(100)
 		self.findDataButton.clicked.connect(self.findDataButtonClicked)
 		self.optionsGrid.addWidget(self.findDataButton,0,0)
+		self.findDataButton.setToolTip("Locate your data files")
 
 		self.fileLocationLine = QLineEdit("./data/")
 		self.optionsGrid.addWidget(self.fileLocationLine, 0, 1)
@@ -69,14 +70,17 @@ class ImportStage():
 		self.configOption.addItem("USC-ELEMENT")
 		self.optionsGrid.addWidget(QLabel("config"), 1,0)
 		self.optionsGrid.addWidget(self.configOption, 1,1)
+		self.configOption.setToolTip("The configuration option")
 
 		self.srm_identifierOption = QLineEdit(self.defaultParams['srm_identifier'])
 		self.optionsGrid.addWidget(QLabel("SRM identifier"), 2, 0)
 		self.optionsGrid.addWidget(self.srm_identifierOption, 2, 1)
+		self.srm_identifierOption.setToolTip("The SRM identifier")
 
 		self.file_extensionOption = QLineEdit(self.defaultParams['extension'])
 		self.optionsGrid.addWidget(QLabel("file extension"), 3, 0)
 		self.optionsGrid.addWidget(self.file_extensionOption, 3, 1)
+		self.file_extensionOption.setToolTip("The file extension used in your data files")
 
 		# We create the button for the right-most section of the Controls Pane.
 
