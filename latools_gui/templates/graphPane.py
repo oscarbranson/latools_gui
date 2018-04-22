@@ -65,7 +65,7 @@ class GraphPane():
 		stageLayout.addWidget(self.graphFrame)
 
 	# Updates the graph
-	def updateGraph(self, stage=None, ranges=False, importing=False):
+	def updateGraph(self, stage=None, ranges=False):
 		""" Updates all currently active graphs. Call this function whenever the graphs need to be updated
 			to reflect new settings
 
@@ -78,10 +78,22 @@ class GraphPane():
 				By default this is set to False.
 
 		"""
-		# If importing new data
-		if importing:
-			self.graph.updateProjectDetails()
 		self.graph.updateGraphs(stage=stage, ranges=ranges)
+
+	def updateGraphDetails(self, importing=False, bkgSub=False):
+		""" Updates the graph details such as samples loaded, and background subtraction areas
+
+			Parameters
+			----------
+			importing: Boolean
+				This determines whether or not to update data related to importing new data
+				By default this is set to False.
+			bkgSub: Boolean
+				This determines whether or not to update removed background regions
+				By default this is set to False.
+
+		"""
+		self.graph.updateGraphDetails(importing, bkgSub)
 
 class GraphWindow(QWidget):
 	"""
@@ -104,6 +116,7 @@ class GraphWindow(QWidget):
 		self.project = project
 		self.graphs = []
 		self.regions = False
+		self.subtracts = dict()
 
 		# List of elements not to be plotted
 		self.exceptionList = []
@@ -127,6 +140,16 @@ class GraphWindow(QWidget):
 		samplesLayout.addWidget(sampleList)
 
 		self.sampleList = sampleList
+
+		# log-scale check box
+		yLogCheckBox = QCheckBox()
+		yLogCheckBox.setMaximumWidth(100)
+		yLogCheckBox.setText('log(y)')
+		yLogCheckBox.setChecked(True)
+		yLogCheckBox.stateChanged.connect(self.updateLogScale)
+		samplesLayout.addWidget(yLogCheckBox)
+
+		self.yLogCheckBox = yLogCheckBox
 
 		layout.addWidget(samples)
 		###
@@ -186,21 +209,25 @@ class GraphWindow(QWidget):
 
 
 	# Updates the project details when importing new data
-	def updateProjectDetails(self):
+	def updateGraphDetails(self, importing=False, bkgSub=False):
 		"""
 		Updates the list of available samples from the dataset viewable on the graph
 
 		"""
-		samples = []
-		for sample in self.project.eg.data:
-			samples.append(sample)
-		self.samples = samples
-		self.sampleName = samples[0]
+		if importing:
+			samples = []
+			for sample in self.project.eg.data:
+				samples.append(sample)
+			self.samples = samples
+			self.sampleName = samples[0]
 
-		self.sampleList.clear()
-		for sample in samples:
-			self.sampleList.addItem(sample)
-		self.sampleList.setCurrentItem(self.sampleList.item(0))
+			self.sampleList.clear()
+			for sample in samples:
+				self.sampleList.addItem(sample)
+				self.subtracts[sample] = []
+			self.sampleList.setCurrentItem(self.sampleList.item(0))
+		if bkgSub:
+			self.calculateBkgSub()
 
 	# Swap currently viewed sample
 	def swapSample(self):
@@ -210,8 +237,10 @@ class GraphWindow(QWidget):
 		# sets current sample to selected sample
 		selectedSamples = self.sampleList.selectedItems()
 		selectedSample = selectedSamples[0]
+		self.sampleName = selectedSample.text()
+
 		# Updates the graph
-		self.updateGraphs(sample=selectedSample.text(), ranges=self.ranges)
+		self.updateGraphs(ranges=self.ranges)
 
 	# updates graph to remove current excepted elements
 	def updateExceptions(self):
@@ -227,14 +256,33 @@ class GraphWindow(QWidget):
 		
 		# Updates the graph
 		self.updateGraphs(ranges=self.ranges)
-		
+	
+	def updateLogScale(self):
+		for graph in self.graphs:
+			graph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
 
 	# Updates graphs based off Focustage name and Sample name
 	def updateGraphs(self, sample=None, stage=None, ranges=False, legendHighlight=None):
 		"""
 		Calls the function "update" to all current graphs
+
+		Parameters
+		----------
+		targetGraph : PlotWidget
+			A PyQtGraph Plot Widget, the graph to be updated
+		sample : String
+			Name of the sample whose data is being plotted from the dataset. This is None by default.
+			Last updated sample is plotted if this is None.
+		stage : String
+			Name of the stage that is being plotted from the dataset. This is None by default.
+			Last updated stage is plotted if this is None.
+		ranges : Boolean
+			Whether or not to display highlighted regions on the graph
+		legendHighlight : String
+			Name of the element that will be highlighted in the legend
 		"""
 		self.ranges = ranges
+		
 		for graph in self.graphs:
 			self.updateGraph(graph, sample, stage, legendHighlight)
 
@@ -253,6 +301,8 @@ class GraphWindow(QWidget):
 		stage : String
 			Name of the stage that is being plotted from the dataset. This is None by default.
 			Last updated stage is plotted if this is None.
+		legendHighlight : String
+			Name of the element that will be highlighted in the legend
 		
 		"""
 
@@ -283,8 +333,8 @@ class GraphWindow(QWidget):
 		analytes = dat.analytes
 
 		# Set graph settings
-		targetGraph.setTitle(self.sampleName)
-		targetGraph.setLogMode(x=False, y=True)
+		# targetGraph.setTitle(self.sampleName)
+		targetGraph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
 		ud = {'rawdata': 'counts',
               'despiked': 'counts',
               'bkgsub': 'background corrected counts',
@@ -317,38 +367,21 @@ class GraphWindow(QWidget):
 				# Plot element from data onto the graph
 				x = dat.Time
 				y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][element])
-				y[y == 0] = np.nan
-				plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[element], width=2), label=element, name=element)
+				# y[y <= 0] = np.nan
+				plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[element], width=2), label=element, name=element, connect='finite')
 				plt.curve.setClickable(True)
 				plt.sigClicked.connect(self.onClickPlot)
 
 			legendEntry.stateChanged.connect(self.updateExceptions)
 			legend.addWidget(legendEntry)
 
-		if self.focusStage == 'bkgsub':
-			subtracts = []
-			begin = dat.bkgrng[0][0]
-			end = None
-			for values in dat.sigrng:
-				for value in values:
-					if begin == None:
-						begin = value
-					elif end == None:
-						end = value
-					else:
-						subtracts.append([begin, end])
-						begin = value
-						end = None
-			end = dat.bkgrng[-1][1]
-			subtracts.append([begin, end])
-
-			for lims in subtracts:
-				self.addRegion(targetGraph, lims, pg.mkBrush(self.backgroundColour))
+		for lims in self.subtracts[self.sampleName]:
+			self.addRegion(targetGraph, lims, pg.mkBrush(self.backgroundColour))
 
 		# Add highlighted regions to the graph
-		if self.ranges:
+		if self.ranges and self.focusStage in ['rawdata', 'despiked']:
 			for lims in dat.bkgrng:
-				self.addRegion(targetGraph, lims, pg.mkBrush((0,0,0,25)))
+				self.addRegion(targetGraph, lims, pg.mkBrush((255,0,0,25)))
 			for lims in dat.sigrng:
 				self.addRegion(targetGraph, lims, pg.mkBrush((0,0,0,25)))
 			
@@ -368,6 +401,26 @@ class GraphWindow(QWidget):
 		"""
 		self.currentItem = item
 		self.updateGraphs(ranges=self.ranges, legendHighlight=self.currentItem.name())
+
+	def calculateBkgSub(self):
+		self.subtracts = dict()
+		for sample in self.samples:
+			self.subtracts[sample] = []
+			dat = self.project.eg.data[sample]
+			begin = dat.bkgrng[0][0]
+			end = None
+			for values in dat.sigrng:
+				for value in values:
+					if begin == None:
+						begin = value
+					elif end == None:
+						end = value
+					else:
+						self.subtracts[sample].append([begin, end])
+						begin = value
+						end = None
+			end = dat.bkgrng[-1][1]
+			self.subtracts[sample].append([begin, end])
 
 	def addRegion(self, targetGraph, lims, brush):
 		region = pg.LinearRegionItem(values=lims, brush=brush, movable=False)
