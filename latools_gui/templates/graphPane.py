@@ -80,7 +80,7 @@ class GraphPane():
 		"""
 		self.graph.updateGraphs(stage=stage, ranges=ranges)
 
-	def updateGraphDetails(self, importing=False, bkgSub=False):
+	def updateGraphDetails(self, importing=False):
 		""" Updates the graph details such as samples loaded, and background subtraction areas
 
 			Parameters
@@ -93,7 +93,7 @@ class GraphPane():
 				By default this is set to False.
 
 		"""
-		self.graph.updateGraphDetails(importing, bkgSub)
+		self.graph.updateGraphDetails(importing)
 
 class GraphWindow(QWidget):
 	"""
@@ -209,7 +209,7 @@ class GraphWindow(QWidget):
 
 
 	# Updates the project details when importing new data
-	def updateGraphDetails(self, importing=False, bkgSub=False):
+	def updateGraphDetails(self, importing=False):
 		"""
 		Updates the list of available samples from the dataset viewable on the graph
 
@@ -226,8 +226,6 @@ class GraphWindow(QWidget):
 				self.sampleList.addItem(sample)
 				self.subtracts[sample] = []
 			self.sampleList.setCurrentItem(self.sampleList.item(0))
-		if bkgSub:
-			self.calculateBkgSub()
 
 	# Swap currently viewed sample
 	def swapSample(self):
@@ -367,16 +365,13 @@ class GraphWindow(QWidget):
 				# Plot element from data onto the graph
 				x = dat.Time
 				y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][element])
-				# y[y <= 0] = np.nan
+				y[y <= 0] = np.nan
 				plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[element], width=2), label=element, name=element, connect='finite')
 				plt.curve.setClickable(True)
 				plt.sigClicked.connect(self.onClickPlot)
 
 			legendEntry.stateChanged.connect(self.updateExceptions)
 			legend.addWidget(legendEntry)
-
-		for lims in self.subtracts[self.sampleName]:
-			self.addRegion(targetGraph, lims, pg.mkBrush(self.backgroundColour))
 
 		# Add highlighted regions to the graph
 		if self.ranges and self.focusStage in ['rawdata', 'despiked']:
@@ -401,26 +396,6 @@ class GraphWindow(QWidget):
 		"""
 		self.currentItem = item
 		self.updateGraphs(ranges=self.ranges, legendHighlight=self.currentItem.name())
-
-	def calculateBkgSub(self):
-		self.subtracts = dict()
-		for sample in self.samples:
-			self.subtracts[sample] = []
-			dat = self.project.eg.data[sample]
-			begin = dat.bkgrng[0][0]
-			end = None
-			for values in dat.sigrng:
-				for value in values:
-					if begin == None:
-						begin = value
-					elif end == None:
-						end = value
-					else:
-						self.subtracts[sample].append([begin, end])
-						begin = value
-						end = None
-			end = dat.bkgrng[-1][1]
-			self.subtracts[sample].append([begin, end])
 
 	def addRegion(self, targetGraph, lims, brush):
 		region = pg.LinearRegionItem(values=lims, brush=brush, movable=False)
