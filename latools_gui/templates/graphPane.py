@@ -8,6 +8,7 @@ import latools.helpers as helpers
 import pyqtgraph as pg
 import numpy as np
 import uncertainties.unumpy as un
+from functools import partial
 
 class GraphPane():
 	"""
@@ -29,12 +30,15 @@ class GraphPane():
 		self.graphFrame.setFrameShape(QFrame.StyledPanel)
 		self.graphFrame.setFrameShadow(QFrame.Raised)
 
-		# We use a horizontal layout for the pane
-		self.graphLayout = QHBoxLayout(self.graphFrame)
-		self.graphLayout.stretch(1)
+		# We use a vertical layout for the pane as a whole
+		self.graphMainLayout = QVBoxLayout(self.graphFrame)
+		self.graphMainLayout.stretch(1)
+
+		# We use a horizontal layout for the content
+		self.graphLayout = QHBoxLayout()
+		self.graphMainLayout.addLayout(self.graphLayout)
 
 		# GRAPH
-
 		# The project object is sent to the GraphWindow object
 		self.graph = GraphWindow(project)
 
@@ -42,6 +46,7 @@ class GraphPane():
 		self.graphLayout.addWidget(self.graph)
 		self.graph.setMinimumWidth(900)
 		self.graph.setMinimumHeight(300)
+
 
 	def addToLayout(self, stageLayout):
 		""" Adds the graph to the stage layout. It is a function so that this can occur after the rest of the
@@ -68,7 +73,8 @@ class GraphPane():
 				By default this is set to False.
 
 		"""
-		self.graph.updateGraphs(stage=stage, ranges=ranges)
+
+		self.graph.updateFocus()
 
 	def updateGraphDetails(self, importing=False):
 		""" Updates the graph details such as samples loaded, and background subtraction areas
@@ -105,11 +111,7 @@ class GraphWindow(QWidget):
 		super().__init__()
 		self.project = project
 		self.graphs = []
-		self.regions = False
-		self.subtracts = dict()
-
-		# List of elements not to be plotted
-		self.exceptionList = []
+		self.ranges = []
 
 		layout = QHBoxLayout()
 
@@ -126,7 +128,7 @@ class GraphWindow(QWidget):
 		# Add List widget
 		sampleList = QListWidget()
 		sampleList.setMaximumWidth(100)
-		sampleList.itemClicked.connect(self.swapSample)
+		sampleList.itemSelectionChanged.connect(self.swapSample)
 		samplesLayout.addWidget(sampleList)
 
 		self.sampleList = sampleList
@@ -177,12 +179,16 @@ class GraphWindow(QWidget):
 		legendLayout = QVBoxLayout()
 		legendLayout.setAlignment(Qt.AlignTop)
 		legend.setLayout(legendLayout)
-		legend.setMinimumWidth(180)
+		legend.setMinimumWidth(150)
 
 		self.legend = legend
+		self.legendLayout = legendLayout
 
 		settingLayout.addWidget(scroll)
 		###
+		resetButton = QPushButton('Reset')
+		resetButton.clicked.connect(self.resetColours)
+		settingLayout.addWidget(resetButton)
 
 		# Add new window button
 		newwindowButton = QPushButton("New Window")
@@ -197,27 +203,121 @@ class GraphWindow(QWidget):
 
 		self.setLayout(layout)
 
+	# function to aid connection development
+	def dummy(self, *args, **kwargs):
+		"""
+		Dummy function for identifying connection content.
+		"""
+		for arg in args:
+			print(arg, type(arg))
+		for k, v in kwargs.items():
+			print(k, v, type(v))
 
 	# Updates the project details when importing new data
 	def updateGraphDetails(self, importing=False):
+		if importing:
+			self.initialiseGraph()
+	# populate sample list
+	def populateSamples(self):
 		"""
 		Updates the list of available samples from the dataset viewable on the graph
-
 		"""
-		if importing:
-			samples = []
-			for sample in self.project.eg.data:
-				samples.append(sample)
-			self.samples = samples
-			self.sampleName = samples[0]
+		samples = self.project.eg.samples
+		self.sampleName = samples[0]
 
-			self.sampleList.clear()
-			for sample in samples:
-				self.sampleList.addItem(sample)
-				self.subtracts[sample] = []
-			self.sampleList.setCurrentItem(self.sampleList.item(0))
+		self.sampleList.clear()
+		for sample in samples:
+			self.sampleList.addItem(sample)
 
-	# Swap currently viewed sample
+	# populate legend check-boxes
+	def populateLegend(self):
+		"""
+		Populate legend with all analytes
+		"""
+		# clear legend Entries
+		for i in reversed(range(self.legendLayout.count())):
+			self.legendLayout.itemAt(i).widget().deleteLater()
+
+		# dicts for storing {analyte: checkbox pairs}
+		self.legendEntries = {}
+
+
+		for analyte in self.project.eg.analytes:
+			# Create legend entry for the element and add it to the legend widget
+			legendEntry = QCheckBox()
+			legendEntry.setChecked(True)
+			legendEntry.setText(analyte)
+			legendEntry.setStyleSheet("color: {:s}".format(self.project.eg.cmaps[analyte]))
+			legendEntry.stateChanged.connect(partial(self.legendStateChange, legendEntry.text()))
+			# record identity of check box in dict
+			self.legendEntries[analyte] = legendEntry
+			# add to layout
+			self.legendLayout.addWidget(legendEntry)
+
+		self.scroll.setWidget(self.legend)
+
+	# create lines (only happens once)
+	def drawLines(self):
+		"""
+		Draw lines on graph for the first time.
+		"""
+		dat = self.project.eg.data[self.sampleName]
+
+		self.graphLines = {}
+		for analyte in dat.analytes:
+			x = dat.Time
+			y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][analyte])
+			line = pg.PlotDataItem(x, y, pen=pg.mkPen(dat.cmap[analyte], width=2), label=analyte, name=analyte, connect='finite')
+			line.curve.setClickable(True)
+			line.curve.sigClicked.connect(partial(self.onClickLine, analyte))
+			self.graphLines[analyte] = line
+
+			for graph in self.graphs:
+				graph.addItem(line)
+	
+	# draw labels
+	def drawLabels(self):
+		"""
+		Draw axis labels, depending on self.focusStage
+		"""
+		ud = {'rawdata': 'counts',
+              'despiked': 'counts',
+              'bkgsub': 'background corrected counts',
+              'ratios': 'counts/{:s} count',
+              'calibrated': 'mol/mol {:s}'}
+		
+		ylabel = ud[self.focusStage]
+		if self.focusStage in ['ratios', 'calibrated']:
+			ylabel.format(self.project.eg.internal_standard)
+
+		for graph in self.graphs:
+			graph.setLabel('left', ylabel)
+			graph.setLabel('bottom', 'Time', units='s')
+
+	# convert hex to rgb colour
+	def hex_2_rgba(self, value, alpha=1):
+		value = value.lstrip('#')
+		lv = len(value)
+		rgba = [int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3)] + [int(255/alpha)]
+		srgba = ['{:.0f}'.format(s) for s in rgba]
+		return 'rgba(' + ','.join(srgba) + ')'
+		
+		
+	# function for setting all graph objects at initialisation
+	def initialiseGraph(self):
+		"""
+		Draw graph for the first time
+		"""
+		self.populateSamples()
+		self.populateLegend()
+		self.drawLabels()
+		self.drawLines()
+		self.updateLogScale()
+
+		# set sample in list - has to happen *after* lines are drawn
+		self.sampleList.setCurrentItem(self.sampleList.item(0))
+
+	# action when
 	def swapSample(self):
 		"""
 		Grabs the name of the currently selected sample and passes it to the "updateGraphs" function
@@ -227,155 +327,62 @@ class GraphWindow(QWidget):
 		selectedSample = selectedSamples[0]
 		self.sampleName = selectedSample.text()
 
-		# Updates the graph
-		self.updateGraphs(ranges=self.ranges)
-
-	# updates graph to remove current excepted elements
-	def updateExceptions(self):
-		"""
-		Clears the current list of excluded elements of the legend, updates this list to reflect current settings,
-		then updates the graph
-		"""
-		# Updates a list of excepted elements based off currently checked elements 
-		self.exceptionList = []
-		for i in (range(self.legend.layout().count())):
-			if not self.legend.layout().itemAt(i).widget().isChecked():
-				self.exceptionList.append(self.legend.layout().itemAt(i).widget().text())
-		
-		# Updates the graph
-		self.updateGraphs(ranges=self.ranges)
+		self.updateLines()
+		# self.updateLogScale()
 	
+	# change between log/linear y scale
 	def updateLogScale(self):
+		"""
+		When log(y) checkbox is modified, update y-axis scale
+		"""
 		for graph in self.graphs:
 			graph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
 
-	# Updates graphs based off Focustage name and Sample name
-	def updateGraphs(self, sample=None, stage=None, ranges=False, legendHighlight=None):
+	# action when legend check-boxes are changed
+	def legendStateChange(self, analyte):
 		"""
-		Calls the function "update" to all current graphs
-
-		Parameters
-		----------
-		targetGraph : PlotWidget
-			A PyQtGraph Plot Widget, the graph to be updated
-		sample : String
-			Name of the sample whose data is being plotted from the dataset. This is None by default.
-			Last updated sample is plotted if this is None.
-		stage : String
-			Name of the stage that is being plotted from the dataset. This is None by default.
-			Last updated stage is plotted if this is None.
-		ranges : Boolean
-			Whether or not to display highlighted regions on the graph
-		legendHighlight : String
-			Name of the element that will be highlighted in the legend
+		Actions to perform when legend check box changes state
 		"""
-		self.ranges = ranges
-		
-		for graph in self.graphs:
-			self.updateGraph(graph, sample, stage, legendHighlight)
-
-	# Updates target graph using given parameters and current settings
-	def updateGraph(self, targetGraph, sample=None, stage=None, legendHighlight=None):
-		"""	Updates target graph by clearing its plots, then plotting data from the project not excluded by the
-		list of excluded elements
-
-		Parameters
-		----------
-		targetGraph : PlotWidget
-			A PyQtGraph Plot Widget, the graph to be updated
-		sample : String
-			Name of the sample whose data is being plotted from the dataset. This is None by default.
-			Last updated sample is plotted if this is None.
-		stage : String
-			Name of the stage that is being plotted from the dataset. This is None by default.
-			Last updated stage is plotted if this is None.
-		legendHighlight : String
-			Name of the element that will be highlighted in the legend
-		
-		"""
-
-		# Get legend layout
-		legend = self.legend.layout()
-
-		# Clear existing plot
-		targetGraph.clear()
-		
-		# Clear legend
-		for i in reversed(range(legend.count())):
-			legend.itemAt(i).widget().deleteLater()
-
-		# Show setting buttons
-		self.setting.itemAt(1).widget().show()
-
-		# Set sample
-		if sample != None:
-			self.sampleName = sample
-
-		# Set stage
-		if stage != None:
-			self.focusStage = stage
-
-		# We get the data object from the project
-		dat = self.project.eg.data[self.sampleName]
-		# Get list of analytes (elements) from the data object
-		analytes = dat.analytes
-
-		# Set graph settings
-		# targetGraph.setTitle(self.sampleName)
-		targetGraph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
-		ud = {'rawdata': 'counts',
-              'despiked': 'counts',
-              'bkgsub': 'background corrected counts',
-              'ratios': 'counts/{:s} count',
-              'calibrated': 'mol/mol {:s}'}
-		targetGraph.setLabel('left', ud[self.focusStage])
-		targetGraph.setLabel('bottom', 'Time', units='s')
-
-		# For each analyte: get x and y, and plot them
-		# Then add it to the legend
-		for element in analytes:
-			# Create legend entry for the element and add it to the legend widget
-			legendEntry = QCheckBox(element)
-			legendEntry.setChecked(False)
-			if legendHighlight == element:
-				textColour = "white"
-			else:
-				textColour = "black"
-			legendEntry.setStyleSheet("""
-			.QCheckBox {
-				color: """+textColour+""";
-				background-color: """+dat.cmap[element]+""";
-				}
-			""")
-
-			# If element is not excepted, set it as checked in the legend and plot it
-			if not element in self.exceptionList:
-				legendEntry.setChecked(True)
-
-				# Plot element from data onto the graph
-				x = dat.Time
-				y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][element])
-				y[y <= 0] = np.nan
-				plt = targetGraph.plot(x, y, pen=pg.mkPen(dat.cmap[element], width=2), label=element, name=element, connect='finite')
-				plt.curve.setClickable(True)
-				plt.sigClicked.connect(self.onClickPlot)
-
-			legendEntry.stateChanged.connect(self.updateExceptions)
-			legend.addWidget(legendEntry)
-
-		# Add highlighted regions to the graph
-		if self.ranges and self.focusStage in ['rawdata', 'despiked']:
-			for lims in dat.bkgrng:
-				self.addRegion(targetGraph, lims, pg.mkBrush((255,0,0,25)))
-			for lims in dat.sigrng:
-				self.addRegion(targetGraph, lims, pg.mkBrush((0,0,0,25)))
-			
-
-
-		# Set legend to be scrollable
-		self.scroll.setWidget(self.legend)
+		# change line visibility
+		self.graphLines[analyte].setVisible(self.legendEntries[analyte].isChecked())
 	
-	def onClickPlot(self, item):
+	def updateLines(self):
+		"""
+		Update lines for new self.sampleName and/or self.focusStage
+		"""
+		dat = self.project.eg.data[self.sampleName]
+		# update line data for new sample
+		for analyte in dat.analytes:
+			x = dat.Time
+			y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][analyte])
+			# if in log mode, transform y
+			if self.yLogCheckBox.isChecked():
+				y = np.log10(y)
+			self.graphLines[analyte].curve.setData(x=x, y=y)
+
+		# this plots the ranges after 'autorange' calculation
+		if self.focusStage not in ['rawdata']:
+			for graph in self.graphs:
+				for gRange in self.ranges:
+					graph.removeItem(gRange)
+			self.ranges = []
+			for graph in self.graphs:
+				for lims in dat.bkgrng:
+					self.addRegion(graph, lims, pg.mkBrush((255,0,0,25)))
+				for lims in dat.sigrng:
+					self.addRegion(graph, lims, pg.mkBrush((0,0,0,25)))
+	
+	def updateFocus(self):
+		"""
+		Update graph for new focus stage. Focus-specific tasks should be included here.
+		"""
+		dat = self.project.eg.data[self.sampleName]
+		self.focusStage = self.project.eg.focus_stage
+		
+		self.updateLines()
+		self.drawLabels()
+	
+	def onClickLine(self, analyte):
 		"""	This function is called when a line on the graph is clicked
 
 			Parameters
@@ -384,13 +391,24 @@ class GraphWindow(QWidget):
 				The plotDataItem that was clicked
 
 		"""
-		self.currentItem = item
-		self.updateGraphs(ranges=self.ranges, legendHighlight=self.currentItem.name())
+		for a in self.project.eg.analytes:
+			if a != analyte:
+				self.graphLines[a].curve.setPen(pg.mkPen(self.project.eg.cmaps[a], width=0.5))
+				self.legendEntries[a].setStyleSheet("color: {:s}".format(self.project.eg.cmaps[a]))
+			else:
+				self.graphLines[a].curve.setPen(pg.mkPen(self.project.eg.cmaps[a], width=3))
+				self.legendEntries[a].setStyleSheet("color: white; background-color: {:s}".format(self.project.eg.cmaps[a]))
+	
+	def resetColours(self):
+		for a in self.project.eg.analytes:
+			self.graphLines[a].curve.setPen(pg.mkPen(self.project.eg.cmaps[a], width=2))
+			self.legendEntries[a].setStyleSheet("color: {:s}".format(self.project.eg.cmaps[a]))
 
 	def addRegion(self, targetGraph, lims, brush):
 		region = pg.LinearRegionItem(values=lims, brush=brush, movable=False)
 		region.lines[0].setPen(pg.mkPen((0,0,0,0)))
 		region.lines[1].setPen(pg.mkPen((0,0,0,0)))
+		self.ranges.append(region)
 		targetGraph.addItem(region)
 
 	# Creates new window which contains a copy of the current main graph
@@ -401,6 +419,7 @@ class GraphWindow(QWidget):
 		newWin = pg.PlotWidget(title=self.sampleName)
 		newWin.setWindowTitle("LAtools Graph")
 		self.graphs.append(newWin)
+		self.initialiseGraph()
 
-		self.updateGraphs(ranges=self.ranges)
+		# self.updateGraphs(ranges=self.ranges)
 		newWin.show()
