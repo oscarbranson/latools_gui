@@ -12,7 +12,7 @@ class AutorangeStage():
 	project.
 	"""
 
-	def __init__(self, stageLayout, graphPaneObj, navigationPaneObj, project):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, project):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -23,14 +23,14 @@ class AutorangeStage():
 		graphPaneObj : GraphPane
 			A reference to the Graph Pane that will sit at the bottom of the stage screen and display
 			updates t the graph, produced by the processing defined in the stage.
-		navigationPaneObj : NavigationPane
-			A reference to the Navigation Pane so that the right button can be enabled by completing the stage.
+		progressPaneObj : ProgressPane
+			A reference to the Progress Pane so that the right button can be enabled by completing the stage.
 		project : RunningProject
 			A reference to the project object which contains all of the information unique to this project,
 			including the latools analyse object that the stages will update.
 		"""
 		self.graphPaneObj = graphPaneObj
-		self.navigationPaneObj = navigationPaneObj
+		self.progressPaneObj = progressPaneObj
 		self.project = project
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
@@ -121,7 +121,7 @@ class AutorangeStage():
 		self.graphPaneObj.updateGraph(ranges=True)
 
 		# When the stage's processing is complete, the right button is enabled for the next stage.
-		self.navigationPaneObj.setRightEnabled()
+		self.progressPaneObj.setRightEnabled()
 
 	def updateStageInfo(self):
 		for analyte in self.project.eg.analytes:

@@ -9,6 +9,7 @@ import sys
 from templates import titleScreen
 from templates import navigationPane
 from templates import graphPane
+from templates import progressPane
 
 # Import the stage information files
 from stages import importStage
@@ -86,6 +87,9 @@ class MainWindow(QMainWindow):
 		# Now we add the stages stack to the layout, so that it sits below the top navigation bar.
 		self.stageScreenLayout.addWidget(self.stagesStack)
 
+		# We create the progress pane object but will add it to the stages layout later
+		self.progressPaneObj = progressPane.ProgressPane(self.stagesStack, STAGES, self.navigationPaneObj)
+
 		# Here we define the graph pane, so that it could be passed to the controls pane.
 		# However, we want it to sit below the controls, so it's not added to the layout yet.
 		self.graphPaneObj = graphPane.GraphPane(self.project)
@@ -125,19 +129,19 @@ class MainWindow(QMainWindow):
 
 		# The stage objects are then produced
 		self.importStageObj = importStage.ImportStage(
-			self.importStageLayout, self.graphPaneObj, self.navigationPaneObj, self.importStageWidget, self.project)
+			self.importStageLayout, self.graphPaneObj, self.progressPaneObj, self.importStageWidget, self.project)
 		self.despikingStageObj = despikingStage.DespikingStage(
-			self.despikingStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+			self.despikingStageLayout, self.graphPaneObj, self.progressPaneObj, self.project)
 		self.autorangeStageObj = autorangeStage.AutorangeStage(
-			self.autorangeStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+			self.autorangeStageLayout, self.graphPaneObj, self.progressPaneObj, self.project)
 		self.backgroundStageObj = backgroundStage.BackgroundStage(
-			self.backgroundStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+			self.backgroundStageLayout, self.graphPaneObj, self.progressPaneObj, self.project)
 		self.ratioStageObj = ratioStage.RatioStage(
-			self.ratioStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+			self.ratioStageLayout, self.graphPaneObj, self.progressPaneObj, self.project)
 		self.calibrationStageObj = calibrationStage.CalibrationStage(
-			self.calibrationStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+			self.calibrationStageLayout, self.graphPaneObj, self.progressPaneObj, self.project)
 		self.filteringStageObj = filteringStage.FilteringStage(
-			self.filteringStageLayout, self.graphPaneObj, self.navigationPaneObj, self.project)
+			self.filteringStageLayout, self.graphPaneObj, self.progressPaneObj, self.project)
 
 		# Object that allows updates to stages to occur during runtime
 		importListener = ImportListener(self.autorangeStageObj,
@@ -147,11 +151,10 @@ class MainWindow(QMainWindow):
 		self.importStageObj.setImportListener(importListener)
 		self.titleScreenObj.setImportListener(importListener)
 
-		# The progress bar is added here. This will need to be hooked up with some functionality
-		self.progressBar = QProgressBar()
-		self.stageScreenLayout.addWidget(self.progressBar)
 
-		#Finally, we call a method on the graphPane object to add it to the layout last.
+
+		#Finally, we call methods on the progressPane and graphPane object to add them to the layout.
+		self.progressPaneObj.addToLayout(self.stageScreenLayout)
 		self.graphPaneObj.addToLayout(self.stageScreenLayout)
 
 	def initFileMenu(self):

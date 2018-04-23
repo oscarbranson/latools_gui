@@ -90,7 +90,7 @@ class TitleScreen():
 		self.nameEdit = QLineEdit()
 		self.titleGrid.addWidget(self.nameEdit, 2, 0, 1, 2)
 		self.nameEdit.setVisible(False)
-		self.nameEdit.cursorPositionChanged.connect(self.nameEdited)
+		self.nameEdit.setMaxLength(60)
 
 		# Currently just a button that begins the demo project
 		self.nextButton = QPushButton("Begin")
@@ -98,6 +98,8 @@ class TitleScreen():
 		self.nextButton.setEnabled(False)
 		self.nextButton.clicked.connect(self.nextButtonClick)
 		self.titleGrid.addWidget(self.nextButton, 3, 0)
+
+		self.nameEdit.cursorPositionChanged.connect(self.nameEdited)
 
 		self.backButton = QPushButton("Back")
 		self.backButton.clicked.connect(self.backButtonClick)
@@ -187,10 +189,20 @@ class TitleScreen():
 
 	def nameEdited(self):
 
+		forbiddens = {'<','>', ':', '\"', '/', '\\', '|', '?', '*'}
+
 		if self.nameEdit.text() != "":
 			self.nextButton.setEnabled(True)
+
+			# addedChar = self.nameEdit.text()[self.nameEdit.cursorPosition() - 1]
+
+			for char in self.nameEdit.text():
+				if char in forbiddens:
+					self.nextButton.setEnabled(False)
+
 		else:
 			self.nextButton.setEnabled(False)
+
 
 	def addRecentProjects(self, names):
 		# TO DO: Get list of recent projects and add the names to self.recentDropdown
