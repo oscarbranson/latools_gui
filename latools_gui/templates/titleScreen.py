@@ -27,9 +27,12 @@ class TitleScreen():
 		# We save a reference to the main stack, so that our buttons can move us to the next screen
 		self.parentStack = stack
 		self.fileLocation = None
+		self.fileName = None
 		self.projectName = None
 		self.loadProjectBool = False
 		self.importListener = None
+		self.nameOK = False
+		self.locationOK = False
 
 		# The layout is created from the mainWidget
 		self.mainLayout = QVBoxLayout(self.mainWidget)
@@ -78,8 +81,6 @@ class TitleScreen():
 		self.titleGrid.addWidget(self.recentDropdown, 1, 0, 1, 2)
 		self.recentDropdown.activated.connect(self.recentClicked)
 		self.recentDropdown.addItem("Recent projects")
-		self.recentDropdown.addItem("Test 1")
-		self.recentDropdown.addItem("Test 2")
 
 		self.newProjectBool = False
 
@@ -92,18 +93,32 @@ class TitleScreen():
 		self.nameEdit.setVisible(False)
 		self.nameEdit.setMaxLength(60)
 
+		self.locationLabel = QLabel("Save location:")
+		self.titleGrid.addWidget(self.locationLabel, 3, 0)
+		self.locationLabel.setVisible(False)
+
+		self.newBrowse = QPushButton("Browse")
+		self.titleGrid.addWidget(self.newBrowse, 3, 1)
+		self.newBrowse.setVisible(False)
+		self.newBrowse.clicked.connect(self.newBrowseClick)
+
+		self.newLocation = QLineEdit()
+		self.titleGrid.addWidget(self.newLocation, 4, 0, 1, 2)
+		self.newLocation.setVisible(False)
+		self.newLocation.setEnabled(False)
+
 		# Currently just a button that begins the demo project
 		self.nextButton = QPushButton("Begin")
 		# The button click calls the nextButtonClick method, within this class
 		self.nextButton.setEnabled(False)
 		self.nextButton.clicked.connect(self.nextButtonClick)
-		self.titleGrid.addWidget(self.nextButton, 3, 0)
+		self.titleGrid.addWidget(self.nextButton, 5, 0)
 
 		self.nameEdit.cursorPositionChanged.connect(self.nameEdited)
 
 		self.backButton = QPushButton("Back")
 		self.backButton.clicked.connect(self.backButtonClick)
-		self.titleGrid.addWidget(self.backButton, 3, 1)
+		self.titleGrid.addWidget(self.backButton, 5, 1)
 		self.backButton.setVisible(False)
 
 		self.logoSpacer = QSpacerItem(0, 25, QSizePolicy.Minimum, QSizePolicy.Expanding)
@@ -116,6 +131,8 @@ class TitleScreen():
 		# A spacer at the bottom.
 		self.bottomSpacer = QSpacerItem(0, 125, QSizePolicy.Minimum, QSizePolicy.Expanding)
 		self.mainLayout.addItem(self.bottomSpacer)
+
+		self.recentProjects = RecentProjects(self.recentDropdown)
 
 	def setImportListener(self, importListener):
 		self.importListener = importListener
@@ -141,11 +158,18 @@ class TitleScreen():
 		#TO DO: load project or begin new one
 
 		if self.loadProjectBool:
+			# Load project
 			self.projectName = self.fileLocation[0]
+
 		elif self.newProjectBool:
+			# New project
 			self.projectName = self.nameEdit.text()
+			self.recentProjects.addNew(self.nameEdit.text(), self.fileLocation)
+
 		else:
+			# Dropdown selected
 			self.projectName = self.recentDropdown.currentText()
+			self.recentProjects.reorderDropdown(self.recentDropdown.currentIndex() - 1)
 
 		self.importListener.setTitle(self.projectName)
 		self.parentStack.setCurrentIndex(1)
@@ -157,6 +181,9 @@ class TitleScreen():
 		self.nameLabel.setVisible(True)
 		self.nameEdit.setVisible(True)
 		self.backButton.setVisible(True)
+		self.locationLabel.setVisible(True)
+		self.newBrowse.setVisible(True)
+		self.newLocation.setVisible(True)
 		self.nextButton.setEnabled(False)
 
 	def openButtonClick(self):
@@ -184,6 +211,9 @@ class TitleScreen():
 		self.nameLabel.setVisible(False)
 		self.nameEdit.setVisible(False)
 		self.backButton.setVisible(False)
+		self.locationLabel.setVisible(False)
+		self.newBrowse.setVisible(False)
+		self.newLocation.setVisible(False)
 		self.nextButton.setEnabled(False)
 		self.recentDropdown.setCurrentIndex(0)
 
@@ -192,23 +222,69 @@ class TitleScreen():
 		forbiddens = {'<','>', ':', '\"', '/', '\\', '|', '?', '*'}
 
 		if self.nameEdit.text() != "":
-			self.nextButton.setEnabled(True)
+			self.nameOK = True
 
 			# addedChar = self.nameEdit.text()[self.nameEdit.cursorPosition() - 1]
 
 			for char in self.nameEdit.text():
 				if char in forbiddens:
-					self.nextButton.setEnabled(False)
+					self.nameOK = False
 
 		else:
-			self.nextButton.setEnabled(False)
+			self.nameOK = False
 
-
-	def addRecentProjects(self, names):
-		# TO DO: Get list of recent projects and add the names to self.recentDropdown
-		x = 1
+		self.nextButton.setEnabled(self.nameOK and self.locationOK)
 
 	def helpButtonClick(self):
 
 		url = QUrl("https://github.com/oscarbranson/latools")
 		QDesktopServices.openUrl(url)
+
+	def newBrowseClick(self):
+		self.fileLocation = QFileDialog.getExistingDirectory(self.mainWidget, 'Open file', '/home')
+
+		if self.fileLocation != '':
+			self.newLocation.setText(self.fileLocation)
+			self.locationOK = True
+
+			self.nextButton.setEnabled(self.nameOK and self.locationOK)
+
+
+
+
+class RecentProjects:
+
+	def __init__(self, recentDropdown):
+
+		recentFile = open("project/recentProjects.txt", "r")
+		self.fileContent = recentFile.read().splitlines()
+		recentFile.close()
+
+		self.splitContent = []
+
+		for name in self.fileContent:
+			self.splitContent.append(name.split('*'))
+
+		i = 0
+		for split in self.splitContent:
+			recentDropdown.addItem(split[0])
+			i += 1
+			if i > 9:
+				break
+
+		print(self.splitContent)
+
+	def addNew(self, name, location):
+		recentFile = open("project/recentProjects.txt", "w")
+		recentFile.write(name + "*" + location + "\n")
+		for line in self.fileContent:
+			recentFile.write(line + "\n")
+		recentFile.close()
+
+	def reorderDropdown(self, index):
+		recentFile = open("project/recentProjects.txt", "w")
+		recentFile.write(self.fileContent[index] + "\n")
+		for i in range(len(self.fileContent)):
+			if i != index:
+				recentFile.write(self.fileContent[i] + "\n")
+		recentFile.close()
