@@ -94,20 +94,18 @@ class ImportStage():
 		""" Imports data into the project when the apply button is pressed. """
 		#Add apply button functionality
 
-
-		self.project.eg = la.analyse(data_folder=self.fileLocationLine.text(),
+		try:
+			self.project.eg = la.analyse(data_folder=self.fileLocationLine.text(),
 										 config=self.configOption.currentText(),
 										 extension=self.file_extensionOption.text(),
 										 srm_identifier=self.srm_identifierOption.text())
 
-		self.graphPaneObj.updateGraph(importing=True)
+			self.graphPaneObj.updateGraph(importing=True)
 
-		self.progressPaneObj.setRightEnabled()
+			self.progressPaneObj.setRightEnabled()
 
-		if not self.importListener is None:
-			self.importListener.dataImported()
-		try:
-			x=1
+			if not self.importListener is None:
+				self.importListener.dataImported()
 		except:
 			print("An error occured")
 
