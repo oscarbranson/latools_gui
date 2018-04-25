@@ -69,6 +69,9 @@ class RatioStage():
 
 		self.project.eg.ratio(internal_standard=self.internal_standardOption.currentText())
 
+		print(list(self.project.eg.data['STD-1'].data.keys()))
+		self.graphPaneObj.updateGraph()
+
 		self.progressPaneObj.setRightEnabled()
 
 	def updateStageInfo(self):

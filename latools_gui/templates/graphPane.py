@@ -60,7 +60,7 @@ class GraphPane():
 		stageLayout.addWidget(self.graphFrame)
 
 	# Updates the graph
-	def updateGraph(self, stage=None, ranges=False):
+	def updateGraph(self, importing=False, showRanges=False):
 		""" Updates all currently active graphs. Call this function whenever the graphs need to be updated
 			to reflect new settings
 
@@ -74,22 +74,10 @@ class GraphPane():
 
 		"""
 
-		self.graph.updateFocus()
-
-	def updateGraphDetails(self, importing=False):
-		""" Updates the graph details such as samples loaded, and background subtraction areas
-
-			Parameters
-			----------
-			importing: Boolean
-				This determines whether or not to update data related to importing new data
-				By default this is set to False.
-			bkgSub: Boolean
-				This determines whether or not to update removed background regions
-				By default this is set to False.
-
-		"""
-		self.graph.updateGraphDetails(importing)
+		# Initialise graph when importing new data
+		if importing:
+			self.graph.initialiseGraph()
+		self.graph.updateFocus(showRanges)	
 
 class GraphWindow(QWidget):
 	"""
@@ -111,6 +99,9 @@ class GraphWindow(QWidget):
 		super().__init__()
 		self.project = project
 		self.graphs = []
+		self.graphLines = {}
+		self.auxGraphs =[]
+		self.showRanges = False
 		self.ranges = []
 
 		layout = QHBoxLayout()
@@ -212,11 +203,7 @@ class GraphWindow(QWidget):
 			print(arg, type(arg))
 		for k, v in kwargs.items():
 			print(k, v, type(v))
-
-	# Updates the project details when importing new data
-	def updateGraphDetails(self, importing=False):
-		if importing:
-			self.initialiseGraph()
+		
 	# populate sample list
 	def populateSamples(self):
 		"""
@@ -263,6 +250,10 @@ class GraphWindow(QWidget):
 		"""
 		dat = self.project.eg.data[self.sampleName]
 
+		for key, line in self.graphLines.items():
+			for graph in self.graphs:
+				graph.removeItem(line)
+
 		self.graphLines = {}
 		for analyte in dat.analytes:
 			x = dat.Time
@@ -308,6 +299,8 @@ class GraphWindow(QWidget):
 		"""
 		Draw graph for the first time
 		"""
+		self.focusStage = self.project.eg.focus_stage
+
 		self.populateSamples()
 		self.populateLegend()
 		self.drawLabels()
@@ -324,11 +317,12 @@ class GraphWindow(QWidget):
 		"""
 		# sets current sample to selected sample
 		selectedSamples = self.sampleList.selectedItems()
-		selectedSample = selectedSamples[0]
-		self.sampleName = selectedSample.text()
+		if selectedSamples != []:
+			selectedSample = selectedSamples[0]
+			self.sampleName = selectedSample.text()
 
-		self.updateLines()
-		# self.updateLogScale()
+			self.updateLines()
+			# self.updateLogScale()
 	
 	# change between log/linear y scale
 	def updateLogScale(self):
@@ -361,22 +355,23 @@ class GraphWindow(QWidget):
 			self.graphLines[analyte].curve.setData(x=x, y=y)
 
 		# this plots the ranges after 'autorange' calculation
-		if self.focusStage not in ['rawdata']:
-			for graph in self.graphs:
-				for gRange in self.ranges:
-					graph.removeItem(gRange)
-			self.ranges = []
+		for graph in self.graphs:
+			for gRange in self.ranges:
+				graph.removeItem(gRange)
+		self.ranges = []
+		if self.showRanges:
 			for graph in self.graphs:
 				for lims in dat.bkgrng:
 					self.addRegion(graph, lims, pg.mkBrush((255,0,0,25)))
 				for lims in dat.sigrng:
 					self.addRegion(graph, lims, pg.mkBrush((0,0,0,25)))
 	
-	def updateFocus(self):
+	def updateFocus(self, showRanges):
 		"""
 		Update graph for new focus stage. Focus-specific tasks should be included here.
 		"""
-		dat = self.project.eg.data[self.sampleName]
+		self.showRanges = showRanges
+
 		self.focusStage = self.project.eg.focus_stage
 		
 		self.updateLines()

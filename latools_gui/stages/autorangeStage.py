@@ -169,7 +169,7 @@ class AutorangeStage():
 
 		print(list(self.project.eg.data['STD-1'].data.keys()))
 		
-		self.graphPaneObj.updateGraph(ranges=True)
+		self.graphPaneObj.updateGraph(showRanges=True)
 
 		# When the stage's processing is complete, the right button is enabled for the next stage.
 		self.progressPaneObj.setRightEnabled()

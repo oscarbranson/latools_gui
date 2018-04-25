@@ -148,7 +148,7 @@ class DespikingStage():
 			return
 
 		print(list(self.project.eg.data['STD-1'].data.keys()))
-		self.graphPaneObj.updateGraph('despiked')
+		self.graphPaneObj.updateGraph()
 		self.progressPaneObj.setRightEnabled()
 
 	def raiseError(self, message):

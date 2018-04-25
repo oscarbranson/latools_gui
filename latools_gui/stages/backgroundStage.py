@@ -237,7 +237,7 @@ class BackgroundStage():
 		self.project.eg.bkg_subtract(analytes=None, errtype='stderr', focus_stage='despiked')
 
 		print(list(self.project.eg.data['STD-1'].data.keys()))
-		self.graphPaneObj.updateGraph('bkgsub', ranges=True)
+		self.graphPaneObj.updateGraph(showRanges=True)
 
 		self.progressPaneObj.setRightEnabled()
 
