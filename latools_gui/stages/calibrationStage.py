@@ -97,11 +97,22 @@ class CalibrationStage():
 	def pressedApplyButton(self):
 		""" Calibrates the project data when a button is pressed. """
 
-		self.project.eg.calibrate(analytes=None,
+		myn_min = int(self.defaultParams['n_min'])
+		if self.n_minOption.text() != "":
+			try:
+				myn_min = int(self.n_minOption.text())
+			except:
+				self.raiseError("The 'n_min' value must be an integer")
+				return
+		try:
+			self.project.eg.calibrate(analytes=None,
 								drift_correct=self.drift_correctOption.isChecked(),
 								srms_used=['NIST610', 'NIST612', 'NIST614'],
 								zero_intercept=self.zero_interceptOption.isChecked(),
-								n_min=int(self.n_minOption.text()))
+								n_min=myn_min)
+		except:
+			self.raiseError("A problem occurred. There may be a problem with the input values.")
+			return
 
 		self.progressPaneObj.setRightEnabled()
 
@@ -115,3 +126,6 @@ class CalibrationStage():
 
 	def updateStageInfo(self):
 		self.srmfile = self.project.eg.srmfile
+
+	def raiseError(self, message):
+		errorBox = QMessageBox.critical(self.calibrationWidget, "Error", message, QMessageBox.Ok)
