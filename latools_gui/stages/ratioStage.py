@@ -13,7 +13,7 @@ class RatioStage():
 	step of the data-processing. It updates the graph pane based on the modifications that are made to the
 	project.
 	"""
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, project):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, ratioWidget, project):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -33,6 +33,7 @@ class RatioStage():
 
 		self.graphPaneObj = graphPaneObj
 		self.progressPaneObj = progressPaneObj
+		self.ratioWidget = ratioWidget
 		self.project = project
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)

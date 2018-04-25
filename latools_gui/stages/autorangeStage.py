@@ -12,7 +12,7 @@ class AutorangeStage():
 	project.
 	"""
 
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, project):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, autorangeWidget, project):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -31,6 +31,7 @@ class AutorangeStage():
 		"""
 		self.graphPaneObj = graphPaneObj
 		self.progressPaneObj = progressPaneObj
+		self.autorangeWidget = autorangeWidget
 		self.project = project
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
@@ -105,18 +106,68 @@ class AutorangeStage():
 		The functionality for the Apply button.
 		It takes the options edited in by the Controls Pane and applies them to the latools analyse object.
 		"""
-		self.project.eg.autorange(analyte=self.analyteBox.currentText(),
-								gwin= int(self.gwinEdit.text()),
-								swin= int(self.swinEdit.text()),
-								win= int(self.winEdit.text()),
-								on_mult=[float(self.on_multEdit1.text()), float(self.on_multEdit2.text())],
-								off_mult=[float(self.off_multEdit1.text()), float(self.off_multEdit2.text())],
-								nbin=int(self.nbinEdit.text()),
+
+		localGwin = None
+		if self.gwinEdit.text() != "":
+			try:
+				localGwin = int(self.gwinEdit.text())
+			except:
+				self.raiseError("The gwin value must be an integer")
+				return
+
+		localSwin = None
+		if self.swinEdit.text() != "":
+			try:
+				localSwin = int(self.swinEdit.text())
+			except:
+				self.raiseError("The swin value must be an integer")
+				return
+
+		localWin = None
+		if self.winEdit.text() != "":
+			try:
+				localWin = int(self.winEdit.text())
+			except:
+				self.raiseError("The win value must be an integer")
+				return
+
+		localOn_mult = None
+		if self.on_multEdit1.text() != "" and self.on_multEdit2.text() != "":
+			try:
+				localOn_mult = [float(self.on_multEdit1.text()), float(self.on_multEdit2.text())]
+			except:
+				self.raiseError("The 'on_mult' values must be floating point numbers")
+				return
+
+		localOff_mult = None
+		if self.off_multEdit1.text() != "" and self.off_multEdit2.text() != "":
+			try:
+				localOff_mult = [float(self.off_multEdit1.text()), float(self.off_multEdit2.text())]
+			except:
+				self.raiseError("The 'off_mult' values must be floating point numbers")
+				return
+
+		localNbin = None
+		if self.nbinEdit.text() != "":
+			try:
+				localNbin = int(self.nbinEdit.text())
+			except:
+				self.raiseError("The 'nbin' value must be an integer")
+				return
+		try:
+			self.project.eg.autorange(analyte=self.analyteBox.currentText(),
+								gwin=localGwin,
+								swin=localSwin,
+								win=localWin,
+								on_mult=localOn_mult,
+								off_mult=localOff_mult,
+								nbin=localNbin,
 								transform=self.logTransformCheck.isChecked())
+		except:
+			self.raiseError("A problem occurred. There may be a problem with the input values.")
+			return
 
 		print(list(self.project.eg.data['STD-1'].data.keys()))
-		#print(self.project.eg.data['STD-1'].bkgrng)
-		#print(self.project.eg.data['STD-1'].sigrng)
 		
 		self.graphPaneObj.updateGraph(ranges=True)
 
@@ -126,3 +177,6 @@ class AutorangeStage():
 	def updateStageInfo(self):
 		for analyte in self.project.eg.analytes:
 			self.analyteBox.addItem(str(analyte))
+
+	def raiseError(self, message):
+		errorBox = QMessageBox.critical(self.autorangeWidget, "Error", message, QMessageBox.Ok)

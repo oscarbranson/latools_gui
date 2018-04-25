@@ -11,7 +11,7 @@ class DespikingStage():
 	step of the data-processing. It updates the graph pane based on the modifications that are made to the
 	project.
 	"""
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, project):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, despikingWidget, project):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -31,6 +31,7 @@ class DespikingStage():
 
 		self.graphPaneObj = graphPaneObj
 		self.progressPaneObj = progressPaneObj
+		self.despikingWidget = despikingWidget
 		self.project = project
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
@@ -105,29 +106,50 @@ class DespikingStage():
 
 		localExponent = None
 		if (self.pane1Exponent.text() != ""):
-			localExponent = float(self.pane1Exponent.text())
+			try:
+				localExponent = float(self.pane1Exponent.text())
+			except:
+				self.raiseError("The exponent value must be a floating point number")
+				return
 
 		localWin = 3
 		if (self.pane2win.text() != ""):
-			localWin = float(self.pane2win.text())
+			try:
+				localWin = float(self.pane2win.text())
+			except:
+				self.raiseError("The 'win' value must be a floating point number")
+				return
 
 		localNlim = 12.0
 		if (self.pane2nlim.text() != ""):
-			localNlim = float(self.pane2nlim.text())
+			try:
+				localNlim = float(self.pane2nlim.text())
+			except:
+				self.raiseError("The 'nlim' value must be a floating point number")
+				return
 
 		localMaxiter = 4
 		if (self.pane2Maxiter.text() != ""):
-			localMaxiter = int(self.pane2Maxiter.text())
-
-		self.project.eg.despike(expdecay_despiker=self.pane1expdecayOption.isChecked(),
+			try:
+				localMaxiter = int(self.pane2Maxiter.text())
+			except:
+				self.raiseError("The 'maxiter' value must be an integer")
+				return
+		try:
+			self.project.eg.despike(expdecay_despiker=self.pane1expdecayOption.isChecked(),
 								exponent=localExponent,
 								noise_despiker=self.pane2NoiseOption.isChecked(),
 								win=localWin,
 								nlim=localNlim,
 								exponentplot=False,
 								maxiter=localMaxiter)
+		except:
+			self.raiseError("A problem occurred. There may be a problem with the input values.")
+			return
 
 		print(list(self.project.eg.data['STD-1'].data.keys()))
 		self.graphPaneObj.updateGraph('despiked')
 		self.progressPaneObj.setRightEnabled()
 
+	def raiseError(self, message):
+		errorBox = QMessageBox.critical(self.despikingWidget, "Error", message, QMessageBox.Ok)

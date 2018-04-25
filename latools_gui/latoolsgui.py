@@ -131,17 +131,17 @@ class MainWindow(QMainWindow):
 		self.importStageObj = importStage.ImportStage(
 			self.importStageLayout, self.graphPaneObj, self.progressPaneObj, self.importStageWidget, self.project)
 		self.despikingStageObj = despikingStage.DespikingStage(
-			self.despikingStageLayout, self.graphPaneObj, self.progressPaneObj, self.project)
+			self.despikingStageLayout, self.graphPaneObj, self.progressPaneObj, self.despikingStageWidget, self.project)
 		self.autorangeStageObj = autorangeStage.AutorangeStage(
-			self.autorangeStageLayout, self.graphPaneObj, self.progressPaneObj, self.project)
+			self.autorangeStageLayout, self.graphPaneObj, self.progressPaneObj, self.autorangeStageWidget, self.project)
 		self.backgroundStageObj = backgroundStage.BackgroundStage(
-			self.backgroundStageLayout, self.graphPaneObj, self.progressPaneObj, self.project)
+			self.backgroundStageLayout, self.graphPaneObj, self.progressPaneObj, self.backgroundStageWidget, self.project)
 		self.ratioStageObj = ratioStage.RatioStage(
-			self.ratioStageLayout, self.graphPaneObj, self.progressPaneObj, self.project)
+			self.ratioStageLayout, self.graphPaneObj, self.progressPaneObj, self.ratioStageWidget, self.project)
 		self.calibrationStageObj = calibrationStage.CalibrationStage(
-			self.calibrationStageLayout, self.graphPaneObj, self.progressPaneObj, self.project)
+			self.calibrationStageLayout, self.graphPaneObj, self.progressPaneObj, self.calibrationStageWidget, self.project)
 		self.filteringStageObj = filteringStage.FilteringStage(
-			self.filteringStageLayout, self.graphPaneObj, self.progressPaneObj, self.project)
+			self.filteringStageLayout, self.graphPaneObj, self.progressPaneObj, self.filteringStageWidget, self.project)
 
 		# Object that allows updates to stages to occur during runtime
 		importListener = ImportListener(self.autorangeStageObj,
