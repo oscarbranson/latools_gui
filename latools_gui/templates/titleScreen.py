@@ -272,8 +272,6 @@ class RecentProjects:
 			if i > 9:
 				break
 
-		print(self.splitContent)
-
 	def addNew(self, name, location):
 		recentFile = open("project/recentProjects.txt", "w")
 		recentFile.write(name + "*" + location + "\n")

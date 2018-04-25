@@ -159,29 +159,55 @@ class BackgroundStage():
 			# We protect against blank or incorrect fields in options
 			myweight = None
 			if self.weight_fwhmOption.text() != "":
-				myweight = float(self.weight_fwhmOption.text())
+				try:
+					myweight = float(self.weight_fwhmOption.text())
+				except:
+					self.raiseError("The 'weight_fwhm' value must be a floating point number")
+					return
 
 			myn_min = 20
 			if self.n_minOption.text() != "":
-				myn_min = int(self.n_minOption.text())
+				try:
+					myn_min = int(self.n_minOption.text())
+				except:
+					self.raiseError("The 'n_min' value must be an integer")
+					return
 
 			myn_max = None
 			if self.n_maxOption.text() != "":
-				myn_max = int(self.n_maxOption.text())
+				try:
+					myn_max = int(self.n_maxOption.text())
+				except:
+					self.raiseError("The 'n_max' value must be an integer")
+					return
+
 
 			mycstep = None
 			if self.cstepOption.text() != "":
-				mycstep = float(self.cstepOption.text())
+				try:
+					mycstep = float(self.cstepOption.text())
+				except:
+					self.raiseError("The 'cstep' value must be a floating point number")
+					return
 
 			myf_win = 7
 			if self.f_winOption.text() != "":
-				myf_win = int(self.f_winOption.text())
+				try:
+					myf_win = int(self.f_winOption.text())
+				except:
+					self.raiseError("The 'f_win' value must be an integer")
+					return
 
 			myf_n_lim = 3
 			if self.f_n_limOption.text() != "":
-				myf_n_lim = int(self.f_n_limOption.text())
+				try:
+					myf_n_lim = int(self.f_n_limOption.text())
+				except:
+					self.raiseError("The 'f_n_lim' value must be an integer")
+					return
 
-			self.project.eg.bkg_calc_weightedmean(analytes=None,
+			try:
+				self.project.eg.bkg_calc_weightedmean(analytes=None,
 												weight_fwhm=myweight,
 												n_min=myn_min,
 												n_max=myn_max,
@@ -189,34 +215,62 @@ class BackgroundStage():
 												bkg_filter=self.bkg_filterOption.isChecked(),
 												f_win=myf_win,
 												f_n_lim=myf_n_lim)
+			except:
+				self.raiseError("A problem occurred. There may be a problem with the input values.")
+				return
 		else:
 
 			# We protect against blank or incorrect fields in options
 			myKind = 1
 			if self.kindOption.text() != "":
-				myKind = int(self.kindOption.text())
+				try:
+					myKind = int(self.kindOption.text())
+				except:
+					self.raiseError("The 'kind' value must be an integer")
+					return
 
 			myn_min2 = 10
 			if self.n_minOption2.text() != "":
-				myn_min2 = int(self.n_minOption2.text())
+				try:
+					myn_min2 = int(self.n_minOption2.text())
+				except:
+					self.raiseError("The 'n_min' value must be an integer")
+					return
 
 			myn_max2 = None
 			if self.n_maxOption2.text() != "":
-				myn_max2 = int(self.n_maxOption2.text())
+				try:
+					myn_max2 = int(self.n_maxOption2.text())
+				except:
+					self.raiseError("The 'n_max' value must be an integer")
+					return
 
 			mycstep = None
 			if self.cstepOption.text() != "":
-				mycstep = float(self.cstepOption.text())
+				try:
+					mycstep = float(self.cstepOption.text())
+				except:
+					self.raiseError("The 'cstep' value must be a floating point number")
+					return
 
 			myf_win = 7
 			if self.f_winOption.text() != "":
-				myf_win = int(self.f_winOption.text())
+				try:
+					myf_win = int(self.f_winOption.text())
+				except:
+					self.raiseError("The 'f_win' value must be an integer")
+					return
 
 			myf_n_lim = 3
 			if self.f_n_limOption.text() != "":
-				myf_n_lim = int(self.f_n_limOption.text())
+				try:
+					myf_n_lim = int(self.f_n_limOption.text())
+				except:
+					self.raiseError("The 'f_n_lim' value must be an integer")
+					return
 
-			self.project.eg.bkg_calc_interp1d(analytes=None,
+			try:
+				self.project.eg.bkg_calc_interp1d(analytes=None,
 											kind=myKind,
 											n_min=myn_min2,
 											n_max=myn_max2,
@@ -224,13 +278,15 @@ class BackgroundStage():
 											bkg_filter=self.bkg_filterOption.isChecked(),
 											f_win=myf_win,
 											f_n_lim=myf_n_lim)
+			except:
+				self.raiseError("A problem occurred. There may be a problem with the input values.")
+				return
 
 		self.subtractButton.setEnabled(True)
 
 	def pressedPopupButton(self):
 		""" Creates a popup for the background calculation when a button is pressed. """
 		# TO DO: ADD POPUP FUNCTIONALITY
-		# self.progressPaneObj.setRightEnabled()
 
 	def pressedSubtractButton(self):
 		""" Subtracts an existing background calculation from the project data when a button is pressed. """
@@ -258,3 +314,6 @@ class BackgroundStage():
 		else:
 			self.f_winOption.setVisible(False)
 			self.f_n_limOption.setVisible(False)
+
+	def raiseError(self, message):
+		errorBox = QMessageBox.critical(self.backgroundWidget, "Error", message, QMessageBox.Ok)
