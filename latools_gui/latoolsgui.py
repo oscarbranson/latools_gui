@@ -87,12 +87,12 @@ class MainWindow(QMainWindow):
 		# Now we add the stages stack to the layout, so that it sits below the top navigation bar.
 		self.stageScreenLayout.addWidget(self.stagesStack)
 
-		# We create the progress pane object but will add it to the stages layout later
-		self.progressPaneObj = progressPane.ProgressPane(self.stagesStack, STAGES, self.navigationPaneObj)
-
 		# Here we define the graph pane, so that it could be passed to the controls pane.
 		# However, we want it to sit below the controls, so it's not added to the layout yet.
 		self.graphPaneObj = graphPane.GraphPane(self.project)
+
+		# We create the progress pane object but will add it to the stages layout later
+		self.progressPaneObj = progressPane.ProgressPane(self.stagesStack, STAGES, self.navigationPaneObj, self.graphPaneObj, self.project)
 
 		# A layout for each stage is created, and added to the stage stack
 

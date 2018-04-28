@@ -359,7 +359,7 @@ class GraphWindow(QWidget):
 			for gRange in self.ranges:
 				graph.removeItem(gRange)
 		self.ranges = []
-		if self.showRanges:
+		if self.showRanges or self.focusStage not in ['rawdata', 'despiked']:
 			for graph in self.graphs:
 				for lims in dat.bkgrng:
 					self.addRegion(graph, lims, pg.mkBrush((255,0,0,25)))
