@@ -67,9 +67,8 @@ class ProgressPane:
 		self.stagesStack.setCurrentIndex(self.stagesStack.currentIndex() - 1)
 
 		# Update the graph if stage was completed perviously
-		currentFocus = self.focusStages[self.stagesStack.currentIndex()]
-		if currentFocus in self.project.eg.stages_complete:
-			self.project.eg.focus_stage = currentFocus
+		if self.focusStages[self.stagesStack.currentIndex()] in self.project.eg.stages_complete:
+			self.project.eg.set_focus(self.focusStages[self.stagesStack.currentIndex()])
 			self.graphPane.updateGraph()
 
 		# If we're now on the first stage, we disable the left button.
@@ -86,7 +85,7 @@ class ProgressPane:
 		""" Controls what happens when the right button is pressed. """
 		self.stagesStack.setCurrentIndex(self.stagesStack.currentIndex() + 1)
 		if self.focusStages[self.stagesStack.currentIndex()] in self.project.eg.stages_complete:
-			self.project.eg.focus_stage = self.focusStages[self.stagesStack.currentIndex()]
+			self.project.eg.set_focus(self.focusStages[self.stagesStack.currentIndex()])
 			self.graphPane.updateGraph()
 		if self.focusStages[self.stagesStack.currentIndex() + 1] not in self.project.eg.stages_complete:
 			self.rightButton.setEnabled(False)
