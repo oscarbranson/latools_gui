@@ -196,6 +196,7 @@ class MainWindow(QMainWindow):
 		configMenu.addAction(makeConfig)
 
 	def saveButton(self):
+		""" Runs the save command on the current running project """
 		self.project.saveButton()
 
 class ImportListener():
@@ -224,6 +225,8 @@ class ImportListener():
 		self.graphPane = graphPane
 
 	def dataImported(self):
+		""" When data is first imported in the Import Stage, several fields can be updated in later
+		stages which require info from that data """
 		self.autorangeStage.updateStageInfo()
 		self.ratioStage.updateStageInfo()
 		self.calibrationStage.updateStageInfo()
@@ -234,10 +237,11 @@ class ImportListener():
 		self.navigationPane.setProjectTitle(title, "")
 
 	def setStageIndex(self, index):
+		""" Jumps to a particular stage when loading a project """
 		self.progressPane.setStageIndex(index)
 
 	def loadStage(self, index):
-
+		""" Tells a stage to load the saved stage parameter info, based on an identifying stage index """
 		if index == 0:
 			self.importStage.loadValues()
 		elif index == 1:

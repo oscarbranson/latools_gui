@@ -23,7 +23,7 @@ class ProgressPane:
 
 		self.stagesStack = stagesStack
 		self.STAGES = STAGES
-		self.focusStages = ['rawdata', 'despiked', 'despiked', 'bkgsub', 'ratios', 'calibrated', 'calibrated']
+		self.focusStages = ['rawdata', 'despiked', 'despiked', 'bkgsub', 'ratios', 'calibrated', 'calibrated', 'calibrated']
 		self.navPane = navPane
 		self.graphPane = graphPane
 		self.project = project
@@ -36,7 +36,8 @@ class ProgressPane:
 		# The click functionality is defined in a method below.
 		self.leftButton.clicked.connect(self.leftButtonClick)
 
-		# The progress bar is added here. This will need to be hooked up with some functionality
+		# The progress bar is added here
+		# TO DO: progress bar functionality
 		self.progressBar = QProgressBar()
 		self.progressLayout.addWidget(self.progressBar)
 
@@ -83,10 +84,15 @@ class ProgressPane:
 
 	def rightButtonClick(self):
 		""" Controls what happens when the right button is pressed. """
+
+		# The stages stack is incremented to move the screen to the next stage
 		self.stagesStack.setCurrentIndex(self.stagesStack.currentIndex() + 1)
+
+		# If the new stage has already been applied, the graph is updated
 		if self.focusStages[self.stagesStack.currentIndex()] in self.project.eg.stages_complete:
 			self.project.eg.set_focus(self.focusStages[self.stagesStack.currentIndex()])
 			self.graphPane.updateGraph()
+		# If it's a new stage, the right button is disabled until the apply button is pressed
 		if self.focusStages[self.stagesStack.currentIndex() + 1] not in self.project.eg.stages_complete:
 			self.rightButton.setEnabled(False)
 		self.leftButton.setEnabled(True)
@@ -101,6 +107,7 @@ class ProgressPane:
 			self.rightButton.setEnabled(True)
 
 	def setStageIndex(self, index):
+		""" When loading a project, we jump to the first uncompleted stage """
 		self.stagesStack.setCurrentIndex(index)
 		self.navPane.setStage(self.stagesStack.currentIndex())
 		self.leftButton.setEnabled(True)

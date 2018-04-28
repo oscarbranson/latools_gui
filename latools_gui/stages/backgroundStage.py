@@ -154,10 +154,10 @@ class BackgroundStage():
 		no illegal inputs.
 
 		"""
-
+		# There are two different calculation methods for this stage
 		if (self.currentlyMethod1):
 
-			# We protect against blank or incorrect fields in options
+			# We process each text entry field by converting blank to the value None, and checking for errors
 			myweight = None
 			if self.weight_fwhmOption.text() != "":
 				try:
@@ -181,7 +181,6 @@ class BackgroundStage():
 				except:
 					self.raiseError("The 'n_max' value must be an integer")
 					return
-
 
 			mycstep = None
 			if self.cstepOption.text() != "":
@@ -207,6 +206,7 @@ class BackgroundStage():
 					self.raiseError("The 'f_n_lim' value must be an integer")
 					return
 
+			# The actual call to the analyse object for this stage is run, using the stage values as parameters
 			try:
 				self.project.eg.bkg_calc_weightedmean(analytes=None,
 												weight_fwhm=myweight,
@@ -283,8 +283,10 @@ class BackgroundStage():
 				self.raiseError("A problem occurred. There may be a problem with the input values.")
 				return
 
+		# The background calculation is now complete, and can now be subtracted
 		self.subtractButton.setEnabled(True)
 
+		# Builds a string representation of a dictionary of the current stage values and saves this in project
 		self.project.runStage(3, "{'method' : '" + self.methodOption.currentText() +
 							  "', 'weight_fwhm' : '" + self.weight_fwhmOption.text() +
 							  "', 'n_min' : '" + self.n_minOption.text() +
@@ -297,6 +299,8 @@ class BackgroundStage():
 							  "', 'f_win' : '" + self.f_winOption.text() +
 							  "', 'f_n_lim' : '" + self.f_n_limOption.text() +
 							  "'}")
+		# Automatically saves the project
+		self.project.saveButton()
 
 	def pressedPopupButton(self):
 		""" Creates a popup for the background calculation when a button is pressed. """
@@ -323,6 +327,7 @@ class BackgroundStage():
 		self.currentlyMethod1 = not self.currentlyMethod1
 
 	def bkgUpdate(self):
+		""" Hides the last two input fields unless the bkg_filter button is ticked """
 		if self.bkg_filterOption.isChecked():
 			self.f_winOption.setVisible(True)
 			self.f_n_limOption.setVisible(True)
@@ -331,16 +336,22 @@ class BackgroundStage():
 			self.f_n_limOption.setVisible(False)
 
 	def raiseError(self, message):
+		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.backgroundWidget, "Error", message, QMessageBox.Ok)
 
 	def loadValues(self):
+		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
+		# The saved stage string is automatically converted to a dictionary
+		# The number passed to getStageString is this stage's index
 		values = ast.literal_eval(self.project.getStageString(3))
 
+		# Any parameters saved as None should be a blank string for that field
 		for key in values:
 			if values[key] == "None":
 				values[key] = ""
 
+		# Each stage field is updated with the saved values
 		self.methodOption.setCurrentText(values['method'])
 		self.weight_fwhmOption.setText(values['weight_fwhm'])
 		self.n_minOption.setText(values['n_min'])
@@ -353,5 +364,6 @@ class BackgroundStage():
 		self.f_winOption.setText(values['f_win'])
 		self.f_n_limOption.setText(values['f_n_lim'])
 
+		# The loading process then activates the stage's apply command
 		self.pressedCalcButton()
 		self.pressedSubtractButton()
