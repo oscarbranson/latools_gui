@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
+import ast
 
 class BackgroundStage():
 	"""
@@ -284,6 +285,19 @@ class BackgroundStage():
 
 		self.subtractButton.setEnabled(True)
 
+		self.project.runStage(3, "{'method' : '" + self.methodOption.currentText() +
+							  "', 'weight_fwhm' : '" + self.weight_fwhmOption.text() +
+							  "', 'n_min' : '" + self.n_minOption.text() +
+							  "', 'n_max' : '" + self.n_maxOption.text() +
+							  "', 'kind' : '" + self.kindOption.text() +
+							  "', 'n_min2' : '" + self.n_minOption2.text() +
+							  "', 'n_max2' : '" + self.n_maxOption2.text() +
+							  "', 'cstep' : '" + self.cstepOption.text() +
+							  "', 'bkg_filter' : '" + str(self.bkg_filterOption.isChecked()) +
+							  "', 'f_win' : '" + self.f_winOption.text() +
+							  "', 'f_n_lim' : '" + self.f_n_limOption.text() +
+							  "'}")
+
 	def pressedPopupButton(self):
 		""" Creates a popup for the background calculation when a button is pressed. """
 		# TO DO: ADD POPUP FUNCTIONALITY
@@ -317,3 +331,26 @@ class BackgroundStage():
 
 	def raiseError(self, message):
 		errorBox = QMessageBox.critical(self.backgroundWidget, "Error", message, QMessageBox.Ok)
+
+	def loadValues(self):
+
+		values = ast.literal_eval(self.project.getStageString(3))
+
+		for key in values:
+			if values[key] == "None":
+				values[key] = ""
+
+		self.methodOption.setCurrentText(values['method'])
+		self.weight_fwhmOption.setText(values['weight_fwhm'])
+		self.n_minOption.setText(values['n_min'])
+		self.n_maxOption.setText(values['n_max'])
+		self.kindOption.setText(values['kind'])
+		self.n_minOption2.setText(values['n_min2'])
+		self.n_maxOption2.setText(values['n_max2'])
+		self.cstepOption.setText(values['cstep'])
+		self.bkg_filterOption.setChecked(values['bkg_filter'] == "True")
+		self.f_winOption.setText(values['f_win'])
+		self.f_n_limOption.setText(values['f_n_lim'])
+
+		self.pressedCalcButton()
+		self.pressedSubtractButton()

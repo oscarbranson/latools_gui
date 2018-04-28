@@ -87,3 +87,8 @@ class ProgressPane:
 		# If we're not in the final stage, set the right button to enabled
 		if (self.stagesStack.currentIndex() != (len(self.STAGES) - 1)):
 			self.rightButton.setEnabled(True)
+
+	def setStageIndex(self, index):
+		self.stagesStack.setCurrentIndex(index)
+		self.navPane.setStage(self.stagesStack.currentIndex())
+		self.leftButton.setEnabled(True)

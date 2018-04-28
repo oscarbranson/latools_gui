@@ -5,7 +5,8 @@
 import os
 import time
 import json
-import latools
+import latools as la
+import datetime
 import re
 
 
@@ -30,6 +31,14 @@ class RunningProject():
 		"""
 		self.eg = None
 		self.dataDictionary = {}
+		self.folder = None
+		self.filePath = None
+		self.fileName = None
+		self.loadStageIndex = 0
+
+		self.fileStrings = None
+		self.importListener = None
+
 
 	def updateSetting(self, key, value):
 		""" The call to update variables stored within
@@ -139,3 +148,57 @@ class RunningProject():
 		else:
 			print ('file not found')  
 
+	def saveButton(self):
+
+		file = open(self.filePath, "w")
+		for line in self.fileStrings:
+			file.write(line + "\n")
+		file.close()
+
+		print(self.fileName + " saved")
+
+		#self.eg.minimal_export()
+
+	def newFile(self, name, location):
+		self.fileName = name
+		self.folder = location
+		self.filePath = location + "/" + name + ".sav"
+
+		writeFile = open(self.filePath, "w")
+		now = datetime.datetime.now()
+		nowString = "LAtools save file. Created " + now.strftime("%Y-%m-%d %H:%M")
+		writeFile.write(nowString + "\n\n\n\n\n\n\n\n\n\n")
+		writeFile.close()
+
+		self.fileStrings = [nowString, "", "", "", "", "", "", "", "", "", ""]
+
+
+	def loadFile(self, name, location):
+
+		self.fileName = name
+		self.folder = location
+		self.filePath = location + "/" + name + ".sav"
+
+		file = open(self.filePath, "r")
+		self.fileStrings = file.read().splitlines()
+
+		for i in range(2,9):
+			if self.fileStrings[i] != "":
+				self.importListener.loadStage(i - 2)
+			else:
+				self.importListener.setStageIndex(i - 2)
+				return
+
+		# self.eg = la.reproduce(location + name + ".log")
+
+	def getLoadStageIndex(self):
+		return self.loadStageIndex
+
+	def runStage(self, index, parameters):
+		self.fileStrings[index + 2] = parameters
+
+	def setImportListener(self, importListener):
+		self.importListener = importListener
+
+	def getStageString(self, index):
+		return self.fileStrings[index + 2]

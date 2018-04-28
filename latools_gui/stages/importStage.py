@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
+import ast
 
 class ImportStage():
 	"""
@@ -106,6 +107,13 @@ class ImportStage():
 
 			if not self.importListener is None:
 				self.importListener.dataImported()
+
+			self.project.runStage(0, "{'data_folder' : '" + self.fileLocationLine.text() +
+								  "', 'config' : '" + self.configOption.currentText() +
+								  "', 'extension' : '" + self.file_extensionOption.text() +
+								  "', 'srm_identifier' : '" + self.srm_identifierOption.text() +
+								  "'}")
+
 		except:
 			print("An error occured")
 
@@ -123,3 +131,13 @@ class ImportStage():
 
 	def setImportListener(self, importListener):
 		self.importListener = importListener
+
+	def loadValues(self):
+
+		values = ast.literal_eval(self.project.getStageString(0))
+		self.fileLocationLine.setText(values['data_folder'])
+		self.configOption.setCurrentText(values['config'])
+		self.file_extensionOption.setText(values['extension'])
+		self.srm_identifierOption.setText(values['srm_identifier'])
+
+		self.pressedApplyButton()

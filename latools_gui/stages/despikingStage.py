@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
+import ast
 
 class DespikingStage():
 	"""
@@ -151,5 +152,32 @@ class DespikingStage():
 		self.graphPaneObj.updateGraph()
 		self.progressPaneObj.setRightEnabled()
 
+		self.project.runStage(1, "{'expdecay_despiker' : '" + str(self.pane1expdecayOption.isChecked()) +
+							  "', 'exponent' : '" + str(localExponent) +
+							  "', 'noise_despiker' : '" + str(self.pane2NoiseOption.isChecked()) +
+							  "', 'win' : '" + str(localWin) +
+							  "', 'nlim' : '" + str(localNlim) +
+							  "', 'exponentplot' : '" + str(False) +
+							  "', 'maxiter' : '" + str(localMaxiter) +
+							  "'}")
+
 	def raiseError(self, message):
 		errorBox = QMessageBox.critical(self.despikingWidget, "Error", message, QMessageBox.Ok)
+
+	def loadValues(self):
+
+		values = ast.literal_eval(self.project.getStageString(1))
+
+		for key in values:
+			if values[key] == "None":
+				values[key] = ""
+
+		self.pane1expdecayOption.setChecked(values['expdecay_despiker'] == "True")
+		self.pane1Exponent.setText(values['exponent'])
+		self.pane2NoiseOption.setChecked(values['noise_despiker'] == "True")
+		self.pane2win.setText(values['win'])
+		self.pane2nlim.setText(values['nlim'])
+		# exponentplot value?
+		self.pane2Maxiter.setText(values['maxiter'])
+
+		self.pressedApplyButton()

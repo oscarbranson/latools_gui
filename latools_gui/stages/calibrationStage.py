@@ -6,6 +6,7 @@ from PyQt5.QtCore import QUrl, Qt
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
+import ast
 
 class CalibrationStage():
 	"""
@@ -114,7 +115,14 @@ class CalibrationStage():
 			self.raiseError("A problem occurred. There may be a problem with the input values.")
 			return
 
+		self.graphPaneObj.updateGraph()
+
 		self.progressPaneObj.setRightEnabled()
+
+		self.project.runStage(5, "{'drift_correct' : '" + str(self.drift_correctOption.isChecked()) +
+							  "', 'zero_intercept' : '" + str(self.zero_interceptOption.isChecked()) +
+							  "', 'n_min' : '" + self.n_minOption.text() +
+							  "'}")
 
 	def pressedReloadButton(self):
 		""" Performs a reload when the button is pressed. """
@@ -129,3 +137,17 @@ class CalibrationStage():
 
 	def raiseError(self, message):
 		errorBox = QMessageBox.critical(self.calibrationWidget, "Error", message, QMessageBox.Ok)
+
+	def loadValues(self):
+
+		values = ast.literal_eval(self.project.getStageString(5))
+
+		for key in values:
+			if values[key] == "None":
+				values[key] = ""
+
+		self.drift_correctOption.setChecked(values['drift_correct'] == "True")
+		self.zero_interceptOption.setChecked(values['zero_intercept'] == "True")
+		self.n_minOption.setText(values['n_min'])
+
+		self.pressedApplyButton()

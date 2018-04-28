@@ -12,7 +12,7 @@ class TitleScreen():
 	The screen that shows up at the beginning of the program and allows a user to define a new project,
 	or continue an existing one.
 	"""
-	def __init__(self, stack):
+	def __init__(self, stack, project):
 		"""
 		Initialising builds and displays the screen.
 
@@ -26,8 +26,8 @@ class TitleScreen():
 
 		# We save a reference to the main stack, so that our buttons can move us to the next screen
 		self.parentStack = stack
+		self.project = project
 		self.fileLocation = None
-		self.fileName = None
 		self.projectName = None
 		self.loadProjectBool = False
 		self.importListener = None
@@ -154,22 +154,23 @@ class TitleScreen():
 		The functionality for the 'next' button. Currently, this sets the main stack to
 		index 1: the stages screen
 		"""
-
-		#TO DO: load project or begin new one
-
 		if self.loadProjectBool:
 			# Load project
-			self.projectName = self.fileLocation[0]
+			self.project.loadFile(self.projectName, self.fileLocation)
+			# Add to or reorder recents dropdown
 
 		elif self.newProjectBool:
 			# New project
 			self.projectName = self.nameEdit.text()
-			self.recentProjects.addNew(self.nameEdit.text(), self.fileLocation)
+			self.recentProjects.addNew(self.projectName, self.fileLocation)
+			self.project.newFile(self.projectName, self.fileLocation)
 
 		else:
 			# Dropdown selected
 			self.projectName = self.recentDropdown.currentText()
+			self.fileLocation = self.recentProjects.getLocation(self.recentDropdown.currentIndex() - 1)
 			self.recentProjects.reorderDropdown(self.recentDropdown.currentIndex() - 1)
+			self.project.loadFile(self.projectName, self.fileLocation)
 
 		self.importListener.setTitle(self.projectName)
 		self.parentStack.setCurrentIndex(1)
@@ -188,12 +189,22 @@ class TitleScreen():
 
 	def openButtonClick(self):
 
-		self.fileLocation = QFileDialog.getOpenFileName(self.mainWidget, 'Open file', '/home')
-		#print(self.fileLocation)
+		loadLocation = QFileDialog.getOpenFileName(self.mainWidget, 'Open file', '/home')
 
-		# TO DO: Load project
-		if self.fileLocation[0] != '':
+		if loadLocation[0] != '':
 			self.loadProjectBool = True
+
+			locationSplit = loadLocation[0].split('/')
+			self.projectName = locationSplit[-1]
+
+			if self.projectName[-4:] != ".sav":
+				message = "file must have extension '.sav'"
+				errorBox = QMessageBox.critical(self.mainWidget, "Error", message, QMessageBox.Ok)
+				return
+
+			self.fileLocation = loadLocation[0][0:-(len(self.projectName) + 1)]
+			self.projectName = self.projectName[0:-4]
+			self.recentProjects.load(self.projectName, self.fileLocation)
 			self.nextButtonClick()
 
 
@@ -249,9 +260,6 @@ class TitleScreen():
 
 			self.nextButton.setEnabled(self.nameOK and self.locationOK)
 
-
-
-
 class RecentProjects:
 
 	def __init__(self, recentDropdown):
@@ -267,7 +275,8 @@ class RecentProjects:
 
 		i = 0
 		for split in self.splitContent:
-			recentDropdown.addItem(split[0])
+			if split[0] != "":
+				recentDropdown.addItem(split[0])
 			i += 1
 			if i > 9:
 				break
@@ -286,3 +295,15 @@ class RecentProjects:
 			if i != index:
 				recentFile.write(self.fileContent[i] + "\n")
 		recentFile.close()
+
+	def load(self, name, location):
+
+		for i in range(len(self.fileContent)):
+			if self.fileContent[i] == name + "*" + location:
+				self.reorderDropdown(i)
+				return
+
+		self.addNew(name, location)
+
+	def getLocation(self, index):
+		return self.splitContent[index][1]

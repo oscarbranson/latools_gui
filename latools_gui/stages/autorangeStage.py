@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
+import ast
 
 class AutorangeStage():
 	"""
@@ -174,9 +175,42 @@ class AutorangeStage():
 		# When the stage's processing is complete, the right button is enabled for the next stage.
 		self.progressPaneObj.setRightEnabled()
 
+		self.project.runStage(2, "{'analyte' : '" + self.analyteBox.currentText() +
+							  "', 'gwin' : '" + str(localGwin) +
+							  "', 'swin' : '" + str(localSwin) +
+							  "', 'win' : '" + str(localWin) +
+							  "', 'on_mult1' : '" + self.on_multEdit1.text() +
+							  "', 'on_mult2' : '" + self.on_multEdit2.text() +
+							  "', 'off_mult1' : '" + self.off_multEdit1.text() +
+							  "', 'off_mult2' : '" + self.off_multEdit2.text() +
+							  "', 'nbin' : '" + str(localNbin) +
+							  "', 'transform' : '" + str(self.logTransformCheck.isChecked()) +
+							  "'}")
+
 	def updateStageInfo(self):
 		for analyte in self.project.eg.analytes:
 			self.analyteBox.addItem(str(analyte))
 
 	def raiseError(self, message):
 		errorBox = QMessageBox.critical(self.autorangeWidget, "Error", message, QMessageBox.Ok)
+
+	def loadValues(self):
+
+		values = ast.literal_eval(self.project.getStageString(2))
+
+		for key in values:
+			if values[key] == "None":
+				values[key] = ""
+
+		self.analyteBox.setCurrentText(values['analyte'])
+		self.gwinEdit.setText(values['gwin'])
+		self.swinEdit.setText(values['swin'])
+		self.winEdit.setText(values['win'])
+		self.on_multEdit1.setText(values['on_mult1'])
+		self.on_multEdit2.setText(values['on_mult2'])
+		self.off_multEdit1.setText(values['off_mult1'])
+		self.off_multEdit2.setText(values['off_mult2'])
+		self.nbinEdit.setText(values['nbin'])
+		self.logTransformCheck.setChecked(values['transform'] == "True")
+
+		self.pressedApplyButton()

@@ -1,9 +1,7 @@
 """ A stage of the program that defines and executes one step of the data-processing """
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
-from PyQt5.QtCore import Qt, QSize
-import sys 
+import ast
 
 import templates.controlsPane as controlsPane
 
@@ -69,6 +67,8 @@ class RatioStage():
 
 		self.project.eg.ratio(internal_standard=self.internal_standardOption.currentText())
 
+		self.project.runStage(4, "{'internal_standard' : '" + self.internal_standardOption.currentText() + "'}")
+
 		print(list(self.project.eg.data['STD-1'].data.keys()))
 		self.graphPaneObj.updateGraph()
 
@@ -83,3 +83,11 @@ class RatioStage():
 			self.applyButton.setEnabled(True)
 		else:
 			self.applyButton.setEnabled(False)
+
+	def loadValues(self):
+
+		values = ast.literal_eval(self.project.getStageString(4))
+
+		self.internal_standardOption.setCurrentText(values['internal_standard'])
+
+		self.pressedApplyButton()
