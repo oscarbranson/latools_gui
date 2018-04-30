@@ -5,7 +5,8 @@
 import os
 import time
 import json
-import latools
+import latools as la
+import datetime
 import re
 
 
@@ -28,114 +29,85 @@ class RunningProject():
 
 		Creates tabula rasa project state.
 		"""
+
+		# The latools analyse object
 		self.eg = None
-		self.dataDictionary = {}
 
-	def updateSetting(self, key, value):
-		""" The call to update variables stored within
+		# Save file details
+		self.folder = None
+		self.filePath = None
+		self.fileName = None
 
-		To change or add new data to be saved,
-		this method should be called upon in prime.
+		# The content of the save file as a list of lines
+		self.fileStrings = None
 
-		Parameters
-		----------
-		key : str
-			The name which points to data writ anon
-		value
-			What data to be locked under such key                
-		"""
+		# The object used to communicate with stages at runtime
+		self.importListener = None
 
-		self.dataDictionary[key] = value
+	def saveButton(self):
+		""" Save overwrites the current save file with the latest file strings """
 
-	def readSetting(self, key):
-		""" Recall the variables stored within the dict
+		# We overwrite the file and write the file strings
+		file = open(self.filePath, "w")
+		for line in self.fileStrings:
+			file.write(line + "\n")
+		file.close()
+		#print(self.fileName + " saved")
+		#self.eg.minimal_export()
 
-		To read and query data saved before
-		this method's call returns a value stored.
+	def newFile(self, name, location):
+		""" Sets up a new save file, and stores the name and location """
 
-		Parameters
-		----------
-		key : str
-			The name which points to data stored anon  
-		Returns
-		-------
-		value : None or dict value
-			The value locked with given key,
-			gives None when probes an empty memory.
-		"""
+		# Record save file info
+		self.fileName = name
+		self.folder = location
+		self.filePath = location + "/" + name + ".sav"
 
-		if key in self.dataDictionary:
+		# Write a new file with the date and time in the header
+		writeFile = open(self.filePath, "w")
+		now = datetime.datetime.now()
+		nowString = "LAtools save file. Created " + now.strftime("%Y-%m-%d %H:%M")
 
-			return self.dataDictionary[key]
-		else:
-			return None
+		# We create a set of blank lines so that we can edit lines by index later
+		writeFile.write(nowString + "\n\n\n\n\n\n\n\n\n\n")
+		writeFile.close()
 
-	def saveProject(self, path = None, name = 'default.sav'):
-		""" The call which saves stored data to a file
+		# fileStrings will be a live-updated copy of the save file contents
+		self.fileStrings = [nowString, "", "", "", "", "", "", "", "", "", ""]
 
-		Saves the project dict
-		Deprecated, using logs
-		Ignore this function.
 
-		Parameters
-		----------
-		path : str
-			The path which points to where the file shall save.
-			Its declaration's place might yet be changed.
-			Non-default value best supplied in call.
-		"""
+	def loadFile(self, name, location):
+		""" Loads a save file, stores the file info, populates the stage parameters and runs
+		the stage function calls """
+		self.fileName = name
+		self.folder = location
+		self.filePath = location + "/" + name + ".sav"
 
-		if path is None:
-			path = 'projects/'
-		if not os.path.isdir(path):
-			os.mkdir(path)
+		# Reads the save file to fileStrings
+		file = open(self.filePath, "r")
+		self.fileStrings = file.read().splitlines()
 
-		header = ['# Sample save file for testing purposes created %s\n' % (time.strftime('%Y:%m:%d %H:%M:%S)'))]
+		# After the first two lines in the save file, the other lines each represent a dictionary of
+		# saved parameters for a stage's fields. These dictionaries are passed to the stages for processing
+		for i in range(2,9):
+			if self.fileStrings[i] != "":
+				# The value passed here is a stage index (import = 0, etc)
+				self.importListener.loadStage(i - 2)
+			else:
+				# The first line that is blank is where the focus of stages screen is set
+				self.importListener.setStageIndex(i - 2)
+				return
 
-		with open(path + name, 'w') as f:
-			f.write('\n'.join(header))
-			json.dump(self.dataDictionary, f)
-			f.close()
+		# self.eg = la.reproduce(location + name + ".log")
 
-	def loadProject(self, path = None, name = 'analysis.log'):
-		""" The call which loads stored data from a file
+	def runStage(self, index, parameters):
+		""" Here the entries from a stage's parameters are saved to that stage's index in fileStrings """
+		self.fileStrings[index + 2] = parameters
 
-		Loads the log data
-		Translates inbuilt logs to dict
-		No more fool json.
+	def setImportListener(self, importListener):
+		""" Receives the importListener to use to pass info to stages at runtime """
+		self.importListener = importListener
 
-		Parameters
-		----------
-		path : str
-			Path to where file is
-			Leads to its directory.
-			Default not advised.
-		name : str
-			Name of loaded file
-			Points to established format
-			Should leave as default?
-		"""
-
-		if path is None: #these are for testing don't mind them
-			path = 'data_export/minimal_export/'
-			#path = 'exp/'
-		if os.path.isdir(path):
-			with open(path + name, 'r') as f:
-				rlog = f.readlines()
-			hashind = [i for i, n in enumerate(rlog) if '#' in n]
-			self.dataDictionary = {}
-			#"borrowed" from oscar's code
-			logread = re.compile('([a-z_]+) :: args=(\(.*\)) kwargs=(\{.*\})')
-			
-			for l in rlog[hashind[1] + 2:]:
-				fname, args, kwargs = logread.match(l).groups()
-				temp = {} #could be optimised.
-				temp.update(**eval(kwargs))
-				for key, value in temp.items():
-					self.dataDictionary[fname+'.'+key] = value
-					
-
-			print ('loading done')
-		else:
-			print ('file not found')  
-
+	def getStageString(self, index):
+		""" Sends the fileString for a particular stage so that it can be processed in the stage """
+		return self.fileStrings[index + 2]

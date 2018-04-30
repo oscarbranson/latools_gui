@@ -61,8 +61,12 @@ class MainWindow(QMainWindow):
 		# Add the mainStack to the principalLayout
 		self.principalLayout.addWidget(self.mainStack)
 
+		# We create an instance of a Running Project to store in one place all of the analysis that will be
+		# performed in this project
+		self.project = runningProject.RunningProject()
+
 		# Here we create a title screen object from the file in templates
-		self.titleScreenObj = titleScreen.TitleScreen(self.mainStack)
+		self.titleScreenObj = titleScreen.TitleScreen(self.mainStack, self.project)
 		# And it is added to the mainstack in position 0.
 		self.mainStack.addWidget(self.titleScreenObj.getPane())
 
@@ -72,10 +76,6 @@ class MainWindow(QMainWindow):
 		# By making the stageWidget the "parent" of the stageScreenLayout, the widget will contain the layout:
 		self.stageScreenLayout = QVBoxLayout(self.stageWidget)
 		self.mainStack.addWidget(self.stageWidget)
-
-		# We create an instance of a Running Project to store in one place all of the analysis that will be
-		# performed in this project
-		self.project = runningProject.RunningProject()
 
 		# We make a new stack here, that will move between the different stages.
 		# Only the Controls pane will actually be changing, but the graph pane could be added here also.
@@ -87,12 +87,12 @@ class MainWindow(QMainWindow):
 		# Now we add the stages stack to the layout, so that it sits below the top navigation bar.
 		self.stageScreenLayout.addWidget(self.stagesStack)
 
-		# We create the progress pane object but will add it to the stages layout later
-		self.progressPaneObj = progressPane.ProgressPane(self.stagesStack, STAGES, self.navigationPaneObj)
-
 		# Here we define the graph pane, so that it could be passed to the controls pane.
 		# However, we want it to sit below the controls, so it's not added to the layout yet.
 		self.graphPaneObj = graphPane.GraphPane(self.project)
+
+		# We create the progress pane object but will add it to the stages layout later
+		self.progressPaneObj = progressPane.ProgressPane(self.stagesStack, STAGES, self.navigationPaneObj, self.graphPaneObj, self.project)
 
 		# A layout for each stage is created, and added to the stage stack
 
@@ -144,12 +144,19 @@ class MainWindow(QMainWindow):
 			self.filteringStageLayout, self.graphPaneObj, self.progressPaneObj, self.filteringStageWidget, self.project)
 
 		# Object that allows updates to stages to occur during runtime
-		importListener = ImportListener(self.autorangeStageObj,
+		importListener = ImportListener(self.importStageObj,
+										self.despikingStageObj,
+										self.autorangeStageObj,
+										self.backgroundStageObj,
 										self.ratioStageObj,
 										self.calibrationStageObj,
-										self.navigationPaneObj)
+										self.filteringStageObj,
+										self.navigationPaneObj,
+										self.progressPaneObj,
+										self.graphPaneObj)
 		self.importStageObj.setImportListener(importListener)
 		self.titleScreenObj.setImportListener(importListener)
+		self.project.setImportListener(importListener)
 
 
 
@@ -163,7 +170,7 @@ class MainWindow(QMainWindow):
 		saveFile = QAction(QIcon('save.png'), 'Save', self)
 		saveFile.setShortcut('Ctrl+S')
 		saveFile.setStatusTip('Save your project')
-		# saveFile.triggered.connect()
+		saveFile.triggered.connect(self.saveButton)
 
 		loadFile = QAction(QIcon('open.png'), 'Load', self)
 		#loadFile.setShortcut('Ctrl+L')
@@ -188,24 +195,67 @@ class MainWindow(QMainWindow):
 		configMenu = menubar.addMenu('&Configuration')
 		configMenu.addAction(makeConfig)
 
+	def saveButton(self):
+		""" Runs the save command on the current running project """
+		self.project.saveButton()
 
 class ImportListener():
 	""" Handles the passing of information between modules during runtime """
 
-	def __init__(self, autorangeStage, ratioStage, calibrationStage, navigationPane):
+	def __init__(self,
+				 importStage,
+				 despikingStage,
+				 autorangeStage,
+				 backgroundStage,
+				 ratioStage,
+				 calibrationStage,
+				 filteringStage,
+				 navigationPane,
+				 progressPane,
+				 graphPane):
+		self.importStage = importStage
+		self.despikingStage = despikingStage
 		self.autorangeStage = autorangeStage
+		self.backgroundStage = backgroundStage
 		self.ratioStage = ratioStage
 		self.calibrationStage = calibrationStage
+		self.filteringStage = filteringStage
 		self.navigationPane = navigationPane
+		self.progressPane = progressPane
+		self.graphPane = graphPane
 
 	def dataImported(self):
+		""" When data is first imported in the Import Stage, several fields can be updated in later
+		stages which require info from that data """
 		self.autorangeStage.updateStageInfo()
 		self.ratioStage.updateStageInfo()
 		self.calibrationStage.updateStageInfo()
 
 	def setTitle(self, title):
 		# Sends the project name to the navigation pane to display
+		# and sets the loaded stage index
 		self.navigationPane.setProjectTitle(title, "")
+
+	def setStageIndex(self, index):
+		""" Jumps to a particular stage when loading a project """
+		self.progressPane.setStageIndex(index)
+
+	def loadStage(self, index):
+		""" Tells a stage to load the saved stage parameter info, based on an identifying stage index """
+		if index == 0:
+			self.importStage.loadValues()
+		elif index == 1:
+			self.despikingStage.loadValues()
+		elif index == 2:
+			self.autorangeStage.loadValues()
+		elif index == 3:
+			self.backgroundStage.loadValues()
+		elif index == 4:
+			self.ratioStage.loadValues()
+		elif index == 5:
+			self.calibrationStage.loadValues()
+		elif index == 6:
+			self.filteringStage.loadValues()
 
 
 

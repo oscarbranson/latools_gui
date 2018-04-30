@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
+import ast
 
 class BackgroundStage():
 	"""
@@ -153,35 +154,61 @@ class BackgroundStage():
 		no illegal inputs.
 
 		"""
-
+		# There are two different calculation methods for this stage
 		if (self.currentlyMethod1):
 
-			# We protect against blank or incorrect fields in options
+			# We process each text entry field by converting blank to the value None, and checking for errors
 			myweight = None
 			if self.weight_fwhmOption.text() != "":
-				myweight = float(self.weight_fwhmOption.text())
+				try:
+					myweight = float(self.weight_fwhmOption.text())
+				except:
+					self.raiseError("The 'weight_fwhm' value must be a floating point number")
+					return
 
 			myn_min = 20
 			if self.n_minOption.text() != "":
-				myn_min = int(self.n_minOption.text())
+				try:
+					myn_min = int(self.n_minOption.text())
+				except:
+					self.raiseError("The 'n_min' value must be an integer")
+					return
 
 			myn_max = None
 			if self.n_maxOption.text() != "":
-				myn_max = int(self.n_maxOption.text())
+				try:
+					myn_max = int(self.n_maxOption.text())
+				except:
+					self.raiseError("The 'n_max' value must be an integer")
+					return
 
 			mycstep = None
 			if self.cstepOption.text() != "":
-				mycstep = float(self.cstepOption.text())
+				try:
+					mycstep = float(self.cstepOption.text())
+				except:
+					self.raiseError("The 'cstep' value must be a floating point number")
+					return
 
 			myf_win = 7
 			if self.f_winOption.text() != "":
-				myf_win = int(self.f_winOption.text())
+				try:
+					myf_win = int(self.f_winOption.text())
+				except:
+					self.raiseError("The 'f_win' value must be an integer")
+					return
 
 			myf_n_lim = 3
 			if self.f_n_limOption.text() != "":
-				myf_n_lim = int(self.f_n_limOption.text())
+				try:
+					myf_n_lim = int(self.f_n_limOption.text())
+				except:
+					self.raiseError("The 'f_n_lim' value must be an integer")
+					return
 
-			self.project.eg.bkg_calc_weightedmean(analytes=None,
+			# The actual call to the analyse object for this stage is run, using the stage values as parameters
+			try:
+				self.project.eg.bkg_calc_weightedmean(analytes=None,
 												weight_fwhm=myweight,
 												n_min=myn_min,
 												n_max=myn_max,
@@ -189,34 +216,62 @@ class BackgroundStage():
 												bkg_filter=self.bkg_filterOption.isChecked(),
 												f_win=myf_win,
 												f_n_lim=myf_n_lim)
+			except:
+				self.raiseError("A problem occurred. There may be a problem with the input values.")
+				return
 		else:
 
 			# We protect against blank or incorrect fields in options
 			myKind = 1
 			if self.kindOption.text() != "":
-				myKind = int(self.kindOption.text())
+				try:
+					myKind = int(self.kindOption.text())
+				except:
+					self.raiseError("The 'kind' value must be an integer")
+					return
 
 			myn_min2 = 10
 			if self.n_minOption2.text() != "":
-				myn_min2 = int(self.n_minOption2.text())
+				try:
+					myn_min2 = int(self.n_minOption2.text())
+				except:
+					self.raiseError("The 'n_min' value must be an integer")
+					return
 
 			myn_max2 = None
 			if self.n_maxOption2.text() != "":
-				myn_max2 = int(self.n_maxOption2.text())
+				try:
+					myn_max2 = int(self.n_maxOption2.text())
+				except:
+					self.raiseError("The 'n_max' value must be an integer")
+					return
 
 			mycstep = None
 			if self.cstepOption.text() != "":
-				mycstep = float(self.cstepOption.text())
+				try:
+					mycstep = float(self.cstepOption.text())
+				except:
+					self.raiseError("The 'cstep' value must be a floating point number")
+					return
 
 			myf_win = 7
 			if self.f_winOption.text() != "":
-				myf_win = int(self.f_winOption.text())
+				try:
+					myf_win = int(self.f_winOption.text())
+				except:
+					self.raiseError("The 'f_win' value must be an integer")
+					return
 
 			myf_n_lim = 3
 			if self.f_n_limOption.text() != "":
-				myf_n_lim = int(self.f_n_limOption.text())
+				try:
+					myf_n_lim = int(self.f_n_limOption.text())
+				except:
+					self.raiseError("The 'f_n_lim' value must be an integer")
+					return
 
-			self.project.eg.bkg_calc_interp1d(analytes=None,
+			try:
+				self.project.eg.bkg_calc_interp1d(analytes=None,
 											kind=myKind,
 											n_min=myn_min2,
 											n_max=myn_max2,
@@ -224,20 +279,40 @@ class BackgroundStage():
 											bkg_filter=self.bkg_filterOption.isChecked(),
 											f_win=myf_win,
 											f_n_lim=myf_n_lim)
+			except:
+				self.raiseError("A problem occurred. There may be a problem with the input values.")
+				return
 
+		# The background calculation is now complete, and can now be subtracted
 		self.subtractButton.setEnabled(True)
+
+		# Builds a string representation of a dictionary of the current stage values and saves this in project
+		self.project.runStage(3, "{'method' : '" + self.methodOption.currentText() +
+							  "', 'weight_fwhm' : '" + self.weight_fwhmOption.text() +
+							  "', 'n_min' : '" + self.n_minOption.text() +
+							  "', 'n_max' : '" + self.n_maxOption.text() +
+							  "', 'kind' : '" + self.kindOption.text() +
+							  "', 'n_min2' : '" + self.n_minOption2.text() +
+							  "', 'n_max2' : '" + self.n_maxOption2.text() +
+							  "', 'cstep' : '" + self.cstepOption.text() +
+							  "', 'bkg_filter' : '" + str(self.bkg_filterOption.isChecked()) +
+							  "', 'f_win' : '" + self.f_winOption.text() +
+							  "', 'f_n_lim' : '" + self.f_n_limOption.text() +
+							  "'}")
+		# Automatically saves the project
+		self.project.saveButton()
 
 	def pressedPopupButton(self):
 		""" Creates a popup for the background calculation when a button is pressed. """
 		# TO DO: ADD POPUP FUNCTIONALITY
-		# self.progressPaneObj.setRightEnabled()
 
 	def pressedSubtractButton(self):
 		""" Subtracts an existing background calculation from the project data when a button is pressed. """
 		self.project.eg.bkg_subtract(analytes=None, errtype='stderr', focus_stage='despiked')
 
 		print(list(self.project.eg.data['STD-1'].data.keys()))
-		self.graphPaneObj.updateGraph('bkgsub', ranges=True)
+		print(self.project.eg.stages_complete)
+		self.graphPaneObj.updateGraph()
 
 		self.progressPaneObj.setRightEnabled()
 
@@ -252,9 +327,43 @@ class BackgroundStage():
 		self.currentlyMethod1 = not self.currentlyMethod1
 
 	def bkgUpdate(self):
+		""" Hides the last two input fields unless the bkg_filter button is ticked """
 		if self.bkg_filterOption.isChecked():
 			self.f_winOption.setVisible(True)
 			self.f_n_limOption.setVisible(True)
 		else:
 			self.f_winOption.setVisible(False)
 			self.f_n_limOption.setVisible(False)
+
+	def raiseError(self, message):
+		""" Creates an error box with the given message """
+		errorBox = QMessageBox.critical(self.backgroundWidget, "Error", message, QMessageBox.Ok)
+
+	def loadValues(self):
+		""" Loads the values saved in the project, and fills in the stage parameters with them """
+
+		# The saved stage string is automatically converted to a dictionary
+		# The number passed to getStageString is this stage's index
+		values = ast.literal_eval(self.project.getStageString(3))
+
+		# Any parameters saved as None should be a blank string for that field
+		for key in values:
+			if values[key] == "None":
+				values[key] = ""
+
+		# Each stage field is updated with the saved values
+		self.methodOption.setCurrentText(values['method'])
+		self.weight_fwhmOption.setText(values['weight_fwhm'])
+		self.n_minOption.setText(values['n_min'])
+		self.n_maxOption.setText(values['n_max'])
+		self.kindOption.setText(values['kind'])
+		self.n_minOption2.setText(values['n_min2'])
+		self.n_maxOption2.setText(values['n_max2'])
+		self.cstepOption.setText(values['cstep'])
+		self.bkg_filterOption.setChecked(values['bkg_filter'] == "True")
+		self.f_winOption.setText(values['f_win'])
+		self.f_n_limOption.setText(values['f_n_lim'])
+
+		# The loading process then activates the stage's apply command
+		self.pressedCalcButton()
+		self.pressedSubtractButton()

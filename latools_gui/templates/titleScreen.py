@@ -12,7 +12,7 @@ class TitleScreen():
 	The screen that shows up at the beginning of the program and allows a user to define a new project,
 	or continue an existing one.
 	"""
-	def __init__(self, stack):
+	def __init__(self, stack, project):
 		"""
 		Initialising builds and displays the screen.
 
@@ -24,10 +24,9 @@ class TitleScreen():
 		# We create a widget to hold the entire screen
 		self.mainWidget = QWidget()
 
-		# We save a reference to the main stack, so that our buttons can move us to the next screen
 		self.parentStack = stack
+		self.project = project
 		self.fileLocation = None
-		self.fileName = None
 		self.projectName = None
 		self.loadProjectBool = False
 		self.importListener = None
@@ -64,6 +63,7 @@ class TitleScreen():
 		self.welcomeSpacer = QSpacerItem(0, 25, QSizePolicy.Minimum, QSizePolicy.Expanding) 
 		self.mainLayout.addItem(self.welcomeSpacer)
 
+		# A small grid of buttons and fields for starting or loading a project
 		self.titleGridWidget = QWidget()
 		self.titleGrid = QGridLayout(self.titleGridWidget)
 		self.mainLayout.addWidget(self.titleGridWidget)
@@ -107,25 +107,32 @@ class TitleScreen():
 		self.newLocation.setVisible(False)
 		self.newLocation.setEnabled(False)
 
-		# Currently just a button that begins the demo project
+		self.backButton = QPushButton("Back")
+		self.backButton.clicked.connect(self.backButtonClick)
+		self.titleGrid.addWidget(self.backButton, 5, 0)
+		self.backButton.setVisible(False)
+
+		# The button to load or begin the project
 		self.nextButton = QPushButton("Begin")
+
 		# The button click calls the nextButtonClick method, within this class
 		self.nextButton.setEnabled(False)
 		self.nextButton.clicked.connect(self.nextButtonClick)
-		self.titleGrid.addWidget(self.nextButton, 5, 0)
+		self.titleGrid.addWidget(self.nextButton, 5, 1)
 
+		# Calls nameEdited() when the cursor position changes on NameEdit
 		self.nameEdit.cursorPositionChanged.connect(self.nameEdited)
 
-		self.backButton = QPushButton("Back")
-		self.backButton.clicked.connect(self.backButtonClick)
-		self.titleGrid.addWidget(self.backButton, 5, 1)
-		self.backButton.setVisible(False)
-
-		self.logoSpacer = QSpacerItem(0, 25, QSizePolicy.Minimum, QSizePolicy.Expanding)
+		self.logoSpacer = QSpacerItem(0, 50, QSizePolicy.Minimum, QSizePolicy.Expanding)
 		self.mainLayout.addItem(self.logoSpacer)
 
+		# A button at the bottom which links to the online user guide
+		self.helpWidget = QWidget()
+		self.helpLayout = QHBoxLayout(self.helpWidget)
 		self.helpButton = QPushButton("Online Manual")
-		self.mainLayout.addWidget(self.helpButton)
+		self.helpButton.setMaximumWidth(130)
+		self.helpLayout.addWidget(self.helpButton)
+		self.mainLayout.addWidget(self.helpWidget)
 		self.helpButton.clicked.connect(self.helpButtonClick)
 
 		# A spacer at the bottom.
@@ -135,6 +142,14 @@ class TitleScreen():
 		self.recentProjects = RecentProjects(self.recentDropdown)
 
 	def setImportListener(self, importListener):
+		"""
+		Provides an object that is called to update the stages at runtime
+
+		Parameters
+		----------
+		importListener : ImportListener
+			An object within the main module that manages communication to the stages at runtime.
+		"""
 		self.importListener = importListener
 
 	def getPane(self):
@@ -151,31 +166,36 @@ class TitleScreen():
 
 	def nextButtonClick(self):
 		"""
-		The functionality for the 'next' button. Currently, this sets the main stack to
-		index 1: the stages screen
+		The functionality for the 'begin' button. Either creates of loads a project, based on the options entered.
 		"""
-
-		#TO DO: load project or begin new one
-
 		if self.loadProjectBool:
 			# Load project
-			self.projectName = self.fileLocation[0]
+			self.project.loadFile(self.projectName, self.fileLocation)
 
 		elif self.newProjectBool:
 			# New project
 			self.projectName = self.nameEdit.text()
-			self.recentProjects.addNew(self.nameEdit.text(), self.fileLocation)
+			self.recentProjects.addNew(self.projectName, self.fileLocation)
+			self.project.newFile(self.projectName, self.fileLocation)
 
 		else:
 			# Dropdown selected
 			self.projectName = self.recentDropdown.currentText()
+			self.fileLocation = self.recentProjects.getLocation(self.recentDropdown.currentIndex() - 1)
 			self.recentProjects.reorderDropdown(self.recentDropdown.currentIndex() - 1)
+			self.project.loadFile(self.projectName, self.fileLocation)
 
+		# The project title is delivered to the stages screen
 		self.importListener.setTitle(self.projectName)
+
+		# We transition to the stages screen
 		self.parentStack.setCurrentIndex(1)
 
 	def newButtonClick(self):
-
+		"""
+		The functionality for the 'new' button.
+		The 'new project' options are displayed, and the recent projects dropdown is hidden.
+		"""
 		self.newProjectBool = True
 		self.recentDropdown.setVisible(False)
 		self.nameLabel.setVisible(True)
@@ -187,25 +207,53 @@ class TitleScreen():
 		self.nextButton.setEnabled(False)
 
 	def openButtonClick(self):
+		"""
+		The functionality for the 'browse' button for loading a project
+		It opens a file browser and loads the project if given an appropriate file.
+		"""
 
-		self.fileLocation = QFileDialog.getOpenFileName(self.mainWidget, 'Open file', '/home')
-		#print(self.fileLocation)
+		# A file browser is opened
+		loadLocation = QFileDialog.getOpenFileName(self.mainWidget, 'Open file', '/home')
 
-		# TO DO: Load project
-		if self.fileLocation[0] != '':
+		# If Cancel was not selected...
+		if loadLocation[0] != '':
 			self.loadProjectBool = True
+
+			# The file name is extracted from the end of the absolute file path
+			locationSplit = loadLocation[0].split('/')
+			self.projectName = locationSplit[-1]
+
+			# We check that its extension is .sav
+			if self.projectName[-4:] != ".sav":
+				message = "file must have extension '.sav'"
+				errorBox = QMessageBox.critical(self.mainWidget, "Error", message, QMessageBox.Ok)
+				return
+
+			# The file location is the absolute file path without the file name
+			self.fileLocation = loadLocation[0][0:-(len(self.projectName) + 1)]
+
+			# We drop the extension from the file name for the project title
+			self.projectName = self.projectName[0:-4]
+
+			# recentProjects handles adding or updating this project in the list of recent projects
+			self.recentProjects.load(self.projectName, self.fileLocation)
+
+			# We progress as though the 'begin' button was pressed
 			self.nextButtonClick()
 
 
 	def recentClicked(self):
-
+		"""
+		When the recent dropdown is clicked, the begin button should be activated only if a
+		project name was selected (rather than the default "Recent projects" message.
+		"""
 		if self.recentDropdown.currentText() != "Recent projects":
 			self.nextButton.setEnabled(True)
 		else:
 			self.nextButton.setEnabled(False)
 
 	def backButtonClick(self):
-
+		""" The functionality for the back button, when a new project entry is cancelled """
 		self.newProjectBool = False
 		self.recentDropdown.setVisible(True)
 		self.nameLabel.setVisible(False)
@@ -218,73 +266,118 @@ class TitleScreen():
 		self.recentDropdown.setCurrentIndex(0)
 
 	def nameEdited(self):
+		""" Checks if the new name edit is currently a valid project name, and enabled the begin button accordingly """
 
+		# A list of characters that can't be used in a file name (This could be added to)
 		forbiddens = {'<','>', ':', '\"', '/', '\\', '|', '?', '*'}
 
 		if self.nameEdit.text() != "":
 			self.nameOK = True
-
-			# addedChar = self.nameEdit.text()[self.nameEdit.cursorPosition() - 1]
-
+			# If there is a forbidden character in the name, the next button is disabled
 			for char in self.nameEdit.text():
 				if char in forbiddens:
 					self.nameOK = False
-
 		else:
 			self.nameOK = False
 
+		# Only when the name and location are okay, is the begin button enabled
 		self.nextButton.setEnabled(self.nameOK and self.locationOK)
 
 	def helpButtonClick(self):
-
+		""" Link to online user guide """
 		url = QUrl("https://github.com/oscarbranson/latools")
 		QDesktopServices.openUrl(url)
 
 	def newBrowseClick(self):
+		""" The file browser dialog for selecting where a new file will be saved """
 		self.fileLocation = QFileDialog.getExistingDirectory(self.mainWidget, 'Open file', '/home')
 
+		# If cancel was not pressed, set the location
 		if self.fileLocation != '':
 			self.newLocation.setText(self.fileLocation)
 			self.locationOK = True
 
 			self.nextButton.setEnabled(self.nameOK and self.locationOK)
 
-
-
-
 class RecentProjects:
-
+	"""
+	A class used to record, update and display the list of projects that were accessed most recently
+	"""
 	def __init__(self, recentDropdown):
+		"""
+		Initialising opens the text file that lists all past projects, and saves the contents to a list of strings.
 
+		Parameters
+		----------
+		recentDropdown : QComboBox
+			The dropdown box that displays the recent projects
+		"""
+
+		# Opens and reads the recentProjects text file.
 		recentFile = open("project/recentProjects.txt", "r")
+
+		# Splits the file into a list of lines
 		self.fileContent = recentFile.read().splitlines()
 		recentFile.close()
 
 		self.splitContent = []
 
+		# Splits each line into the project name and location
 		for name in self.fileContent:
 			self.splitContent.append(name.split('*'))
 
 		i = 0
 		for split in self.splitContent:
-			recentDropdown.addItem(split[0])
+			if split[0] != "":
+				# Adds the names to the dropdown in order
+				recentDropdown.addItem(split[0])
 			i += 1
+			# The maximum number of items added to the dropdown:
 			if i > 9:
 				break
 
-		print(self.splitContent)
-
 	def addNew(self, name, location):
+		""" Adding a new project to the recent projects list """
+
+		# Open the file
 		recentFile = open("project/recentProjects.txt", "w")
+
+		# Write the new file at the top
 		recentFile.write(name + "*" + location + "\n")
+
+		# Write the rest of the file below the new entry
 		for line in self.fileContent:
 			recentFile.write(line + "\n")
+
+		# Close the file
 		recentFile.close()
 
 	def reorderDropdown(self, index):
+		""" Moves a particular past project to the top of the list """
+
 		recentFile = open("project/recentProjects.txt", "w")
+
+		# The indexed project is written to the top of the list
 		recentFile.write(self.fileContent[index] + "\n")
+
+		# The rest of the projects are added
 		for i in range(len(self.fileContent)):
 			if i != index:
 				recentFile.write(self.fileContent[i] + "\n")
 		recentFile.close()
+
+	def load(self, name, location):
+		"""
+		When a project is loaded, if it is in the recent projects list it is moved to the top of the list,
+		otherwise it is added to the top of the list.
+		"""
+		for i in range(len(self.fileContent)):
+			if self.fileContent[i] == name + "*" + location:
+				self.reorderDropdown(i)
+				return
+		# If we didn't find it in the list, add it as new.
+		self.addNew(name, location)
+
+	def getLocation(self, index):
+		""" Given the index of a project in the recent list, returns the file location """
+		return self.splitContent[index][1]

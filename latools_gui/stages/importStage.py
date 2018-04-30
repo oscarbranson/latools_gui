@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
+import ast
 
 class ImportStage():
 	"""
@@ -94,19 +95,28 @@ class ImportStage():
 		""" Imports data into the project when the apply button is pressed. """
 		#Add apply button functionality
 
+		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		try:
 			self.project.eg = la.analyse(data_folder=self.fileLocationLine.text(),
 										 config=self.configOption.currentText(),
 										 extension=self.file_extensionOption.text(),
 										 srm_identifier=self.srm_identifierOption.text())
 
-			self.graphPaneObj.updateGraphDetails(importing=True)
-			self.graphPaneObj.updateGraph(stage='rawdata')
+			self.graphPaneObj.updateGraph(importing=True)
 
 			self.progressPaneObj.setRightEnabled()
 
 			if not self.importListener is None:
 				self.importListener.dataImported()
+
+			# Builds a string representation of a dictionary of the current stage values and saves this in project
+			self.project.runStage(0, "{'data_folder' : '" + self.fileLocationLine.text() +
+								  "', 'config' : '" + self.configOption.currentText() +
+								  "', 'extension' : '" + self.file_extensionOption.text() +
+								  "', 'srm_identifier' : '" + self.srm_identifierOption.text() +
+								  "'}")
+			# Automatically saves the project
+			self.project.saveButton()
 		except:
 			print("An error occured")
 
@@ -124,3 +134,19 @@ class ImportStage():
 
 	def setImportListener(self, importListener):
 		self.importListener = importListener
+
+	def loadValues(self):
+		""" Loads the values saved in the project, and fills in the stage parameters with them """
+
+		# The saved stage string is automatically converted to a dictionary
+		# The number passed to getStageString is this stage's index
+		values = ast.literal_eval(self.project.getStageString(0))
+
+		# Each stage field is updated with the saved values
+		self.fileLocationLine.setText(values['data_folder'])
+		self.configOption.setCurrentText(values['config'])
+		self.file_extensionOption.setText(values['extension'])
+		self.srm_identifierOption.setText(values['srm_identifier'])
+
+		# The loading process then activates the stage's apply command
+		self.pressedApplyButton()

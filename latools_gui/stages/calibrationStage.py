@@ -6,6 +6,7 @@ from PyQt5.QtCore import QUrl, Qt
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
+import ast
 
 class CalibrationStage():
 	"""
@@ -97,13 +98,37 @@ class CalibrationStage():
 	def pressedApplyButton(self):
 		""" Calibrates the project data when a button is pressed. """
 
-		self.project.eg.calibrate(analytes=None,
+		# We process each text entry field by converting blank to the value None, and checking for errors
+		myn_min = int(self.defaultParams['n_min'])
+		if self.n_minOption.text() != "":
+			try:
+				myn_min = int(self.n_minOption.text())
+			except:
+				self.raiseError("The 'n_min' value must be an integer")
+				return
+
+		# The actual call to the analyse object for this stage is run, using the stage values as parameters
+		try:
+			self.project.eg.calibrate(analytes=None,
 								drift_correct=self.drift_correctOption.isChecked(),
 								srms_used=['NIST610', 'NIST612', 'NIST614'],
 								zero_intercept=self.zero_interceptOption.isChecked(),
-								n_min=int(self.n_minOption.text()))
+								n_min=myn_min)
+		except:
+			self.raiseError("A problem occurred. There may be a problem with the input values.")
+			return
+
+		self.graphPaneObj.updateGraph()
 
 		self.progressPaneObj.setRightEnabled()
+
+		# Builds a string representation of a dictionary of the current stage values and saves this in project
+		self.project.runStage(5, "{'drift_correct' : '" + str(self.drift_correctOption.isChecked()) +
+							  "', 'zero_intercept' : '" + str(self.zero_interceptOption.isChecked()) +
+							  "', 'n_min' : '" + self.n_minOption.text() +
+							  "'}")
+		# Automatically saves the project
+		self.project.saveButton()
 
 	def pressedReloadButton(self):
 		""" Performs a reload when the button is pressed. """
@@ -114,4 +139,29 @@ class CalibrationStage():
 		print(self.srmfile)
 
 	def updateStageInfo(self):
+		""" Updates the stage after data is imported at runtime """
 		self.srmfile = self.project.eg.srmfile
+
+	def raiseError(self, message):
+		""" Creates an error box with the given message """
+		errorBox = QMessageBox.critical(self.calibrationWidget, "Error", message, QMessageBox.Ok)
+
+	def loadValues(self):
+		""" Loads the values saved in the project, and fills in the stage parameters with them """
+
+		# The saved stage string is automatically converted to a dictionary
+		# The number passed to getStageString is this stage's index
+		values = ast.literal_eval(self.project.getStageString(5))
+
+		# Any parameters saved as None should be a blank string for that field
+		for key in values:
+			if values[key] == "None":
+				values[key] = ""
+
+		# Each stage field is updated with the saved values
+		self.drift_correctOption.setChecked(values['drift_correct'] == "True")
+		self.zero_interceptOption.setChecked(values['zero_intercept'] == "True")
+		self.n_minOption.setText(values['n_min'])
+
+		# The loading process then activates the stage's apply command
+		self.pressedApplyButton()

@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
+import ast
 
 class AutorangeStage():
 	"""
@@ -107,6 +108,7 @@ class AutorangeStage():
 		It takes the options edited in by the Controls Pane and applies them to the latools analyse object.
 		"""
 
+		# We process each text entry field by converting blank to the value None, and checking for errors
 		localGwin = None
 		if self.gwinEdit.text() != "":
 			try:
@@ -154,6 +156,8 @@ class AutorangeStage():
 			except:
 				self.raiseError("The 'nbin' value must be an integer")
 				return
+
+		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		try:
 			self.project.eg.autorange(analyte=self.analyteBox.currentText(),
 								gwin=localGwin,
@@ -169,14 +173,58 @@ class AutorangeStage():
 
 		print(list(self.project.eg.data['STD-1'].data.keys()))
 		
-		self.graphPaneObj.updateGraph(ranges=True)
+		self.graphPaneObj.updateGraph(showRanges=True)
 
 		# When the stage's processing is complete, the right button is enabled for the next stage.
 		self.progressPaneObj.setRightEnabled()
 
+		# Builds a string representation of a dictionary of the current stage values and saves this in project
+		self.project.runStage(2, "{'analyte' : '" + self.analyteBox.currentText() +
+							  "', 'gwin' : '" + str(localGwin) +
+							  "', 'swin' : '" + str(localSwin) +
+							  "', 'win' : '" + str(localWin) +
+							  "', 'on_mult1' : '" + self.on_multEdit1.text() +
+							  "', 'on_mult2' : '" + self.on_multEdit2.text() +
+							  "', 'off_mult1' : '" + self.off_multEdit1.text() +
+							  "', 'off_mult2' : '" + self.off_multEdit2.text() +
+							  "', 'nbin' : '" + str(localNbin) +
+							  "', 'transform' : '" + str(self.logTransformCheck.isChecked()) +
+							  "'}")
+		# Automatically saves the project
+		self.project.saveButton()
+
 	def updateStageInfo(self):
+		""" The analyte dropdown can only be built once data is imported at runtime """
 		for analyte in self.project.eg.analytes:
 			self.analyteBox.addItem(str(analyte))
 
 	def raiseError(self, message):
+		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.autorangeWidget, "Error", message, QMessageBox.Ok)
+
+	def loadValues(self):
+		""" Loads the values saved in the project, and fills in the stage parameters with them """
+
+		# The saved stage string is automatically converted to a dictionary
+		# The number passed to getStageString is this stage's index
+		values = ast.literal_eval(self.project.getStageString(2))
+
+		# Any parameters saved as None should be a blank string for that field
+		for key in values:
+			if values[key] == "None":
+				values[key] = ""
+
+		# Each stage field is updated with the saved values
+		self.analyteBox.setCurrentText(values['analyte'])
+		self.gwinEdit.setText(values['gwin'])
+		self.swinEdit.setText(values['swin'])
+		self.winEdit.setText(values['win'])
+		self.on_multEdit1.setText(values['on_mult1'])
+		self.on_multEdit2.setText(values['on_mult2'])
+		self.off_multEdit1.setText(values['off_mult1'])
+		self.off_multEdit2.setText(values['off_mult2'])
+		self.nbinEdit.setText(values['nbin'])
+		self.logTransformCheck.setChecked(values['transform'] == "True")
+
+		# The loading process then activates the stage's apply command
+		self.pressedApplyButton()
