@@ -100,7 +100,6 @@ class GraphWindow(QWidget):
 		self.project = project
 		self.graphs = []
 		self.graphLines = {}
-		self.auxGraphs =[]
 		self.showRanges = False
 		self.ranges = []
 
@@ -331,6 +330,7 @@ class GraphWindow(QWidget):
 		"""
 		for graph in self.graphs:
 			graph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
+		self.updateLines()
 
 	# action when legend check-boxes are changed
 	def legendStateChange(self, analyte):
@@ -339,6 +339,8 @@ class GraphWindow(QWidget):
 		"""
 		# change line visibility
 		self.graphLines[analyte].setVisible(self.legendEntries[analyte].isChecked())
+
+		self.legendEntries[analyte].setVisible(False)
 	
 	def updateLines(self):
 		"""
@@ -418,3 +420,6 @@ class GraphWindow(QWidget):
 
 		# self.updateGraphs(ranges=self.ranges)
 		newWin.show()
+
+	def showAuxGraph(self):
+		self.auxGraph = pg.PlotWidget()

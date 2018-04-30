@@ -1,4 +1,11 @@
-test19*/Users/simon/Documents/Uni
+MosesTest2*C:/Users/koh_m/Desktop/LatoolsTest
 MosesTest1*C:/Users/koh_m/Desktop/LatoolsTest
+MosesTest1*C:/Users/koh_m/Desktop/LatoolsTest
+MosesTest2*C:/Users/koh_m/Desktop/LatoolsTest
+MosesTest1*C:/Users/koh_m/Desktop/LatoolsTest
+MosesTest3*C:/Users/koh_m/Desktop/LatoolsTest
+MosesTest2*C:/Users/koh_m/Desktop/LatoolsTest
+MosesTest1*C:/Users/koh_m/Desktop/LatoolsTest
+test19*/Users/simon/Documents/Uni
 test18*/Users/simon/Documents/Uni
 

@@ -172,7 +172,6 @@ class AutorangeStage():
 			return
 
 		print(list(self.project.eg.data['STD-1'].data.keys()))
-		print(self.project.eg.stages_complete)
 		
 		self.graphPaneObj.updateGraph(showRanges=True)
 
