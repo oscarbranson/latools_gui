@@ -72,6 +72,7 @@ class CalibrationStage():
 		self.optionsLeft.addWidget(self.drift_correctOption, 0, 0, 1, 2)
 
 		self.optionsRight.addWidget(QLabel("srms_used"))
+		# TO DO: add srms properly from file
 		self.optionsRight.addWidget(QCheckBox("NIST610"))
 		self.optionsRight.addWidget(QCheckBox("NIST612"))
 		self.optionsRight.addWidget(QCheckBox("NIST614"))

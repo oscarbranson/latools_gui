@@ -23,7 +23,8 @@ class ProgressPane:
 
 		self.stagesStack = stagesStack
 		self.STAGES = STAGES
-		self.focusStages = {'rawdata':'rawdata', 'despiked':'despiked', 'autorange':'despiked', 'bkgsub':'bkgsub', 'ratios':'ratios', 'calibrated':'calibrated', 'calibrated':'calibrated'}
+		self.focusStages = {'rawdata':'rawdata', 'despiked':'despiked', 'autorange':'despiked', 'bkgsub':'bkgsub',
+							'ratios':'ratios', 'calibrated':'calibrated', 'filtering':'calibrated'}
 		self.navPane = navPane
 		self.graphPane = graphPane
 		self.project = project

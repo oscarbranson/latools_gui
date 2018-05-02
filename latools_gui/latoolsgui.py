@@ -177,6 +177,10 @@ class MainWindow(QMainWindow):
 		loadFile.setStatusTip('Load File')
 		# loadFile.triggered.connect()
 
+		exportFile = QAction(QIcon('export.png'), 'Export', self)
+		exportFile.setStatusTip('Export Project')
+		exportFile.triggered.connect(self.exportButton)
+
 		exitAct = QAction(QIcon('exit.png'), 'Exit', self)
 		exitAct.setShortcut('Ctrl+Q')
 		exitAct.setStatusTip('Exit application')
@@ -186,6 +190,7 @@ class MainWindow(QMainWindow):
 		fileMenu = menubar.addMenu('&File')
 		fileMenu.addAction(saveFile)
 		fileMenu.addAction(loadFile)
+		fileMenu.addAction(exportFile)
 		fileMenu.addAction(exitAct)
 
 		makeConfig = QAction(QIcon('open.png'), 'Make', self)
@@ -198,6 +203,11 @@ class MainWindow(QMainWindow):
 	def saveButton(self):
 		""" Runs the save command on the current running project """
 		self.project.saveButton()
+
+	def exportButton(self):
+		""" Runs the export command on the current running project """
+		if self.project.eg is not None:
+			self.project.eg.minimal_export()
 
 class ImportListener():
 	""" Handles the passing of information between modules during runtime """

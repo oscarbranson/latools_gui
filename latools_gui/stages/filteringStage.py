@@ -1,11 +1,7 @@
 """ A stage of the program that defines and executes one step of the data-processing """
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
-from PyQt5.QtCore import Qt, QSize
-import sys 
-
-import templates.controlsPane as controlsPane
+import templates.filterControls as filterControls
 
 class FilteringStage():
 	"""
@@ -36,14 +32,7 @@ class FilteringStage():
 		self.filteringWidget = filteringWidget
 		self.project = project
 
-		self.stageControls = controlsPane.ControlsPane(stageLayout)
-
-		# We set the title and description for the stage
-
-		self.stageControls.setDescription("Data Selection and Filtering", """
-			The data are now background corrected, normalised to an internal standard, and 
-			calibrated. Now we can get into some of the new features of latools, and start 
-			thinking about data filtering.""")
+		self.stageControls = filterControls.FilterControls(stageLayout)
 
 		# The space for the stage options is provided by the Controls Pane.
 
@@ -51,9 +40,9 @@ class FilteringStage():
 
 		# We create the button for the right-most section of the Controls Pane.
 
-		self.applyButton = QPushButton("APPLY")
-		self.applyButton.clicked.connect(self.pressedApplyButton)
-		self.stageControls.addApplyButton(self.applyButton)
+		#self.applyButton = QPushButton("APPLY")
+		#self.applyButton.clicked.connect(self.pressedApplyButton)
+		#self.stageControls.addApplyButton(self.applyButton)
 
 	def pressedApplyButton(self):
 		#Add apply button functionality

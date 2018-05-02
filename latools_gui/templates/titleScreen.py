@@ -175,7 +175,7 @@ class TitleScreen():
 		elif self.newProjectBool:
 			# New project
 			self.projectName = self.nameEdit.text()
-			self.recentProjects.addNew(self.projectName, self.fileLocation)
+			self.recentProjects.load(self.projectName, self.fileLocation)
 			self.project.newFile(self.projectName, self.fileLocation)
 
 		else:

@@ -96,6 +96,7 @@ class RunningProject():
 			else:
 				# The first line that is blank is where the focus of stages screen is set
 				self.importListener.setStageIndex(i - 2)
+
 				return
 
 		# self.eg = la.reproduce(location + name + ".log")
