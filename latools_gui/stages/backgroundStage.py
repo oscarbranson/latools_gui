@@ -142,6 +142,7 @@ class BackgroundStage():
 		self.popupButton = QPushButton("Plot in popup")
 		self.popupButton.clicked.connect(self.pressedPopupButton)
 		self.stageControls.addApplyButton(self.popupButton)
+		self.popupButton.setEnabled(False)
 
 		self.subtractButton = QPushButton("Subtract background")
 		self.subtractButton.clicked.connect(self.pressedSubtractButton)
@@ -283,8 +284,9 @@ class BackgroundStage():
 				self.raiseError("A problem occurred. There may be a problem with the input values.")
 				return
 
-		# The background calculation is now complete, and can now be subtracted
+		# The background calculation is now complete, and can now be subtracted and plotted
 		self.subtractButton.setEnabled(True)
+		self.popupButton.setEnabled(True)
 
 		# Builds a string representation of a dictionary of the current stage values and saves this in project
 		self.project.runStage(3, "{'method' : '" + self.methodOption.currentText() +
@@ -305,13 +307,13 @@ class BackgroundStage():
 	def pressedPopupButton(self):
 		""" Creates a popup for the background calculation when a button is pressed. """
 		# TO DO: ADD POPUP FUNCTIONALITY
+		self.graphPaneObj.showAuxGraph(bkg=True)
 
 	def pressedSubtractButton(self):
 		""" Subtracts an existing background calculation from the project data when a button is pressed. """
 		self.project.eg.bkg_subtract(analytes=None, errtype='stderr', focus_stage='despiked')
 
 		print(list(self.project.eg.data['STD-1'].data.keys()))
-		print(self.project.eg.stages_complete)
 		self.graphPaneObj.updateGraph()
 
 		self.progressPaneObj.setRightEnabled()
