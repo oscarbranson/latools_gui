@@ -77,7 +77,11 @@ class GraphPane():
 		# Initialise graph when importing new data
 		if importing:
 			self.graph.initialiseGraph()
-		self.graph.updateFocus(showRanges)	
+		self.graph.updateFocus(showRanges)
+
+	def showAuxGraph(self, bkg=False):
+		if bkg:
+			self.graph.showBkgPlot()	
 
 class GraphWindow(QWidget):
 	"""
@@ -102,6 +106,7 @@ class GraphWindow(QWidget):
 		self.graphLines = {}
 		self.showRanges = False
 		self.ranges = []
+		self.bkgPlot = None
 
 		layout = QHBoxLayout()
 
@@ -290,7 +295,8 @@ class GraphWindow(QWidget):
 		lv = len(value)
 		rgba = [int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3)] + [int(255/alpha)]
 		srgba = ['{:.0f}'.format(s) for s in rgba]
-		return 'rgba(' + ','.join(srgba) + ')'
+		return rgba
+		#return 'rgba(' + ','.join(srgba) + ')'
 		
 		
 	# function for setting all graph objects at initialisation
@@ -421,5 +427,42 @@ class GraphWindow(QWidget):
 		# self.updateGraphs(ranges=self.ranges)
 		newWin.show()
 
-	def showAuxGraph(self):
-		self.auxGraph = pg.PlotWidget()
+	def showBkgPlot(self, err='stderr'):
+		dat = self.project.eg
+			
+		bkgPlot = pg.PlotWidget(title=self.sampleName)
+		bkgPlot.setWindowTitle("LAtools bkg Plot")
+		bkgPlot.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
+
+		self.bkgScatters = []
+		self.bkgLines = []
+		self.bkgFills = []
+		for analyte in self.project.eg.analytes:
+			sy = dat.bkg['raw'].loc[:, analyte]
+
+			x = dat.bkg['calc']['uTime']
+			y = dat.bkg['calc'][analyte]['mean']
+			yl = dat.bkg['calc'][analyte]['mean'] - dat.bkg['calc'][analyte][err]
+			yu = dat.bkg['calc'][analyte]['mean'] + dat.bkg['calc'][analyte][err]
+
+			if self.yLogCheckBox.isChecked():
+				sy = np.log10(sy)
+				yl = np.log10(yl)
+				yu = np.log10(yu)
+				#y = np.log10(y)
+
+			scatter = pg.ScatterPlotItem(dat.bkg['raw'].uTime, sy, pen=None, brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 2)), size=3)
+			self.bkgScatters.append(scatter)
+			bkgPlot.addItem(scatter)
+
+
+			line = pg.PlotDataItem(x, y, pen=pg.mkPen(dat.cmaps[analyte], width=2), label=analyte, name=analyte, connect='finite')
+			self.bkgLines.append(line)
+			bkgPlot.addItem(line)
+
+			fill = pg.FillBetweenItem(pg.PlotDataItem(x, yl, pen=pg.mkPen(0,0,0,0)), pg.PlotDataItem(x, yu, pen=pg.mkPen(0,0,0,0)), brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 1.25)))
+			self.bkgFills.append(fill)
+			bkgPlot.addItem(fill)
+
+		self.bkgPlot = bkgPlot
+		self.bkgPlot.show()
