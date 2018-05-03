@@ -25,6 +25,8 @@ class GraphPane():
 			This object contains all of the information unique to the current project.
 			The stages update the project object and the graph displays its current state.
 		"""
+		self.project = project
+
 		# We make a frame for this section
 		self.graphFrame = QFrame()
 		self.graphFrame.setFrameShape(QFrame.StyledPanel)
@@ -78,6 +80,7 @@ class GraphPane():
 		if importing:
 			self.graph.initialiseGraph()
 		self.graph.updateFocus(showRanges)
+		self.graph.hideInternalStandard()
 
 	def showAuxGraph(self, bkg=False):
 		if bkg:
@@ -107,6 +110,7 @@ class GraphWindow(QWidget):
 		self.showRanges = False
 		self.ranges = []
 		self.bkgPlot = None
+		self.currentInternalStandard = None
 
 		layout = QHBoxLayout()
 
@@ -346,7 +350,18 @@ class GraphWindow(QWidget):
 		# change line visibility
 		self.graphLines[analyte].setVisible(self.legendEntries[analyte].isChecked())
 
-		self.legendEntries[analyte].setVisible(False)
+	def hideInternalStandard(self):
+		if self.currentInternalStandard != None:
+			self.legendEntries[self.currentInternalStandard].setVisible(True)
+			self.graphLines[self.currentInternalStandard].setVisible(True)
+		analyte = self.project.eg.internal_standard
+		self.currentInternalStandard = analyte
+		if self.focusStage not in ['rawdata', 'despiked', 'bkgsub']:
+			self.legendEntries[analyte].setVisible(False)
+			self.graphLines[analyte].setVisible(False)
+		else:
+			self.legendEntries[analyte].setVisible(True)
+			self.graphLines[analyte].setVisible(True)
 	
 	def updateLines(self):
 		"""
