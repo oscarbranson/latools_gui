@@ -43,15 +43,12 @@ class AutorangeStage():
 		# We set the title and description for the stage
 
 		self.stageControls.setDescription("Autorange", """
-			The first step in data reduction is the ‘de-spike’ the raw data to 
-			remove physically unrealistic outliers from the data (i.e. higher than 
-			is physically possible based on your system setup).
-			The first step in data reduction is the ‘de-spike’ the raw data to 
-			remove physically unrealistic outliers from the data (i.e. higher than 
-			is physically possible based on your system setup).
-			The first step in data reduction is the ‘de-spike’ the raw data to 
-			remove physically unrealistic outliers from the data (i.e. higher than 
-			is physically possible based on your system setup).""")
+			Autorange uses your internal standard to discriminate between signal ("laser on") and background 
+			("laser off") regions. 
+			
+			<p> To see the regions identified as signal and background, change any parameters required, and then click 
+			APPLY.
+			""")
 
 		# The space for the stage options is provided by the Controls Pane.
 
@@ -67,34 +64,49 @@ class AutorangeStage():
 		self.gwinEdit = QLineEdit(self.defaultParams['gwin'])
 		self.optionsGrid.addWidget(QLabel("gwin"), 1, 0)
 		self.optionsGrid.addWidget(self.gwinEdit, 1, 1)
+		self.gwinEdit.setToolTip("The window used for calculating first derivative.")
+
 
 		self.swinEdit = QLineEdit(self.defaultParams['swin'])
 		self.optionsGrid.addWidget(QLabel("swin"), 2, 0)
 		self.optionsGrid.addWidget(self.swinEdit, 2, 1)
+		self.swinEdit.setToolTip("The window used for signal smoothing.")
+
 
 		self.winEdit = QLineEdit(self.defaultParams['win'])
 		self.optionsGrid.addWidget(QLabel("win"), 3, 0)
 		self.optionsGrid.addWidget(self.winEdit, 3, 1)
+		self.winEdit.setToolTip("The width (c +/- win) of the transition data subsets.")
+
 
 		self.on_multEdit1 = QLineEdit("1.0")
 		self.on_multEdit2 = QLineEdit("1.5")
 		self.optionsGrid.addWidget(QLabel("on_mult"), 0, 2)
 		self.optionsGrid.addWidget(self.on_multEdit1, 0, 3)
 		self.optionsGrid.addWidget(self.on_multEdit2, 0, 4)
+		self.on_multEdit1.setToolTip("need text")
+		self.on_multEdit2.setToolTip("need text")
+
 
 		self.off_multEdit1 = QLineEdit("1.5")
 		self.off_multEdit2 = QLineEdit("1.0")
 		self.optionsGrid.addWidget(QLabel("off_mult"), 1, 2)
 		self.optionsGrid.addWidget(self.off_multEdit1, 1, 3)
 		self.optionsGrid.addWidget(self.off_multEdit2, 1, 4)
+		self.off_multEdit1.setToolTip("need text")
+		self.off_multEdit2.setToolTip("need text")
 
 		self.nbinEdit = QLineEdit(self.defaultParams['nbin'])
 		self.optionsGrid.addWidget(QLabel("nbin"), 2, 2)
 		self.optionsGrid.addWidget(self.nbinEdit, 2, 3, 1, 2)
+		self.nbinEdit.setToolTip("Used to calculate the number of bins in the data histogram.")
+
 
 		self.logTransformCheck = QCheckBox("log transform")
 		self.logTransformCheck.setChecked(self.defaultParams['transform'] == 'True')
 		self.optionsGrid.addWidget(self.logTransformCheck, 3, 2, 1, 2)
+		self.logTransformCheck.setToolTip("need text")
+
 
 		# We create the button for the right-most section of the Controls Pane.
 

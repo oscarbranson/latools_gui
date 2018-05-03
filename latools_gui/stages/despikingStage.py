@@ -43,9 +43,20 @@ class DespikingStage():
 		# We set the title and description for the stage
 
 		self.stageControls.setDescription("Data De-spiking", """
-			The first step in data reduction is the ‘de-spike’ the raw data to 
-			remove physically unrealistic outliers from the data (i.e. higher than 
-			is physically possible based on your system setup).""")
+			Despiking remotes all physically unrealistic outliers from your data. There are two despiking methods 
+			available to use, both of which can be applied.			
+
+			<p><b>Exponential decay despiker</b>
+			<p>Removes low outliers, and replaces them with the average of the adjacent values. If you know the 
+			exponetial decay constant of your laser you may specify it; otherwise, leave it blank and LAtools will fit 
+			an exponential decay function to your data for you. 
+			
+			<p><b>Noise despiker</b>
+			<p>Removes high outliers greater than a specified standard deviation from a rolling mean of your data.
+			
+			<p>To graph your selected despiking method/s, click APPLY.
+		
+			""")
 
 		# The space for the stage options is provided by the Controls Pane.
 
@@ -67,6 +78,7 @@ class DespikingStage():
 		self.pane1Exponent = QLineEdit(self.defaultParams['exponent'])
 		self.pane1Layout.addWidget(QLabel("exponent"), 1, 0)
 		self.pane1Layout.addWidget(self.pane1Exponent, 1, 1)
+		self.pane1Exponent.setToolTip("The exponent for the exponential decay filter.")
 
 		#self.pane1Maxiter = QLineEdit(self.defaultParams('maxiter'))
 		#self.pane1Layout.addWidget(QLabel("maxiter"), 2, 0)
@@ -87,14 +99,20 @@ class DespikingStage():
 		self.pane2win = QLineEdit(self.defaultParams['win'])
 		self.pane2Layout.addWidget(QLabel("\'win\'"), 1, 0)
 		self.pane2Layout.addWidget(self.pane2win, 1, 1)
+		self.pane2win.setToolTip("The rolling window over which the spike filter calculates the trace statistics.")
+
 
 		self.pane2nlim = QLineEdit(self.defaultParams['nlim'])
 		self.pane2Layout.addWidget(QLabel("nlim"), 2, 0)
 		self.pane2Layout.addWidget(self.pane2nlim, 2, 1)
+		self.pane2nlim.setToolTip("The number of standard deviations above the rolling mean that data are excluded.")
+
 
 		self.pane2Maxiter = QLineEdit(self.defaultParams['maxiter'])
 		self.pane2Layout.addWidget(QLabel("maxiter"), 3, 0)
 		self.pane2Layout.addWidget(self.pane2Maxiter, 3, 1)
+		self.pane2Maxiter.setToolTip("The maximum number of times that the fitler is applied.")
+
 
 		# We create the button for the right-most section of the Controls Pane.
 

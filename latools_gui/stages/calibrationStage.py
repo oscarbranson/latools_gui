@@ -70,6 +70,8 @@ class CalibrationStage():
 		self.drift_correctOption = QCheckBox("drift_correct")
 		self.drift_correctOption.setChecked(self.defaultParams['drift_correct'] == 'True')
 		self.optionsLeft.addWidget(self.drift_correctOption, 0, 0, 1, 2)
+		self.drift_correctOption.setToolTip("Accounts for sensitivity drift.")
+
 
 		self.optionsRight.addWidget(QLabel("srms_used"))
 		# TO DO: add srms properly from file
@@ -81,10 +83,13 @@ class CalibrationStage():
 		self.zero_interceptOption = QCheckBox("zero_intercept")
 		self.zero_interceptOption.setChecked(self.defaultParams['zero_intercept'] == 'True')
 		self.optionsLeft.addWidget(self.zero_interceptOption, 1, 0)
+		self.zero_interceptOption.setToolTip("need text")
+
 
 		self.n_minOption = QLineEdit(self.defaultParams['n_min'])
 		self.optionsLeft.addWidget(QLabel("n_min"), 2, 0)
 		self.optionsLeft.addWidget(self.n_minOption, 2, 1)
+		self.n_minOption.setToolTip("The minimum number of data points an SRM measurement must have to be included.")
 
 		self.reloadButton = QPushButton("View SRM table")
 		self.reloadButton.clicked.connect(self.pressedReloadButton)

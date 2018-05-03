@@ -23,7 +23,9 @@ To start your analysis session, you will need to load your data. Do this by clic
 
 Configurating LAtools
 =====================
-A configuration stores information about the way your data is formatted, and what SRMs are to be used in your analysis session.
+A configuration stores information about the way your data is formatted, and what SRMs table is to be used in your analysis session. .. one srm table or more?
+
+
 
 If you have not configured your
 
@@ -33,6 +35,8 @@ If you have not configured your
 .. How to create a configuration
 
 
+.. do we need to select an internal standard ?? or is it always ca43 ?
+
 
 Selecting a SRM identifier
 =============================================
@@ -40,7 +44,9 @@ Selecting a SRM identifier
 The SRM identifier is required to help the program separate your sample files and standard files. It may help to set up all your files as suggested in this link.
     .. need to create a page about how users should set up their files
 
-The value for this parameter is defaulted to "STD". This means that all the standard files in your folder contain the string "STD" in their file name. If you do not have a unique identifier in your standards file names, you will need to change this. Do this by opening your project folder, and rename your standards files with "STD", or some other identifier. If you have identified your standards files differently, enter that identifier in the :guilabel:`&SRM Identifier` dialogue box.
+The value for this parameter is defaulted to "STD". This means that all the standard files in your folder contain the string "STD" in their file name. If you do not have a unique identifier in your standards file names, you will need to change this. Do this by opening your project folder, and rename your standards files so they include the string "STD", or some other identifier. If you have identified your standards files, enter your identifier in the :guilabel:`&SRM Identifier` dialogue box.
+
+.. probs need to tell the user where there files are moved/copy to after import?
 
 .. link to http://latools.readthedocs.io/en/latest/users/configuration/srm-file.html#srm-file
 

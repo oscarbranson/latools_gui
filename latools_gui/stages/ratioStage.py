@@ -39,10 +39,8 @@ class RatioStage():
 		# We set the title and description for the stage
 
 		self.stageControls.setDescription("Ratio Calculation", """
-			Next, you must normalise your data to an internal standard
-			The internal standard is specified during data import, but can also be changed 
-			here by specifying internal_standard in ratio(). In this case, the internal 
-			standard is Ca43, so all analytes are divided by Ca43.""")
+			Your data now needs to be converted to ratios using your internal standard. Select your internal standard, 
+			and then click APPLY. >""")
 
 		# The space for the stage options is provided by the Controls Pane.
 		self.optionsGrid = QGridLayout(self.stageControls.getOptionsWidget())

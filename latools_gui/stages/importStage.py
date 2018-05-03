@@ -48,9 +48,17 @@ class ImportStage():
 		# We set the title and description for the stage
 
 		self.stageControls.setDescription("Import Data", """
-			This imports all the data files within the data/ folder into an latools.analyse 
-			object called eg, along with several parameters describing the dataset and how 
-			it should be imported:""")
+			In this stage you will be importing and configuring all the data required for your analysis session. Specifically, you will:
+			<ul>
+			<li style="margin-left:-20px;">  Locate the folder containing your sample and standards data</li>
+			<li style="margin-left:-20px;">  Select or create a configuration</li>
+			<li style="margin-left:-20px;">  Specify your SRM file identifier</li>
+			<li style="margin-left:-20px;">  Specify your file extension</li>
+			</ul>
+			
+			<p>Once specified, graph your sample and standard data by clicking APPLY.
+			
+			""")
 
 		# The space for the stage options is provided by the Controls Pane.
 		self.optionsGrid = QGridLayout(self.stageControls.getOptionsWidget())
@@ -61,7 +69,7 @@ class ImportStage():
 		self.findDataButton.setMaximumWidth(100)
 		self.findDataButton.clicked.connect(self.findDataButtonClicked)
 		self.optionsGrid.addWidget(self.findDataButton,0,0)
-		self.findDataButton.setToolTip("Locate your data files")
+		self.findDataButton.setToolTip("File path to the directory containing the data files.")
 
 		self.fileLocationLine = QLineEdit("./data/")
 		self.optionsGrid.addWidget(self.fileLocationLine, 0, 1)
@@ -74,12 +82,12 @@ class ImportStage():
 
 		self.optionsGrid.addWidget(QLabel("config"), 1,0)
 		self.optionsGrid.addWidget(self.configOption, 1,1)
-		self.configOption.setToolTip("The configuration option")
+		self.configOption.setToolTip("Configuration for your files.")
 
 		self.srm_identifierOption = QLineEdit(self.defaultParams['srm_identifier'])
 		self.optionsGrid.addWidget(QLabel("SRM identifier"), 2, 0)
 		self.optionsGrid.addWidget(self.srm_identifierOption, 2, 1)
-		self.srm_identifierOption.setToolTip("The SRM identifier")
+		self.srm_identifierOption.setToolTip("The string present in the file names of all standards.")
 
 		self.file_extensionOption = QLineEdit(self.defaultParams['extension'])
 		self.optionsGrid.addWidget(QLabel("file extension"), 3, 0)
