@@ -6,6 +6,7 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtCore import QUrl
+import os
 
 class TitleScreen():
 	"""
@@ -314,7 +315,10 @@ class RecentProjects:
 		"""
 
 		# Opens and reads the recentProjects text file.
-		recentFile = open("project/recentProjects.txt", "r")
+		filename = "project/recentProjects.txt"
+		if '_MEIPASS2' in os.environ:
+			filename = os.path.join(os.environ['_MEIPASS2'], filename)
+		recentFile = open(filename, "r")
 
 		# Splits the file into a list of lines
 		self.fileContent = recentFile.read().splitlines()

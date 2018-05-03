@@ -48,7 +48,10 @@ class RunningProject():
 		""" Save overwrites the current save file with the latest file strings """
 
 		# We overwrite the file and write the file strings
-		file = open(self.filePath, "w")
+		filename = self.filePath
+		if '_MEIPASS2' in os.environ:
+			filename = os.path.join(os.environ['_MEIPASS2'], filename)
+		file = open(filename, "w")
 		for line in self.fileStrings:
 			file.write(line + "\n")
 		file.close()
@@ -64,7 +67,10 @@ class RunningProject():
 		self.filePath = location + "/" + name + ".sav"
 
 		# Write a new file with the date and time in the header
-		writeFile = open(self.filePath, "w")
+		filename = self.filePath
+		if '_MEIPASS2' in os.environ:
+			filename = os.path.join(os.environ['_MEIPASS2'], filename)
+		writeFile = open(filename, "w")
 		now = datetime.datetime.now()
 		nowString = "LAtools save file. Created " + now.strftime("%Y-%m-%d %H:%M")
 
@@ -84,7 +90,10 @@ class RunningProject():
 		self.filePath = location + "/" + name + ".sav"
 
 		# Reads the save file to fileStrings
-		file = open(self.filePath, "r")
+		filename = self.filePath
+		if '_MEIPASS2' in os.environ:
+			filename = os.path.join(os.environ['_MEIPASS2'], filename)
+		file = open(filename, "r")
 		self.fileStrings = file.read().splitlines()
 
 		# After the first two lines in the save file, the other lines each represent a dictionary of
