@@ -169,21 +169,16 @@ class DespikingStage():
 			self.raiseError("A problem occurred. There may be a problem with the input values.")
 			return
 
-		print(list(self.project.eg.data['STD-1'].data.keys()))
+		# If the exponential decay despiker is applied without specifying the 'exponent' option, the automatically
+		# calculated value is provided to the exponent textbox.
+		if self.pane1expdecayOption.isChecked():
+			self.pane1Exponent.setText(str(self.project.eg.expdecay_coef[0]))
+
 		self.graphPaneObj.updateGraph()
 		self.progressPaneObj.setRightEnabled()
 
-		# Builds a string representation of a dictionary of the current stage values and saves this in project
-		self.project.runStage(1, "{'expdecay_despiker' : '" + str(self.pane1expdecayOption.isChecked()) +
-							  "', 'exponent' : '" + str(localExponent) +
-							  "', 'noise_despiker' : '" + str(self.pane2NoiseOption.isChecked()) +
-							  "', 'win' : '" + str(localWin) +
-							  "', 'nlim' : '" + str(localNlim) +
-							  "', 'exponentplot' : '" + str(False) +
-							  "', 'maxiter' : '" + str(localMaxiter) +
-							  "'}")
 		# Automatically saves the project
-		self.project.saveButton()
+		#self.project.saveProject()
 
 	def raiseError(self, message):
 		""" Creates an error box with the given message """
@@ -192,23 +187,18 @@ class DespikingStage():
 	def loadValues(self):
 		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
-		# The saved stage string is automatically converted to a dictionary
-		# The number passed to getStageString is this stage's index
-		values = ast.literal_eval(self.project.getStageString(1))
+		# The stage parameters are stored in project as dictionaries
+		params = self.project.getStageParams("despike")
 
-		# Any parameters saved as None should be a blank string for that field
-		for key in values:
-			if values[key] == "None":
-				values[key] = ""
-
-		# Each stage field is updated with the saved values
-		self.pane1expdecayOption.setChecked(values['expdecay_despiker'] == "True")
-		self.pane1Exponent.setText(values['exponent'])
-		self.pane2NoiseOption.setChecked(values['noise_despiker'] == "True")
-		self.pane2win.setText(values['win'])
-		self.pane2nlim.setText(values['nlim'])
-		# exponentplot value?
-		self.pane2Maxiter.setText(values['maxiter'])
+		# The stage parameters are applied to the input fields
+		if params is not None:
+			self.pane1expdecayOption.setChecked(params.get("expdecay_despiker", False))
+			self.pane1Exponent.setText(params.get("exponent", ""))
+			self.pane2NoiseOption.setChecked(params.get("noise_despiker", True))
+			self.pane2win.setText(str(params.get("win", "")))
+			self.pane2nlim.setText(str(params.get("nlim", "")))
+			# exponentplot value?
+			self.pane2Maxiter.setText(str(params.get("maxiter", 4)))
 
 		# The loading process then activates the stage's apply command
 		self.pressedApplyButton()

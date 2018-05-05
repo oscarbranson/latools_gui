@@ -39,6 +39,7 @@ class CalibrationStage():
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 		self.srmfile = None
+		self.srmList = []
 
 		# We capture the default parameters for this stage's function call
 		self.defaultParams = self.stageControls.getDefaultParameters(inspect.signature(la.analyse.calibrate))
@@ -74,11 +75,6 @@ class CalibrationStage():
 
 
 		self.optionsRight.addWidget(QLabel("srms_used"))
-		# TO DO: add srms properly from file
-		self.optionsRight.addWidget(QCheckBox("NIST610"))
-		self.optionsRight.addWidget(QCheckBox("NIST612"))
-		self.optionsRight.addWidget(QCheckBox("NIST614"))
-		self.optionsRight.addStretch(1)
 
 		self.zero_interceptOption = QCheckBox("zero_intercept")
 		self.zero_interceptOption.setChecked(self.defaultParams['zero_intercept'] == 'True')
@@ -113,11 +109,18 @@ class CalibrationStage():
 				self.raiseError("The 'n_min' value must be an integer")
 				return
 
+		my = QCheckBox("hi")
+
+		srmParam = []
+		for srm in self.srmList:
+			if srm[0].isChecked():
+				srmParam.append(srm[1])
+
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		try:
 			self.project.eg.calibrate(analytes=None,
 								drift_correct=self.drift_correctOption.isChecked(),
-								srms_used=['NIST610', 'NIST612', 'NIST614'],
+								srms_used=srmParam,
 								zero_intercept=self.zero_interceptOption.isChecked(),
 								n_min=myn_min)
 		except:
@@ -128,13 +131,8 @@ class CalibrationStage():
 
 		self.progressPaneObj.setRightEnabled()
 
-		# Builds a string representation of a dictionary of the current stage values and saves this in project
-		self.project.runStage(5, "{'drift_correct' : '" + str(self.drift_correctOption.isChecked()) +
-							  "', 'zero_intercept' : '" + str(self.zero_interceptOption.isChecked()) +
-							  "', 'n_min' : '" + self.n_minOption.text() +
-							  "'}")
 		# Automatically saves the project
-		self.project.saveButton()
+		#self.project.saveProject()
 
 	def pressedReloadButton(self):
 		""" Performs a reload when the button is pressed. """
@@ -148,6 +146,14 @@ class CalibrationStage():
 		""" Updates the stage after data is imported at runtime """
 		self.srmfile = self.project.eg.srmfile
 
+		srms = la.helpers.srm.get_defined_srms(self.project.eg.srmfile)
+
+		for i in range(len(srms)):
+			self.srmList.append((QCheckBox(srms[i]), srms[i]))
+			self.srmList[i][0].setChecked(True)
+			self.optionsRight.addWidget(self.srmList[i][0])
+		self.optionsRight.addStretch(1)
+
 	def raiseError(self, message):
 		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.calibrationWidget, "Error", message, QMessageBox.Ok)
@@ -155,19 +161,28 @@ class CalibrationStage():
 	def loadValues(self):
 		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
-		# The saved stage string is automatically converted to a dictionary
-		# The number passed to getStageString is this stage's index
-		values = ast.literal_eval(self.project.getStageString(5))
+		# The stage parameters are stored in project as dictionaries
+		params = self.project.getStageParams("calibrate")
 
-		# Any parameters saved as None should be a blank string for that field
-		for key in values:
-			if values[key] == "None":
-				values[key] = ""
+		# The stage parameters are applied to the input fields
+		if params is not None:
+			self.drift_correctOption.setChecked(params.get("drift_correct", True))
+			self.zero_interceptOption.setChecked(params.get("zero_intercept", True))
+			self.n_minOption.setText(str(params.get("n_min", 10)))
 
-		# Each stage field is updated with the saved values
-		self.drift_correctOption.setChecked(values['drift_correct'] == "True")
-		self.zero_interceptOption.setChecked(values['zero_intercept'] == "True")
-		self.n_minOption.setText(values['n_min'])
+			# Setting the srms_used, we get the saved list of strings
+			srms = params.get("srms_used", None)
+			if srms is not None:
+
+				# All srms are turned off
+				for box in self.srmList:
+					box[0].setChecked(False)
+
+				# The listed srms are turned on
+				for srmString in srms:
+					for box in self.srmList:
+						if box[1] == srmString:
+							box[0].setChecked(True)
 
 		# The loading process then activates the stage's apply command
 		self.pressedApplyButton()

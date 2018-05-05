@@ -1,6 +1,2 @@
-MosesTest4*C:/Users/koh_m/Desktop/LatoolsTest
-MosesTest3*C:/Users/koh_m/Desktop/LatoolsTest
-MosesTest2*C:/Users/koh_m/Desktop/LatoolsTest
-test21*/Users/simon/Documents/Uni
-test22*/Users/simon/Documents/Uni
-MosesTest1*C:/Users/koh_m/Desktop/LatoolsTest
+test62*/Users/simon/Documents/Uni
+

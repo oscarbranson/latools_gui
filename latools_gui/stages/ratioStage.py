@@ -66,14 +66,9 @@ class RatioStage():
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		self.project.eg.ratio(internal_standard=self.internal_standardOption.currentText())
 
-		# Builds a string representation of a dictionary of the current stage values and saves this in project
-		self.project.runStage(4, "{'internal_standard' : '" + self.internal_standardOption.currentText() + "'}")
 		# Automatically saves the project
-		self.project.saveButton()
-
-		print(list(self.project.eg.data['STD-1'].data.keys()))
+		#self.project.saveProject()
 		self.graphPaneObj.updateGraph()
-
 		self.progressPaneObj.setRightEnabled()
 
 	def updateStageInfo(self):
@@ -90,12 +85,13 @@ class RatioStage():
 	def loadValues(self):
 		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
-		# The saved stage string is automatically converted to a dictionary
-		# The number passed to getStageString is this stage's index
-		values = ast.literal_eval(self.project.getStageString(4))
+		# The stage parameters are stored in project as dictionaries
+		params = self.project.getStageParams("ratio")
 
-		# Each stage field is updated with the saved values
-		self.internal_standardOption.setCurrentText(values['internal_standard'])
+		# The stage parameters are applied to the input fields
+		if params is not None:
+			self.internal_standardOption.setCurrentText(params.get("internal_standard", ""))
+			self.internal_standardClicked()
 
 		# The loading process then activates the stage's apply command
 		self.pressedApplyButton()

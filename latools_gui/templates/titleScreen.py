@@ -27,12 +27,13 @@ class TitleScreen():
 
 		self.parentStack = stack
 		self.project = project
-		self.fileLocation = None
+		self.fileLocation = ""
 		self.projectName = None
 		self.loadProjectBool = False
 		self.importListener = None
 		self.nameOK = False
-		self.locationOK = False
+
+		# self.locationOK = False
 
 		# The layout is created from the mainWidget
 		self.mainLayout = QVBoxLayout(self.mainWidget)
@@ -94,19 +95,19 @@ class TitleScreen():
 		self.nameEdit.setVisible(False)
 		self.nameEdit.setMaxLength(60)
 
-		self.locationLabel = QLabel("Save location:")
-		self.titleGrid.addWidget(self.locationLabel, 3, 0)
-		self.locationLabel.setVisible(False)
+		# self.locationLabel = QLabel("Save location:")
+		# self.titleGrid.addWidget(self.locationLabel, 3, 0)
+		# self.locationLabel.setVisible(False)
 
-		self.newBrowse = QPushButton("Browse")
-		self.titleGrid.addWidget(self.newBrowse, 3, 1)
-		self.newBrowse.setVisible(False)
-		self.newBrowse.clicked.connect(self.newBrowseClick)
+		# self.newBrowse = QPushButton("Browse")
+		# self.titleGrid.addWidget(self.newBrowse, 3, 1)
+		# self.newBrowse.setVisible(False)
+		# self.newBrowse.clicked.connect(self.newBrowseClick)
 
-		self.newLocation = QLineEdit()
-		self.titleGrid.addWidget(self.newLocation, 4, 0, 1, 2)
-		self.newLocation.setVisible(False)
-		self.newLocation.setEnabled(False)
+		# self.newLocation = QLineEdit()
+		# self.titleGrid.addWidget(self.newLocation, 4, 0, 1, 2)
+		# self.newLocation.setVisible(False)
+		# self.newLocation.setEnabled(False)
 
 		self.backButton = QPushButton("Back")
 		self.backButton.clicked.connect(self.backButtonClick)
@@ -141,6 +142,7 @@ class TitleScreen():
 		self.mainLayout.addItem(self.bottomSpacer)
 
 		self.recentProjects = RecentProjects(self.recentDropdown)
+
 
 	def setImportListener(self, importListener):
 		"""
@@ -177,14 +179,19 @@ class TitleScreen():
 			# New project
 			self.projectName = self.nameEdit.text()
 			self.recentProjects.load(self.projectName, self.fileLocation)
-			self.project.newFile(self.projectName, self.fileLocation)
+			self.project.newFile(self.projectName, None)
 
 		else:
 			# Dropdown selected
 			self.projectName = self.recentDropdown.currentText()
 			self.fileLocation = self.recentProjects.getLocation(self.recentDropdown.currentIndex() - 1)
 			self.recentProjects.reorderDropdown(self.recentDropdown.currentIndex() - 1)
-			self.project.loadFile(self.projectName, self.fileLocation)
+			try:
+				self.project.loadFile(self.projectName, self.fileLocation)
+			except:
+				message = "The .lalog file could not be found."
+				errorBox = QMessageBox.critical(self.mainWidget, "Error", message, QMessageBox.Ok)
+				return
 
 		# The project title is delivered to the stages screen
 		self.importListener.setTitle(self.projectName)
@@ -202,9 +209,9 @@ class TitleScreen():
 		self.nameLabel.setVisible(True)
 		self.nameEdit.setVisible(True)
 		self.backButton.setVisible(True)
-		self.locationLabel.setVisible(True)
-		self.newBrowse.setVisible(True)
-		self.newLocation.setVisible(True)
+		# self.locationLabel.setVisible(True)
+		# self.newBrowse.setVisible(True)
+		# self.newLocation.setVisible(True)
 		self.nextButton.setEnabled(False)
 
 	def openButtonClick(self):
@@ -225,8 +232,8 @@ class TitleScreen():
 			self.projectName = locationSplit[-1]
 
 			# We check that its extension is .sav
-			if self.projectName[-4:] != ".sav":
-				message = "file must have extension '.sav'"
+			if self.projectName[-6:] != ".lalog":
+				message = "file must have extension '.lalog'"
 				errorBox = QMessageBox.critical(self.mainWidget, "Error", message, QMessageBox.Ok)
 				return
 
@@ -234,7 +241,7 @@ class TitleScreen():
 			self.fileLocation = loadLocation[0][0:-(len(self.projectName) + 1)]
 
 			# We drop the extension from the file name for the project title
-			self.projectName = self.projectName[0:-4]
+			self.projectName = self.projectName[0:-6]
 
 			# recentProjects handles adding or updating this project in the list of recent projects
 			self.recentProjects.load(self.projectName, self.fileLocation)
@@ -260,9 +267,9 @@ class TitleScreen():
 		self.nameLabel.setVisible(False)
 		self.nameEdit.setVisible(False)
 		self.backButton.setVisible(False)
-		self.locationLabel.setVisible(False)
-		self.newBrowse.setVisible(False)
-		self.newLocation.setVisible(False)
+		# self.locationLabel.setVisible(False)
+		# self.newBrowse.setVisible(False)
+		# self.newLocation.setVisible(False)
 		self.nextButton.setEnabled(False)
 		self.recentDropdown.setCurrentIndex(0)
 
@@ -282,23 +289,23 @@ class TitleScreen():
 			self.nameOK = False
 
 		# Only when the name and location are okay, is the begin button enabled
-		self.nextButton.setEnabled(self.nameOK and self.locationOK)
+		self.nextButton.setEnabled(self.nameOK)
 
 	def helpButtonClick(self):
 		""" Link to online user guide """
 		url = QUrl("https://github.com/oscarbranson/latools")
 		QDesktopServices.openUrl(url)
 
-	def newBrowseClick(self):
-		""" The file browser dialog for selecting where a new file will be saved """
-		self.fileLocation = QFileDialog.getExistingDirectory(self.mainWidget, 'Open file', '/home')
-
-		# If cancel was not pressed, set the location
-		if self.fileLocation != '':
-			self.newLocation.setText(self.fileLocation)
-			self.locationOK = True
-
-			self.nextButton.setEnabled(self.nameOK and self.locationOK)
+	# def newBrowseClick(self):
+	# 	""" The file browser dialog for selecting where a new file will be saved """
+	# 	self.fileLocation = QFileDialog.getExistingDirectory(self.mainWidget, 'Open file', '/home')
+	#
+	# 	# If cancel was not pressed, set the location
+	# 	if self.fileLocation != '':
+	# 		self.newLocation.setText(self.fileLocation)
+	# 		self.locationOK = True
+	#
+	# 		self.nextButton.setEnabled(self.nameOK and self.locationOK)
 
 class RecentProjects:
 	"""
@@ -385,3 +392,7 @@ class RecentProjects:
 	def getLocation(self, index):
 		""" Given the index of a project in the recent list, returns the file location """
 		return self.splitContent[index][1]
+
+	def updateLocation(self, name, location):
+		self.fileContent[0] = name + "*" + location
+		self.reorderDropdown(0)

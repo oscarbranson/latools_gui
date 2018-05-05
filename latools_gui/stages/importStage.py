@@ -118,14 +118,8 @@ class ImportStage():
 			if not self.importListener is None:
 				self.importListener.dataImported()
 
-			# Builds a string representation of a dictionary of the current stage values and saves this in project
-			self.project.runStage(0, "{'data_folder' : '" + self.fileLocationLine.text() +
-								  "', 'config' : '" + self.configOption.currentText() +
-								  "', 'extension' : '" + self.file_extensionOption.text() +
-								  "', 'srm_identifier' : '" + self.srm_identifierOption.text() +
-								  "'}")
-			# Automatically saves the project
-			self.project.saveButton()
+			self.project.setDataLocation(self.fileLocationLine.text())
+			self.project.reSave()
 		except:
 			print("An error occured")
 
@@ -147,15 +141,15 @@ class ImportStage():
 	def loadValues(self):
 		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
-		# The saved stage string is automatically converted to a dictionary
-		# The number passed to getStageString is this stage's index
-		values = ast.literal_eval(self.project.getStageString(0))
+		# The stage parameters are stored in project as dictionaries
+		params = self.project.getStageParams("import")
 
-		# Each stage field is updated with the saved values
-		self.fileLocationLine.setText(values['data_folder'])
-		self.configOption.setCurrentText(values['config'])
-		self.file_extensionOption.setText(values['extension'])
-		self.srm_identifierOption.setText(values['srm_identifier'])
+		# The stage parameters are applied to the input fields
+		if params is not None:
+			self.fileLocationLine.setText(params.get("data_folder", ""))
+			self.configOption.setCurrentText(params.get("config", ""))
+			self.file_extensionOption.setText(params.get("extension", ""))
+			self.srm_identifierOption.setText(params.get("srm_identifier", ""))
 
 		# The loading process then activates the stage's apply command
 		self.pressedApplyButton()

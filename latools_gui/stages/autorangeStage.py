@@ -183,27 +183,13 @@ class AutorangeStage():
 			self.raiseError("A problem occurred. There may be a problem with the input values.")
 			return
 
-		print(list(self.project.eg.data['STD-1'].data.keys()))
-		
 		self.graphPaneObj.updateGraph(showRanges=True)
 
 		# When the stage's processing is complete, the right button is enabled for the next stage.
 		self.progressPaneObj.setRightEnabled()
 
-		# Builds a string representation of a dictionary of the current stage values and saves this in project
-		self.project.runStage(2, "{'analyte' : '" + self.analyteBox.currentText() +
-							  "', 'gwin' : '" + str(localGwin) +
-							  "', 'swin' : '" + str(localSwin) +
-							  "', 'win' : '" + str(localWin) +
-							  "', 'on_mult1' : '" + self.on_multEdit1.text() +
-							  "', 'on_mult2' : '" + self.on_multEdit2.text() +
-							  "', 'off_mult1' : '" + self.off_multEdit1.text() +
-							  "', 'off_mult2' : '" + self.off_multEdit2.text() +
-							  "', 'nbin' : '" + str(localNbin) +
-							  "', 'transform' : '" + str(self.logTransformCheck.isChecked()) +
-							  "'}")
 		# Automatically saves the project
-		self.project.saveButton()
+		#self.project.saveProject()
 
 	def updateStageInfo(self):
 		""" The analyte dropdown can only be built once data is imported at runtime """
@@ -217,26 +203,21 @@ class AutorangeStage():
 	def loadValues(self):
 		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
-		# The saved stage string is automatically converted to a dictionary
-		# The number passed to getStageString is this stage's index
-		values = ast.literal_eval(self.project.getStageString(2))
+		# The stage parameters are stored in project as dictionaries
+		params = self.project.getStageParams("autorange")
 
-		# Any parameters saved as None should be a blank string for that field
-		for key in values:
-			if values[key] == "None":
-				values[key] = ""
-
-		# Each stage field is updated with the saved values
-		self.analyteBox.setCurrentText(values['analyte'])
-		self.gwinEdit.setText(values['gwin'])
-		self.swinEdit.setText(values['swin'])
-		self.winEdit.setText(values['win'])
-		self.on_multEdit1.setText(values['on_mult1'])
-		self.on_multEdit2.setText(values['on_mult2'])
-		self.off_multEdit1.setText(values['off_mult1'])
-		self.off_multEdit2.setText(values['off_mult2'])
-		self.nbinEdit.setText(values['nbin'])
-		self.logTransformCheck.setChecked(values['transform'] == "True")
+		# The stage parameters are applied to the input fields
+		if params is not None:
+			self.analyteBox.setCurrentText(params.get("analyte", "total_counts"))
+			self.gwinEdit.setText(str(params.get("gwin", 5)))
+			self.swinEdit.setText(str(params.get("swin", 3)))
+			self.winEdit.setText(str(params.get("win", 20)))
+			self.on_multEdit1.setText(str(params.get("on_mult", [1.0, 1.5])[0]))
+			self.on_multEdit2.setText(str(params.get("on_mult", [1.0, 1.5])[1]))
+			self.off_multEdit1.setText(str(params.get("off_mult", [1.5, 1.0])[0]))
+			self.off_multEdit2.setText(str(params.get("off_mult", [1.5, 1.0])[1]))
+			self.nbinEdit.setText(str(params.get("nbin", 10)))
+			self.logTransformCheck.setChecked(params.get("transform", False))
 
 		# The loading process then activates the stage's apply command
 		self.pressedApplyButton()

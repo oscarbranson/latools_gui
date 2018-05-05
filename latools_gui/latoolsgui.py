@@ -63,10 +63,12 @@ class MainWindow(QMainWindow):
 
 		# We create an instance of a Running Project to store in one place all of the analysis that will be
 		# performed in this project
-		self.project = runningProject.RunningProject()
+		self.project = runningProject.RunningProject(self.mainWidget)
 
 		# Here we create a title screen object from the file in templates
 		self.titleScreenObj = titleScreen.TitleScreen(self.mainStack, self.project)
+		self.project.addRecentProjects(self.titleScreenObj.recentProjects)
+
 		# And it is added to the mainstack in position 0.
 		self.mainStack.addWidget(self.titleScreenObj.getPane())
 
@@ -164,6 +166,8 @@ class MainWindow(QMainWindow):
 		self.progressPaneObj.addToLayout(self.stageScreenLayout)
 		self.graphPaneObj.addToLayout(self.stageScreenLayout)
 
+		self.quitting = False
+
 	def initFileMenu(self):
 		""" Builds and displays the file menu"""
 
@@ -177,21 +181,21 @@ class MainWindow(QMainWindow):
 		loadFile.setStatusTip('Load File')
 		# loadFile.triggered.connect()
 
-		exportFile = QAction(QIcon('export.png'), 'Export', self)
-		exportFile.setStatusTip('Export Project')
-		exportFile.triggered.connect(self.exportButton)
+		# exportFile = QAction(QIcon('export.png'), 'Export', self)
+		# exportFile.setStatusTip('Export Project')
+		# exportFile.triggered.connect(self.exportButton)
 
-		exitAct = QAction(QIcon('exit.png'), 'Exit', self)
-		exitAct.setShortcut('Ctrl+Q')
-		exitAct.setStatusTip('Exit application')
-		exitAct.triggered.connect(qApp.quit)
+		# exitAct = QAction(QIcon('exit.png'), 'Exit', self)
+		# exitAct.setShortcut('Ctrl+Q')
+		# exitAct.setStatusTip('Exit application')
+		# exitAct.triggered.connect(qApp.quit)
 
 		menubar = self.menuBar()
 		fileMenu = menubar.addMenu('&File')
 		fileMenu.addAction(saveFile)
 		fileMenu.addAction(loadFile)
-		fileMenu.addAction(exportFile)
-		fileMenu.addAction(exitAct)
+		# fileMenu.addAction(exportFile)
+		# fileMenu.addAction(exitAct)
 
 		makeConfig = QAction(QIcon('open.png'), 'Make', self)
 		makeConfig.setStatusTip('Make a new configuration')
@@ -202,12 +206,30 @@ class MainWindow(QMainWindow):
 
 	def saveButton(self):
 		""" Runs the save command on the current running project """
-		self.project.saveButton()
+		self.project.saveProject()
 
 	def exportButton(self):
 		""" Runs the export command on the current running project """
 		if self.project.eg is not None:
 			self.project.eg.minimal_export()
+
+	def closeEvent(self, event):
+
+		# If we are not on the title page...
+		if self.mainStack.currentIndex() != 0 and not self.quitting:
+			self.quitting = True
+			reply = QMessageBox.question(self, 'Message',
+										"Would you like to save before quitting?", QMessageBox.Yes |
+										QMessageBox.No | QMessageBox.Cancel, QMessageBox.Cancel)
+
+			if reply == QMessageBox.Yes:
+				self.project.saveProject()
+				event.accept()
+			elif reply == QMessageBox.No:
+				event.accept()
+			else:
+				self.quitting = False
+				event.ignore()
 
 class ImportListener():
 	""" Handles the passing of information between modules during runtime """

@@ -303,34 +303,18 @@ class BackgroundStage():
 		self.subtractButton.setEnabled(True)
 		self.popupButton.setEnabled(True)
 
-		# Builds a string representation of a dictionary of the current stage values and saves this in project
-		self.project.runStage(3, "{'method' : '" + self.methodOption.currentText() +
-							  "', 'weight_fwhm' : '" + self.weight_fwhmOption.text() +
-							  "', 'n_min' : '" + self.n_minOption.text() +
-							  "', 'n_max' : '" + self.n_maxOption.text() +
-							  "', 'kind' : '" + self.kindOption.text() +
-							  "', 'n_min2' : '" + self.n_minOption2.text() +
-							  "', 'n_max2' : '" + self.n_maxOption2.text() +
-							  "', 'cstep' : '" + self.cstepOption.text() +
-							  "', 'bkg_filter' : '" + str(self.bkg_filterOption.isChecked()) +
-							  "', 'f_win' : '" + self.f_winOption.text() +
-							  "', 'f_n_lim' : '" + self.f_n_limOption.text() +
-							  "'}")
 		# Automatically saves the project
-		self.project.saveButton()
+		#self.project.saveProject()
 
 	def pressedPopupButton(self):
 		""" Creates a popup for the background calculation when a button is pressed. """
-		# TO DO: ADD POPUP FUNCTIONALITY
+
 		self.graphPaneObj.showAuxGraph(bkg=True)
 
 	def pressedSubtractButton(self):
 		""" Subtracts an existing background calculation from the project data when a button is pressed. """
 		self.project.eg.bkg_subtract(analytes=None, errtype='stderr', focus_stage='despiked')
-
-		print(list(self.project.eg.data['STD-1'].data.keys()))
 		self.graphPaneObj.updateGraph()
-
 		self.progressPaneObj.setRightEnabled()
 
 	def methodUpdate(self):
@@ -359,27 +343,39 @@ class BackgroundStage():
 	def loadValues(self):
 		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
-		# The saved stage string is automatically converted to a dictionary
-		# The number passed to getStageString is this stage's index
-		values = ast.literal_eval(self.project.getStageString(3))
+		# The stage parameters are stored in project as dictionaries
+		params = self.project.getStageParams("bkg_calc_weightedmean")
 
-		# Any parameters saved as None should be a blank string for that field
-		for key in values:
-			if values[key] == "None":
-				values[key] = ""
+		# The stage parameters are applied to the input fields
+		# bkg_calc_weightedmean, or bkg_calc_interp1d will be in stageParams dictionary, but not both.
+		# We define all stage values based on which entry exists (ie. was performed most recently)
+		if params is not None:
+			self.methodOption.setCurrentText("bkg_calc_weightedmean")
 
-		# Each stage field is updated with the saved values
-		self.methodOption.setCurrentText(values['method'])
-		self.weight_fwhmOption.setText(values['weight_fwhm'])
-		self.n_minOption.setText(values['n_min'])
-		self.n_maxOption.setText(values['n_max'])
-		self.kindOption.setText(values['kind'])
-		self.n_minOption2.setText(values['n_min2'])
-		self.n_maxOption2.setText(values['n_max2'])
-		self.cstepOption.setText(values['cstep'])
-		self.bkg_filterOption.setChecked(values['bkg_filter'] == "True")
-		self.f_winOption.setText(values['f_win'])
-		self.f_n_limOption.setText(values['f_n_lim'])
+			self.weight_fwhmOption.setText(str(params.get("weight_fwhm", "")))
+			self.n_minOption.setText(str(params.get("n_min", 20)))
+			self.n_maxOption.setText(str(params.get("n_max", "")))
+
+			self.cstepOption.setText(str(params.get("cstep", "")))
+			self.bkg_filterOption.setChecked(params.get("bkg_filter", False))
+			self.f_winOption.setText(str(params.get("f_win", 7)))
+			self.f_n_limOption.setText(str(params.get("f_n_lim", 3)))
+
+		else:
+			params = self.project.getStageParams("bkg_calc_interp1d")
+			if params is not None:
+				self.methodOption.setCurrentText("bkg_calc_interp1d")
+
+				self.kindOption.setText(str(params.get("kind", 1)))
+				self.n_minOption2.setText(str(params.get("n_min", 10)))
+				self.n_maxOption2.setText(str(params.get("n_max", "")))
+
+				self.cstepOption.setText(str(params.get("cstep", "")))
+				self.bkg_filterOption.setChecked(params.get("bkg_filter", False))
+				self.f_winOption.setText(str(params.get("f_win", 7)))
+				self.f_n_limOption.setText(str(params.get("f_n_lim", 3)))
+
+				self.methodUpdate()
 
 		# The loading process then activates the stage's apply command
 		self.pressedCalcButton()
