@@ -188,8 +188,8 @@ class AutorangeStage():
 		# When the stage's processing is complete, the right button is enabled for the next stage.
 		self.progressPaneObj.setRightEnabled()
 
-		# Automatically saves the project
-		#self.project.saveProject()
+		# Automatically saves the project if it already has a save location
+		self.project.reSave()
 
 	def updateStageInfo(self):
 		""" The analyte dropdown can only be built once data is imported at runtime """

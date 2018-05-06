@@ -394,5 +394,5 @@ class RecentProjects:
 		return self.splitContent[index][1]
 
 	def updateLocation(self, name, location):
-		self.fileContent[0] = name + "*" + location
-		self.reorderDropdown(0)
+		self.fileContent.append(name + "*" + location)
+		self.reorderDropdown(len(self.fileContent) - 1)

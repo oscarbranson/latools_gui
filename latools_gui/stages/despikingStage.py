@@ -177,8 +177,8 @@ class DespikingStage():
 		self.graphPaneObj.updateGraph()
 		self.progressPaneObj.setRightEnabled()
 
-		# Automatically saves the project
-		#self.project.saveProject()
+		# Automatically saves the project if it already has a save location
+		self.project.reSave()
 
 	def raiseError(self, message):
 		""" Creates an error box with the given message """

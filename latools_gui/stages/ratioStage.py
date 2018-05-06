@@ -66,8 +66,9 @@ class RatioStage():
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		self.project.eg.ratio(internal_standard=self.internal_standardOption.currentText())
 
-		# Automatically saves the project
-		#self.project.saveProject()
+		# Automatically saves the project if it already has a save location
+		self.project.reSave()
+
 		self.graphPaneObj.updateGraph()
 		self.progressPaneObj.setRightEnabled()
 

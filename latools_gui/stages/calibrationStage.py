@@ -131,8 +131,8 @@ class CalibrationStage():
 
 		self.progressPaneObj.setRightEnabled()
 
-		# Automatically saves the project
-		#self.project.saveProject()
+		# Automatically saves the project if it already has a save location
+		self.project.reSave()
 
 	def pressedReloadButton(self):
 		""" Performs a reload when the button is pressed. """

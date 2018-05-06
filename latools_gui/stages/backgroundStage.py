@@ -303,8 +303,8 @@ class BackgroundStage():
 		self.subtractButton.setEnabled(True)
 		self.popupButton.setEnabled(True)
 
-		# Automatically saves the project
-		#self.project.saveProject()
+		# Automatically saves the project if it already has a save location
+		self.project.reSave()
 
 	def pressedPopupButton(self):
 		""" Creates a popup for the background calculation when a button is pressed. """
