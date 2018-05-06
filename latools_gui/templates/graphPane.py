@@ -285,7 +285,7 @@ class GraphWindow(QWidget):
               'ratios': 'counts/{:s} count',
               'calibrated': 'mol/mol {:s}'}
 		
-		ylabel = ud[self.focusStage]
+		ylabel = ud[self.focusStage].format(self.project.eg.internal_standard)
 		if self.focusStage in ['ratios', 'calibrated']:
 			ylabel.format(self.project.eg.internal_standard)
 

@@ -1,2 +1,4 @@
+MosesTest*
+MosesTest1*
 test62*/Users/simon/Documents/Uni
 
