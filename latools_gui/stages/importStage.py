@@ -119,6 +119,8 @@ class ImportStage():
 				self.importListener.dataImported()
 
 			self.project.setDataLocation(self.fileLocationLine.text())
+
+			# Automatically saves the project if it already has a save location
 			self.project.reSave()
 		except:
 			print("An error occured")

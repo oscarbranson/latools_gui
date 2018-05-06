@@ -53,19 +53,19 @@ class RunningProject():
 				location = self.dataLocation
 
 			dialogLocaton = QFileDialog.getExistingDirectory(self.mainWidget, 'Open file', location)
-			print(dialogLocaton)
 			# If cancel was not pressed, set the location
 			if dialogLocaton != '':
 				self.folder = dialogLocaton
 				self.hasSaved = True
+				self.recentProjects.updateLocation(self.fileName, self.folder)
 			else:
 				return
-		self.recentProjects.updateLocation(self.fileName, self.folder)
+
 		if self.eg is None:
 			return
 
 		if self.folder is not None:
-			self.eg.save_log(self.folder)
+			self.eg.save_log(self.folder, self.fileName + ".lalog")
 		else:
 			print("failed to save")
 
@@ -86,7 +86,7 @@ class RunningProject():
 		self.hasSaved = True
 
 		# We open the log file and split into lines
-		logName = location + "/analysis.lalog"
+		logName = location + "/" + name + ".lalog"
 		logFile = open(logName, "r")
 		logFileStrings = logFile.read().splitlines()
 
@@ -132,7 +132,6 @@ class RunningProject():
 			if "ratio :: args=() kwargs=" in line:
 				subLine = line.replace("ratio :: args=() kwargs=", "")
 				self.stageParams["ratio"] = ast.literal_eval(subLine)
-				print(self.stageParams["ratio"])
 				self.updateLastStage(4)
 
 			if "calibrate :: args=() kwargs=" in line:
