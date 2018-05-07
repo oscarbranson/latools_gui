@@ -109,6 +109,7 @@ class GraphWindow(QWidget):
 		self.graphLines = {}
 		self.showRanges = False
 		self.ranges = []
+		self.highlightedAnalytes = []
 		self.bkgPlot = None
 		self.currentInternalStandard = None
 
@@ -185,15 +186,9 @@ class GraphWindow(QWidget):
 
 		settingLayout.addWidget(scroll)
 		###
-		resetButton = QPushButton('Reset')
-		resetButton.clicked.connect(self.resetColours)
-		settingLayout.addWidget(resetButton)
-
-		# Add new window button
-		newwindowButton = QPushButton("New Window")
-		newwindowButton.hide()
-		newwindowButton.clicked.connect(self.makeWindow)
-		settingLayout.addWidget(newwindowButton)
+		toggleButton = QPushButton('Toggle Legend Items')
+		toggleButton.clicked.connect(self.toggleLegendItems)
+		settingLayout.addWidget(toggleButton)
 
 		self.setting = settingLayout
 
@@ -326,7 +321,7 @@ class GraphWindow(QWidget):
 		"""
 		# sets current sample to selected sample
 		selectedSamples = self.sampleList.selectedItems()
-		if selectedSamples != []:
+		if len(selectedSamples) > 0:
 			selectedSample = selectedSamples[0]
 			self.sampleName = selectedSample.text()
 
@@ -409,18 +404,33 @@ class GraphWindow(QWidget):
 				The plotDataItem that was clicked
 
 		"""
-		for a in self.project.eg.analytes:
-			if a != analyte:
-				self.graphLines[a].curve.setPen(pg.mkPen(self.project.eg.cmaps[a], width=0.5))
-				self.legendEntries[a].setStyleSheet("color: {:s}".format(self.project.eg.cmaps[a]))
-			else:
-				self.graphLines[a].curve.setPen(pg.mkPen(self.project.eg.cmaps[a], width=3))
-				self.legendEntries[a].setStyleSheet("color: white; background-color: {:s}".format(self.project.eg.cmaps[a]))
+		if analyte in self.highlightedAnalytes:
+			self.highlightedAnalytes.remove(analyte)
+		else:
+			self.highlightedAnalytes.append(analyte)
+		if len(self.highlightedAnalytes) > 0:
+			for a in self.project.eg.analytes:
+				if a not in self.highlightedAnalytes:
+					self.graphLines[a].curve.setPen(pg.mkPen(self.project.eg.cmaps[a], width=0.5))
+					self.legendEntries[a].setStyleSheet("color: {:s}".format(self.project.eg.cmaps[a]))
+				else:
+					self.graphLines[a].curve.setPen(pg.mkPen(self.project.eg.cmaps[a], width=3))
+					self.legendEntries[a].setStyleSheet("color: white; background-color: {:s}".format(self.project.eg.cmaps[a]))
+		else:
+			self.resetColours()
 	
 	def resetColours(self):
 		for a in self.project.eg.analytes:
 			self.graphLines[a].curve.setPen(pg.mkPen(self.project.eg.cmaps[a], width=2))
 			self.legendEntries[a].setStyleSheet("color: {:s}".format(self.project.eg.cmaps[a]))
+
+	def toggleLegendItems(self):
+		for i in reversed(range(self.legendLayout.count())):
+			if self.legendLayout.itemAt(i).widget().isChecked():
+				check = False
+			else:
+				check = True
+			self.legendLayout.itemAt(i).widget().setChecked(check)
 
 	def addRegion(self, targetGraph, lims, brush):
 		region = pg.LinearRegionItem(values=lims, brush=brush, movable=False)
