@@ -431,6 +431,9 @@ class GraphWindow(QWidget):
 			else:
 				check = True
 			self.legendLayout.itemAt(i).widget().setChecked(check)
+			
+			if self.legendLayout.itemAt(i).widget().text() == self.currentInternalStandard:
+				self.graphLines[self.currentInternalStandard].setVisible(False)
 
 	def addRegion(self, targetGraph, lims, brush):
 		region = pg.LinearRegionItem(values=lims, brush=brush, movable=False)
