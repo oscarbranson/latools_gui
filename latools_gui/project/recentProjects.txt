@@ -1,6 +1,6 @@
-<<<<<<< HEAD
 MosesTest*
 MosesTest1*
+<<<<<<< HEAD
 test62*/Users/simon/Documents/Uni
 
 =======

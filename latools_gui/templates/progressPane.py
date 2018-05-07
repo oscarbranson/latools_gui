@@ -23,8 +23,8 @@ class ProgressPane:
 
 		self.stagesStack = stagesStack
 		self.STAGES = STAGES
-		self.focusStages = {'rawdata':'rawdata', 'despiked':'despiked', 'autorange':'despiked', 'bkgsub':'bkgsub',
-							'ratios':'ratios', 'calibrated':'calibrated', 'filtering':'calibrated'}
+		self.focusStages = {'rawdata':('rawdata',), 'despiked':('despiked',), 'autorange':('despiked', 'rawdata'), 
+							'bkgsub':('bkgsub',), 'ratios':('ratios',), 'calibrated':('calibrated',), 'filtering':('calibrated',)}
 		self.navPane = navPane
 		self.graphPane = graphPane
 		self.project = project
@@ -71,9 +71,17 @@ class ProgressPane:
 
 		# Update the graph if stage was completed perviously
 		currentStage = list(self.focusStages.keys())[self.stagesStack.currentIndex()]
+
+		if currentStage not in ['rawdata', 'despiked']:
+			ranges = True
+		else:
+			ranges = False
 		if currentStage in self.project.eg.stages_complete:
-			self.project.eg.set_focus(self.focusStages[currentStage])
-			self.graphPane.updateGraph()
+			stageIndex = 0
+			if self.focusStages[currentStage][stageIndex] not in self.project.eg.stages_complete:
+				stageIndex += 1
+			self.project.eg.set_focus(self.focusStages[currentStage][stageIndex])
+		self.graphPane.updateGraph(showRanges=ranges)
 
 		# If we're now on the first stage, we disable the left button.
 		if (self.stagesStack.currentIndex() == 0):
@@ -93,11 +101,17 @@ class ProgressPane:
 		#print(self.project.eg.stages_complete)
 
 		currentStage = list(self.focusStages.keys())[self.stagesStack.currentIndex()]
-
+		if currentStage not in ['rawdata', 'despiked']:
+			ranges = True
+		else:
+			ranges = False
 		# If the new stage has already been applied, the graph is updated
-		if currentStage in self.project.eg.stages_complete:
-			self.project.eg.set_focus(self.focusStages[currentStage])
-			self.graphPane.updateGraph()
+		if currentStage in self.project.eg.stages_complete: 
+			stageIndex = 0
+			if self.focusStages[currentStage][stageIndex] not in self.project.eg.stages_complete:
+				stageIndex += 1
+			self.project.eg.set_focus(self.focusStages[currentStage][stageIndex])
+		self.graphPane.updateGraph(showRanges=ranges)
 		# If it's a new stage, the right button is disabled until the apply button is pressed
 		if currentStage not in self.project.eg.stages_complete and currentStage != 'despiked':
 			self.rightButton.setEnabled(False)
