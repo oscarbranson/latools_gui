@@ -107,7 +107,6 @@ class AutorangeStage():
 		self.optionsGrid.addWidget(self.logTransformCheck, 3, 2, 1, 2)
 		self.logTransformCheck.setToolTip("need text")
 
-
 		# We create the button for the right-most section of the Controls Pane.
 
 		self.applyButton = QPushButton("APPLY")
@@ -221,3 +220,4 @@ class AutorangeStage():
 
 		# The loading process then activates the stage's apply command
 		self.pressedApplyButton()
+

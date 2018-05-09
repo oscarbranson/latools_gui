@@ -23,7 +23,7 @@ class FilterControls():
 		self.tabsArea = QTabWidget()
 		stageLayout.addWidget(self.tabsArea)
 
-		self.tabsArea.setMinimumHeight(250)
+		#self.tabsArea.setMinimumHeight(200)
 
 		self.tabsList = []
 
@@ -77,6 +77,7 @@ class FilterControls():
 
 		self.tabsArea.setCurrentIndex(self.tabsArea.currentIndex() + 1)
 		self.plusNameField.setText("")
+		self.plusNameButton.setEnabled(False)
 
 	def plusNameEdit(self):
 		if self.plusNameField.text() != "":
