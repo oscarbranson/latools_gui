@@ -96,10 +96,6 @@ class ImportStage():
 		self.optionsGrid.addWidget(self.file_extensionOption, 3, 1)
 		self.file_extensionOption.setToolTip("The file extension used in your data files")
 
-		self.progress = QPushButton("progress")
-		self.progress.clicked.connect(self.pressedProgress)
-		self.stageControls.addApplyButton(self.progress)
-
 		# We create the button for the right-most section of the Controls Pane.
 
 		self.applyButton = QPushButton("APPLY")
@@ -163,13 +159,3 @@ class ImportStage():
 		# The loading process then activates the stage's apply command
 		self.pressedApplyButton()
 
-	def pressedProgress(self):
-
-		self.progressPaneObj.progressUpdater.set(total=10, desc="test")
-
-		for i in range(10):
-			self.progressPaneObj.progressUpdater.update()
-			QApplication.processEvents()
-			time.sleep(0.1)
-
-		self.progressPaneObj.progressUpdater.reset()
