@@ -108,7 +108,6 @@ class ImportStage():
 
 	def pressedApplyButton(self):
 		""" Imports data into the project when the apply button is pressed. """
-		#Add apply button functionality
 
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		try:
@@ -116,7 +115,8 @@ class ImportStage():
 										 config=self.configOption.currentText(),
 										 extension=self.file_extensionOption.text(),
 										 srm_identifier=self.srm_identifierOption.text(),
-										 pbar=None)
+										 pbar=self.progressPaneObj.progressUpdater)
+										 #pbar=None)
 
 			self.graphPaneObj.updateGraph(importing=True)
 

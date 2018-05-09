@@ -4,6 +4,7 @@
 
 import ast
 from PyQt5.QtWidgets import *
+from templates import progressUpdater
 
 class RunningProject():
 	""" This class is intended to house everything that is specific to one project.
@@ -99,8 +100,13 @@ class RunningProject():
 		# This is then cast to an actual dictionary and saved.
 		# The lastStage value is then updated to find the last completed stage
 		for line in logFileStrings:
+
 			if "__init__ :: args=() kwargs=" in line:
+
 				subLine = line.replace("__init__ :: args=() kwargs=", "")
+				subLine = subLine.replace('<', '"')
+				subLine = subLine.replace('>', '"')
+				print(subLine)
 				self.stageParams["import"] = ast.literal_eval(subLine)
 				self.updateLastStage(0)
 
@@ -152,17 +158,16 @@ class RunningProject():
 
 		# Set up loading bar
 		if progress is not None:
-			progress.set(self.lastStage + 1, "loading stages")
+			bar = progress.set(self.lastStage + 1, "loading stages")
 
 		# The completed stages are loaded
 		for i in range(self.lastStage + 1):
 			self.importListener.loadStage(i)
 			if progress is not None:
-				progress.update()
-				QApplication.processEvents()
+				bar.update()
 
 		if progress is not None:
-			progress.reset()
+			bar.reset()
 
 		# Load the stage after the last completed stage
 		self.importListener.setStageIndex(self.lastStage + 1)

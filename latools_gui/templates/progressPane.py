@@ -45,6 +45,7 @@ class ProgressPane:
 
 		# The object that updates the progress bar
 		self.progressUpdater = progressUpdater.ProgressUpdater(self.progressBar)
+		#self.progressProvider = progressUpdater.ProgressUpdaterProvider(self.progressBar)
 
 		# We add a right button
 		self.rightButton = QPushButton("➡")

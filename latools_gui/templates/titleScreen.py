@@ -151,7 +151,6 @@ class TitleScreen():
 		self.mainLayout.addWidget(self.progressBar)
 
 		self.progressUpdater = progressUpdater.ProgressUpdater(self.progressBar)
-
 		self.recentProjects = RecentProjects(self.recentDropdown)
 
 
