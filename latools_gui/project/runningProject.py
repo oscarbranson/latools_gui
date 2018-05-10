@@ -4,6 +4,7 @@
 
 import ast
 from PyQt5.QtWidgets import *
+from templates import progressUpdater
 
 class RunningProject():
 	""" This class is intended to house everything that is specific to one project.
@@ -61,7 +62,8 @@ class RunningProject():
 			else:
 				return
 
-		if self.eg is None:
+		if self.eg is None and self.folder is not None:
+			file = open(self.folder + "/" + self.fileName + ".lalog", 'w')
 			return
 
 		if self.folder is not None:
@@ -78,7 +80,7 @@ class RunningProject():
 			self.folder = location
 			self.hasSaved = True
 
-	def loadFile(self, name, location):
+	def loadFile(self, name, location, progress=None):
 		""" Loads a save file, stores the file info, populates the stage parameters and runs
 		the stage function calls """
 		self.fileName = name
@@ -90,13 +92,21 @@ class RunningProject():
 		logFile = open(logName, "r")
 		logFileStrings = logFile.read().splitlines()
 
+		if len(logFileStrings) == 0:
+			return
+
 		# Each line is checked for a characteristic indicating a particular stage's parameter list
 		# The line is then cropped to only the section resembling a dictionary of parameters.
 		# This is then cast to an actual dictionary and saved.
 		# The lastStage value is then updated to find the last completed stage
 		for line in logFileStrings:
+
 			if "__init__ :: args=() kwargs=" in line:
+
 				subLine = line.replace("__init__ :: args=() kwargs=", "")
+				subLine = subLine.replace('<', '"')
+				subLine = subLine.replace('>', '"')
+				print(subLine)
 				self.stageParams["import"] = ast.literal_eval(subLine)
 				self.updateLastStage(0)
 
@@ -146,12 +156,18 @@ class RunningProject():
 				if self.stageParams[stage][key] is None:
 					self.stageParams[stage][key] = ""
 
-		#reply = QMessageBox.information(self.mainWidget, 'Information',
-		#							 "Loading project", QMessageBox.Ok, QMessageBox.Ok)
+		# Set up loading bar
+		if progress is not None:
+			bar = progress.set(self.lastStage + 1, "loading stages")
 
 		# The completed stages are loaded
 		for i in range(self.lastStage + 1):
 			self.importListener.loadStage(i)
+			if progress is not None:
+				bar.update()
+
+		if progress is not None:
+			bar.reset()
 
 		# Load the stage after the last completed stage
 		self.importListener.setStageIndex(self.lastStage + 1)

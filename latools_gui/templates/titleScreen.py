@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtCore import QUrl
 import os
+from templates import progressUpdater
 
 class TitleScreen():
 	"""
@@ -141,6 +142,15 @@ class TitleScreen():
 		self.bottomSpacer = QSpacerItem(0, 125, QSizePolicy.Minimum, QSizePolicy.Expanding)
 		self.mainLayout.addItem(self.bottomSpacer)
 
+		self.progressLabel = QLabel("")
+		self.mainLayout.addWidget(self.progressLabel)
+		self.progressLabel.setAlignment(Qt.AlignCenter)
+		self.progressBar = QProgressBar()
+		self.progressBar.setMaximumWidth(300)
+		self.progressBar.setAlignment(Qt.AlignCenter)
+		self.mainLayout.addWidget(self.progressBar)
+
+		self.progressUpdater = progressUpdater.ProgressUpdater(self.progressBar)
 		self.recentProjects = RecentProjects(self.recentDropdown)
 
 
@@ -171,9 +181,12 @@ class TitleScreen():
 		"""
 		The functionality for the 'begin' button. Either creates of loads a project, based on the options entered.
 		"""
+
+		self.progressLabel.setText("Loading project")
+
 		if self.loadProjectBool:
 			# Load project
-			self.project.loadFile(self.projectName, self.fileLocation)
+			self.project.loadFile(self.projectName, self.fileLocation, self.progressUpdater)
 
 		elif self.newProjectBool:
 			# New project
@@ -186,12 +199,12 @@ class TitleScreen():
 			self.projectName = self.recentDropdown.currentText()
 			self.fileLocation = self.recentProjects.getLocation(self.recentDropdown.currentIndex() - 1)
 			self.recentProjects.reorderDropdown(self.recentDropdown.currentIndex() - 1)
-			try:
-				self.project.loadFile(self.projectName, self.fileLocation)
-			except:
-				message = "The .lalog file could not be found."
-				errorBox = QMessageBox.critical(self.mainWidget, "Error", message, QMessageBox.Ok)
-				return
+			#try:
+			self.project.loadFile(self.projectName, self.fileLocation, self.progressUpdater)
+			#except:
+				#message = "The .lalog file could not be found."
+				#errorBox = QMessageBox.critical(self.mainWidget, "Error", message, QMessageBox.Ok)
+				#return
 
 		# The project title is delivered to the stages screen
 		self.importListener.setTitle(self.projectName)
@@ -296,17 +309,6 @@ class TitleScreen():
 		url = QUrl("https://github.com/oscarbranson/latools")
 		QDesktopServices.openUrl(url)
 
-	# def newBrowseClick(self):
-	# 	""" The file browser dialog for selecting where a new file will be saved """
-	# 	self.fileLocation = QFileDialog.getExistingDirectory(self.mainWidget, 'Open file', '/home')
-	#
-	# 	# If cancel was not pressed, set the location
-	# 	if self.fileLocation != '':
-	# 		self.newLocation.setText(self.fileLocation)
-	# 		self.locationOK = True
-	#
-	# 		self.nextButton.setEnabled(self.nameOK and self.locationOK)
-
 class RecentProjects:
 	"""
 	A class used to record, update and display the list of projects that were accessed most recently
@@ -327,24 +329,24 @@ class RecentProjects:
 			filename = os.path.join(os.environ['_MEIPASS2'], filename)
 		recentFile = open(filename, "r")
 
-		# Splits the file into a list of lines
-		self.fileContent = recentFile.read().splitlines()
-		recentFile.close()
-
+		self.fileContent = []
 		self.splitContent = []
 
 		# Splits each line into the project name and location
-		for name in self.fileContent:
+		for name in recentFile.read().splitlines():
 			self.splitContent.append(name.split('*'))
+		recentFile.close()
 
 		i = 0
 		for split in self.splitContent:
-			if split[0] != "":
+			#print(split)
+			if split[0] != "" and split[1] != "":
 				# Adds the names to the dropdown in order
 				recentDropdown.addItem(split[0])
+				self.fileContent.append(split[0] + "*" + split[1])
 			i += 1
 			# The maximum number of items added to the dropdown:
-			if i > 9:
+			if i > 10:
 				break
 
 	def addNew(self, name, location):
@@ -391,7 +393,7 @@ class RecentProjects:
 
 	def getLocation(self, index):
 		""" Given the index of a project in the recent list, returns the file location """
-		return self.splitContent[index][1]
+		return self.fileContent[index].split('*')[1]
 
 	def updateLocation(self, name, location):
 		self.fileContent.append(name + "*" + location)

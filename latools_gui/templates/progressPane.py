@@ -2,6 +2,7 @@
 """
 
 from PyQt5.QtWidgets import *
+from templates import progressUpdater
 
 class ProgressPane:
 	"""
@@ -41,6 +42,10 @@ class ProgressPane:
 		# TO DO: progress bar functionality
 		self.progressBar = QProgressBar()
 		self.progressLayout.addWidget(self.progressBar)
+
+		# The object that updates the progress bar
+		self.progressUpdater = progressUpdater.ProgressUpdater(self.progressBar)
+		#self.progressProvider = progressUpdater.ProgressUpdaterProvider(self.progressBar)
 
 		# We add a right button
 		self.rightButton = QPushButton("➡")

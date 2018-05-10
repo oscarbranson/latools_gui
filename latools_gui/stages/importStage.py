@@ -7,6 +7,8 @@ import templates.controlsPane as controlsPane
 import ast
 import os
 
+import time
+
 class ImportStage():
 	"""
 	Each stage has its own Controls Pane, where it defines a description and the unique options for that
@@ -102,14 +104,15 @@ class ImportStage():
 
 	def pressedApplyButton(self):
 		""" Imports data into the project when the apply button is pressed. """
-		#Add apply button functionality
 
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		try:
 			self.project.eg = la.analyse(data_folder=self.fileLocationLine.text(),
 										 config=self.configOption.currentText(),
 										 extension=self.file_extensionOption.text(),
-										 srm_identifier=self.srm_identifierOption.text())
+										 srm_identifier=self.srm_identifierOption.text(),
+										 pbar=self.progressPaneObj.progressUpdater)
+										 #pbar=None)
 
 			self.graphPaneObj.updateGraph(importing=True)
 
@@ -155,3 +158,4 @@ class ImportStage():
 
 		# The loading process then activates the stage's apply command
 		self.pressedApplyButton()
+
