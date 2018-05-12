@@ -315,7 +315,7 @@ class BackgroundStage():
 		""" Subtracts an existing background calculation from the project data when a button is pressed. """
 		self.project.eg.bkg_subtract(analytes=None, errtype='stderr', focus_stage='despiked')
 		self.graphPaneObj.updateGraph()
-		self.progressPaneObj.setRightEnabled()
+		self.progressPaneObj.completedStage(3)
 
 	def methodUpdate(self):
 		""" Updates the current method. """

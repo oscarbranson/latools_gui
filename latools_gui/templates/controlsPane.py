@@ -39,7 +39,7 @@ class ControlsPane():
 		
 		# We fix the width and height
 		self.controlDescriptionBox.setFixedWidth(300)
-		self.controlsFrame.setFixedHeight(200)
+		self.controlsFrame.setFixedHeight(220)
 
 		# We create a widget to house the stage options. These will be filled in via function calls from
 		# the stage object.

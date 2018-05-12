@@ -175,7 +175,7 @@ class DespikingStage():
 			self.pane1Exponent.setText(str(self.project.eg.expdecay_coef[0]))
 
 		self.graphPaneObj.updateGraph()
-		self.progressPaneObj.setRightEnabled()
+		self.progressPaneObj.completedStage(1)
 
 		# Automatically saves the project if it already has a save location
 		self.project.reSave()

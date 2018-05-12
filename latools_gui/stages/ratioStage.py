@@ -70,7 +70,7 @@ class RatioStage():
 		self.project.reSave()
 
 		self.graphPaneObj.updateGraph()
-		self.progressPaneObj.setRightEnabled()
+		self.progressPaneObj.completedStage(4)
 
 	def updateStageInfo(self):
 		""" Updates the stage after data is imported at runtime """

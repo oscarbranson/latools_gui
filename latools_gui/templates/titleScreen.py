@@ -267,9 +267,6 @@ class TitleScreen():
 		self.nameLabel.setVisible(False)
 		self.nameEdit.setVisible(False)
 		self.backButton.setVisible(False)
-		# self.locationLabel.setVisible(False)
-		# self.newBrowse.setVisible(False)
-		# self.newLocation.setVisible(False)
 		self.nextButton.setEnabled(False)
 		self.recentDropdown.setCurrentIndex(0)
 
@@ -318,8 +315,12 @@ class RecentProjects:
 		filename = "project/recentProjects.txt"
 		if '_MEIPASS2' in os.environ:
 			filename = os.path.join(os.environ['_MEIPASS2'], filename)
-		recentFile = open(filename, "r")
-
+		try:
+			recentFile = open(filename, "r")
+		except IOError:
+			file = open(filename, "w")
+			file.close()
+			recentFile = open(filename, "r")
 		self.fileContent = []
 		self.splitContent = []
 
@@ -330,15 +331,15 @@ class RecentProjects:
 
 		i = 0
 		for split in self.splitContent:
-			#print(split)
-			if split[0] != "" and split[1] != "":
-				# Adds the names to the dropdown in order
-				recentDropdown.addItem(split[0])
-				self.fileContent.append(split[0] + "*" + split[1])
-			i += 1
-			# The maximum number of items added to the dropdown:
-			if i > 10:
-				break
+			if len(split) == 2:
+				if split[0] != "" and split[1] != "":
+					# Adds the names to the dropdown in order
+					recentDropdown.addItem(split[0])
+					self.fileContent.append(split[0] + "*" + split[1])
+				i += 1
+				# The maximum number of items added to the dropdown:
+				if i > 10:
+					break
 
 	def addNew(self, name, location):
 		""" Adding a new project to the recent projects list """

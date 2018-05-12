@@ -1,16 +1,16 @@
 """ This is the main module that builds all aspects of the latools program and runs the GUI."""
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QIcon, QKeyEvent, QPainter
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QIcon, QKeyEvent
+from PyQt5.QtCore import Qt
 import sys 
 import latools as la
 
 # Import the templates
 from templates import titleScreen
-from templates import navigationPane
 from templates import graphPane
 from templates import progressPane
+from templates import stageTabs
 
 # Import the stage information files
 from stages import importStage
@@ -78,59 +78,58 @@ class MainWindow(QMainWindow):
 		self.stageWidget = QWidget()
 		# By making the stageWidget the "parent" of the stageScreenLayout, the widget will contain the layout:
 		self.stageScreenLayout = QVBoxLayout(self.stageWidget)
-		self.mainStack.addWidget(self.stageWidget)
+		#self.mainStack.addWidget(self.stageWidget)
 
-		# We make a new stack here, that will move between the different stages.
-		# Only the Controls pane will actually be changing, but the graph pane could be added here also.
-		self.stagesStack = QStackedWidget()
+		# ----
 
-		# We create one navigation pane object (The horizontal bar across the top)
-		self.navigationPaneObj = navigationPane.NavigationPane(self.stagesStack, STAGES, self.stageScreenLayout)
-		
-		# Now we add the stages stack to the layout, so that it sits below the top navigation bar.
-		self.stageScreenLayout.addWidget(self.stagesStack)
+		self.stageTabsWidget = QWidget()
+		self.stagesLayout = QVBoxLayout(self.stageTabsWidget)
+		self.mainStack.addWidget(self.stageTabsWidget)
+
+		self.stageTabs = stageTabs.StageTabs(STAGES, self.stagesLayout)
+
+		self.stageLayouts = []
+
+		# First a widget is made, so that it can be added to the stage stack
+		self.importStageWidget = QWidget()
+		self.importStageLayout = QVBoxLayout(self.importStageWidget)
+		self.stageLayouts.append(self.importStageLayout)
+
+		self.despikingStageWidget = QWidget()
+		self.despikingStageLayout = QVBoxLayout(self.despikingStageWidget)
+		self.stageLayouts.append(self.despikingStageLayout)
+
+		self.autorangeStageWidget = QWidget()
+		self.autorangeStageLayout = QVBoxLayout(self.autorangeStageWidget)
+		self.stageLayouts.append(self.autorangeStageLayout)
+
+		self.backgroundStageWidget = QWidget()
+		self.backgroundStageLayout = QVBoxLayout(self.backgroundStageWidget)
+		self.stageLayouts.append(self.backgroundStageLayout)
+
+		self.ratioStageWidget = QWidget()
+		self.ratioStageLayout = QVBoxLayout(self.ratioStageWidget)
+		self.stageLayouts.append(self.ratioStageLayout)
+
+		self.calibrationStageWidget = QWidget()
+		self.calibrationStageLayout = QVBoxLayout(self.calibrationStageWidget)
+		self.stageLayouts.append(self.calibrationStageLayout)
+
+		self.filteringStageWidget = QWidget()
+		self.filteringStageLayout = QVBoxLayout(self.filteringStageWidget)
+		self.stageLayouts.append(self.filteringStageLayout)
+
+		self.stageTabs.passStageLayouts(self.stageLayouts)
 
 		# Here we define the graph pane, so that it could be passed to the controls pane.
 		# However, we want it to sit below the controls, so it's not added to the layout yet.
 		self.graphPaneObj = graphPane.GraphPane(self.project)
 
 		# We create the progress pane object but will add it to the stages layout later
-		self.progressPaneObj = progressPane.ProgressPane(self.stagesStack, STAGES, self.navigationPaneObj, self.graphPaneObj, self.project)
+		self.progressPaneObj = progressPane.ProgressPane(STAGES, self.graphPaneObj, self.project, self.stageTabs)
 
 		# A layout for each stage is created, and added to the stage stack
 
-		# First a widget is made, so that it can be added to the stage stack
-		self.importStageWidget = QWidget()
-		# Then a layout is made from the widget
-		self.importStageLayout = QVBoxLayout(self.importStageWidget)
-		# And added to the stage stack
-		self.stagesStack.addWidget(self.importStageWidget)
-
-		self.despikingStageWidget = QWidget()
-		self.despikingStageLayout = QVBoxLayout(self.despikingStageWidget)
-		self.stagesStack.addWidget(self.despikingStageWidget)
-
-		self.autorangeStageWidget = QWidget()
-		self.autorangeStageLayout = QVBoxLayout(self.autorangeStageWidget)
-		self.stagesStack.addWidget(self.autorangeStageWidget)
-
-		self.backgroundStageWidget = QWidget()
-		self.backgroundStageLayout = QVBoxLayout(self.backgroundStageWidget)
-		self.stagesStack.addWidget(self.backgroundStageWidget)
-
-		self.ratioStageWidget = QWidget()
-		self.ratioStageLayout = QVBoxLayout(self.ratioStageWidget)
-		self.stagesStack.addWidget(self.ratioStageWidget)
-
-		self.calibrationStageWidget = QWidget()
-		self.calibrationStageLayout = QVBoxLayout(self.calibrationStageWidget)
-		self.stagesStack.addWidget(self.calibrationStageWidget)
-
-		self.filteringStageWidget = QWidget()
-		self.filteringStageLayout = QVBoxLayout(self.filteringStageWidget)
-		self.stagesStack.addWidget(self.filteringStageWidget)
-
-		# The stage objects are then produced
 		self.importStageObj = importStage.ImportStage(
 			self.importStageLayout, self.graphPaneObj, self.progressPaneObj, self.importStageWidget, self.project)
 		self.despikingStageObj = despikingStage.DespikingStage(
@@ -138,11 +137,13 @@ class MainWindow(QMainWindow):
 		self.autorangeStageObj = autorangeStage.AutorangeStage(
 			self.autorangeStageLayout, self.graphPaneObj, self.progressPaneObj, self.autorangeStageWidget, self.project)
 		self.backgroundStageObj = backgroundStage.BackgroundStage(
-			self.backgroundStageLayout, self.graphPaneObj, self.progressPaneObj, self.backgroundStageWidget, self.project)
+			self.backgroundStageLayout, self.graphPaneObj, self.progressPaneObj, self.backgroundStageWidget,
+			self.project)
 		self.ratioStageObj = ratioStage.RatioStage(
 			self.ratioStageLayout, self.graphPaneObj, self.progressPaneObj, self.ratioStageWidget, self.project)
 		self.calibrationStageObj = calibrationStage.CalibrationStage(
-			self.calibrationStageLayout, self.graphPaneObj, self.progressPaneObj, self.calibrationStageWidget, self.project)
+			self.calibrationStageLayout, self.graphPaneObj, self.progressPaneObj, self.calibrationStageWidget,
+			self.project)
 		self.filteringStageObj = filteringStage.FilteringStage(
 			self.filteringStageLayout, self.graphPaneObj, self.progressPaneObj, self.filteringStageWidget, self.project)
 
@@ -154,17 +155,18 @@ class MainWindow(QMainWindow):
 											self.ratioStageObj,
 											self.calibrationStageObj,
 											self.filteringStageObj,
-											self.navigationPaneObj,
 											self.progressPaneObj,
 											self.graphPaneObj,
-											self.titleScreenObj)
+											self.titleScreenObj,
+											self.stageTabs,
+											self)
 		self.importStageObj.setImportListener(self.importListener)
 		self.titleScreenObj.setImportListener(self.importListener)
 		self.project.setImportListener(self.importListener)
 
 		#Finally, we call methods on the progressPane and graphPane object to add them to the layout.
-		self.progressPaneObj.addToLayout(self.stageScreenLayout)
-		self.graphPaneObj.addToLayout(self.stageScreenLayout)
+		self.progressPaneObj.addToLayout(self.stagesLayout)
+		self.graphPaneObj.addToLayout(self.stagesLayout)
 
 		self.quitting = False
 
@@ -174,7 +176,7 @@ class MainWindow(QMainWindow):
 		if type(event) == QKeyEvent:
 			if event.key() == Qt.Key_Return:
 				self.importListener.enterPressed(main=self.mainStack.currentIndex(),
-												 stage=self.stagesStack.currentIndex())
+												 stage=self.stageTabs.tabs.currentIndex())
 
 	def initFileMenu(self):
 		""" Builds and displays the file menu"""
@@ -184,14 +186,10 @@ class MainWindow(QMainWindow):
 		saveFile.setStatusTip('Save your project')
 		saveFile.triggered.connect(self.saveButton)
 
-		loadFile = QAction(QIcon('open.png'), 'Load', self)
-		#loadFile.setShortcut('Ctrl+L')
-		loadFile.setStatusTip('Load File')
-		# loadFile.triggered.connect()
-
-		# exportFile = QAction(QIcon('export.png'), 'Export', self)
-		# exportFile.setStatusTip('Export Project')
-		# exportFile.triggered.connect(self.exportButton)
+		# loadFile = QAction(QIcon('open.png'), 'Load', self)
+		# #loadFile.setShortcut('Ctrl+L')
+		# loadFile.setStatusTip('Load File')
+		# # loadFile.triggered.connect()
 
 		# exitAct = QAction(QIcon('exit.png'), 'Exit', self)
 		# exitAct.setShortcut('Ctrl+Q')
@@ -201,7 +199,7 @@ class MainWindow(QMainWindow):
 		menubar = self.menuBar()
 		fileMenu = menubar.addMenu('&File')
 		fileMenu.addAction(saveFile)
-		fileMenu.addAction(loadFile)
+		# fileMenu.addAction(loadFile)
 		# fileMenu.addAction(exportFile)
 		# fileMenu.addAction(exitAct)
 
@@ -242,6 +240,9 @@ class MainWindow(QMainWindow):
 	def makeConfig(self):
 		self.configWindow = ConfigWindow()
 		self.configWindow.show()
+
+	def setProjectTitle(self, title):
+		self.setWindowTitle("LAtools - " + title)
 
 class ConfigWindow(QWidget):
 
@@ -336,10 +337,11 @@ class ImportListener():
 				 ratioStage,
 				 calibrationStage,
 				 filteringStage,
-				 navigationPane,
 				 progressPane,
 				 graphPane,
-				 titleScreen):
+				 titleScreen,
+				 stageTabs,
+				 mainWindow):
 		self.importStage = importStage
 		self.despikingStage = despikingStage
 		self.autorangeStage = autorangeStage
@@ -347,10 +349,11 @@ class ImportListener():
 		self.ratioStage = ratioStage
 		self.calibrationStage = calibrationStage
 		self.filteringStage = filteringStage
-		self.navigationPane = navigationPane
 		self.progressPane = progressPane
 		self.graphPane = graphPane
 		self.titleScreen = titleScreen
+		self.stageTabs = stageTabs
+		self.mainWindow = mainWindow
 
 		self.stageObjects = [self.importStage,
 							 self.despikingStage,
@@ -371,29 +374,15 @@ class ImportListener():
 	def setTitle(self, title):
 		# Sends the project name to the navigation pane to display
 		# and sets the loaded stage index
-		self.navigationPane.setProjectTitle(title, "")
+		self.mainWindow.setProjectTitle(title)
 
 	def setStageIndex(self, index):
 		""" Jumps to a particular stage when loading a project """
-		self.progressPane.setStageIndex(index)
+		self.stageTabs.setStage(index)
 
 	def loadStage(self, index):
 		""" Tells a stage to load the saved stage parameter info, based on an identifying stage index """
 		self.stageObjects[index].loadValues()
-		# if index == 0:
-		# 	self.importStage.loadValues()
-		# elif index == 1:
-		# 	self.despikingStage.loadValues()
-		# elif index == 2:
-		# 	self.autorangeStage.loadValues()
-		# elif index == 3:
-		# 	self.backgroundStage.loadValues()
-		# elif index == 4:
-		# 	self.ratioStage.loadValues()
-		# elif index == 5:
-		# 	self.calibrationStage.loadValues()
-		# elif index == 6:
-		# 	self.filteringStage.loadValues()
 		self.progressPane.progressUpdater.reset()
 
 	def enterPressed(self, main, stage):

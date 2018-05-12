@@ -46,7 +46,7 @@ class FilteringStage():
 
 	def pressedApplyButton(self):
 		#Add apply button functionality
-		self.progressPaneObj.setRightEnabled()
+		pass
 
 	def loadValues(self):
 		x = 1

@@ -185,7 +185,7 @@ class AutorangeStage():
 		self.graphPaneObj.updateGraph(showRanges=True)
 
 		# When the stage's processing is complete, the right button is enabled for the next stage.
-		self.progressPaneObj.setRightEnabled()
+		self.progressPaneObj.completedStage(2)
 
 		# Automatically saves the project if it already has a save location
 		self.project.reSave()

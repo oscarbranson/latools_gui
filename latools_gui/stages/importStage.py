@@ -115,7 +115,7 @@ class ImportStage():
 
 			self.graphPaneObj.updateGraph(importing=True)
 
-			self.progressPaneObj.setRightEnabled()
+			self.progressPaneObj.completedStage(0)
 
 			if not self.importListener is None:
 				self.importListener.dataImported()

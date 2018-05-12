@@ -132,7 +132,7 @@ class CalibrationStage():
 
 		self.graphPaneObj.updateGraph()
 
-		self.progressPaneObj.setRightEnabled()
+		self.progressPaneObj.completedStage(5)
 
 		# Automatically saves the project if it already has a save location
 		self.project.reSave()
