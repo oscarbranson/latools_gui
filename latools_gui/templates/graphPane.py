@@ -42,7 +42,9 @@ class GraphPane():
 
 		# GRAPH
 		# The project object is sent to the GraphWindow object
-		self.graph = GraphWindow(project)
+		self.graph = MainGraph(project)
+		self.bkgPlot = BkgPlot(project)
+		self.caliPlot = None
 
 		#  We add the graph to the pane and set minimum dimensions
 		self.graphLayout.addWidget(self.graph)
@@ -84,14 +86,10 @@ class GraphPane():
 
 	def showAuxGraph(self, bkg=False):
 		if bkg:
-			self.graph.showBkgPlot()	
+			self.bkgPlot.populateGraph()
+			self.bkgPlot.showGraph()	
 
 class GraphWindow(QWidget):
-	"""
-	Widget that contains a PyQtGraph plot, all the settings that control it, and a new window button
-	that creates a clone graph
-
-	"""
 	def __init__(self, project):
 		"""	Initialises an empty PyQtGraph plot, containers for all graph settings, a new window button
 		that is initially hidden till data is set
@@ -110,16 +108,37 @@ class GraphWindow(QWidget):
 		self.showRanges = False
 		self.ranges = []
 		self.highlightedAnalytes = []
-		self.bkgPlot = None
 		self.currentInternalStandard = None
 
-		layout = QHBoxLayout()
+		# dicts for storing {analyte: checkbox pairs}
+		self.legendEntries = {}
 
-		# By default the focus stage is 'rawdata'
-		self.focusStage = 'rawdata'
+		self.layout = QHBoxLayout()
 
+		self.setLayout(self.layout)
+
+	# function to aid connection development
+	def dummy(self, *args, **kwargs):
+		"""
+		Dummy function for identifying connection content.
+		"""
+		for arg in args:
+			print(arg, type(arg))
+		for k, v in kwargs.items():
+			print(k, v, type(v))
+
+	# convert hex to rgb colour
+	def hex_2_rgba(self, value, alpha=1):
+		value = value.lstrip('#')
+		lv = len(value)
+		rgba = [int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3)] + [int(255/alpha)]
+		srgba = ['{:.0f}'.format(s) for s in rgba]
+		return rgba
+		#return 'rgba(' + ','.join(srgba) + ')'
+
+	def initialiseSamples(self):
 		# Add list of samples to the layout
-		###
+
 		samples = QWidget()
 		samplesLayout = QVBoxLayout()
 		samplesLayout.setAlignment(Qt.AlignTop)
@@ -133,6 +152,8 @@ class GraphWindow(QWidget):
 
 		self.sampleList = sampleList
 
+		self.layout.addWidget(samples)
+
 		# log-scale check box
 		yLogCheckBox = QCheckBox()
 		yLogCheckBox.setMaximumWidth(100)
@@ -143,30 +164,13 @@ class GraphWindow(QWidget):
 
 		self.yLogCheckBox = yLogCheckBox
 
-		layout.addWidget(samples)
-		###
-
-		# Add plot window to the layout
-		###
-		self.backgroundColour = 'w'
-
-		pg.setConfigOption('background', self.backgroundColour)
-		pg.setConfigOption('foreground', 'k')
-		graph = pg.PlotWidget()
-
-		self.graphs.append(graph)
-
-		layout.addWidget(graph, 1)
-		###
-
+	def initialiseLegend(self):
 		# Add setting to the layout
-		###
 		setting = QWidget()
 		settingLayout = QVBoxLayout()
 		setting.setLayout(settingLayout)
 
 		# Add legend widget to the settings
-		###
 
 		scroll = QScrollArea()
 		scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -185,33 +189,21 @@ class GraphWindow(QWidget):
 		self.legendLayout = legendLayout
 
 		settingLayout.addWidget(scroll)
-		###
+
 		toggleButton = QPushButton('Toggle Legend Items')
 		toggleButton.clicked.connect(self.toggleLegendItems)
 		settingLayout.addWidget(toggleButton)
 
 		self.setting = settingLayout
 
-		layout.addWidget(setting)
-		###
+		self.layout.addWidget(setting)
 
-		self.setLayout(layout)
-
-	# function to aid connection development
-	def dummy(self, *args, **kwargs):
-		"""
-		Dummy function for identifying connection content.
-		"""
-		for arg in args:
-			print(arg, type(arg))
-		for k, v in kwargs.items():
-			print(k, v, type(v))
-		
 	# populate sample list
 	def populateSamples(self):
 		"""
 		Updates the list of available samples from the dataset viewable on the graph
 		"""
+
 		samples = self.project.eg.samples
 		self.sampleName = samples[0]
 
@@ -228,9 +220,6 @@ class GraphWindow(QWidget):
 		for i in reversed(range(self.legendLayout.count())):
 			self.legendLayout.itemAt(i).widget().deleteLater()
 
-		# dicts for storing {analyte: checkbox pairs}
-		self.legendEntries = {}
-
 
 		for analyte in self.project.eg.analytes:
 			# Create legend entry for the element and add it to the legend widget
@@ -245,6 +234,57 @@ class GraphWindow(QWidget):
 			self.legendLayout.addWidget(legendEntry)
 
 		self.scroll.setWidget(self.legend)
+
+	def hideInternalStandard(self):
+		if self.currentInternalStandard != None:
+			self.legendEntries[self.currentInternalStandard].setVisible(True)
+			self.graphLines[self.currentInternalStandard].setVisible(True)
+		analyte = self.project.eg.internal_standard
+		self.currentInternalStandard = analyte
+		if self.focusStage not in ['rawdata', 'despiked', 'bkgsub']:
+			self.legendEntries[analyte].setVisible(False)
+			self.graphLines[analyte].setVisible(False)
+		else:
+			self.legendEntries[analyte].setVisible(True)
+			self.graphLines[analyte].setVisible(True)
+
+	def toggleLegendItems(self):
+		for i in reversed(range(self.legendLayout.count())):
+			if self.legendLayout.itemAt(i).widget().isChecked():
+				self.legendLayout.itemAt(i).widget().setChecked(False)
+			else:
+				self.legendLayout.itemAt(i).widget().setChecked(True)
+				if self.legendLayout.itemAt(i).widget().text() == self.currentInternalStandard:
+					self.hideInternalStandard()
+
+class MainGraph(GraphWindow):
+	"""
+	Widget that contains a PyQtGraph plot, all the settings that control it, and a new window button
+	that creates a clone graph
+
+	"""
+	def __init__(self, project):
+		super().__init__(project)
+
+		# By default the focus stage is 'rawdata'
+		self.focusStage = 'rawdata'
+
+		self.initialiseSamples()
+
+		# Add plot window to the layout
+		###
+		self.backgroundColour = 'w'
+
+		pg.setConfigOption('background', self.backgroundColour)
+		pg.setConfigOption('foreground', 'k')
+		graph = pg.PlotWidget()
+
+		self.graphs.append(graph)
+
+		self.layout.addWidget(graph, 1)
+		###
+
+		self.initialiseLegend()
 
 	# create lines (only happens once)
 	def drawLines(self):
@@ -287,15 +327,6 @@ class GraphWindow(QWidget):
 		for graph in self.graphs:
 			graph.setLabel('left', ylabel)
 			graph.setLabel('bottom', 'Time', units='s')
-
-	# convert hex to rgb colour
-	def hex_2_rgba(self, value, alpha=1):
-		value = value.lstrip('#')
-		lv = len(value)
-		rgba = [int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3)] + [int(255/alpha)]
-		srgba = ['{:.0f}'.format(s) for s in rgba]
-		return rgba
-		#return 'rgba(' + ','.join(srgba) + ')'
 		
 		
 	# function for setting all graph objects at initialisation
@@ -344,19 +375,6 @@ class GraphWindow(QWidget):
 		"""
 		# change line visibility
 		self.graphLines[analyte].setVisible(self.legendEntries[analyte].isChecked())
-
-	def hideInternalStandard(self):
-		if self.currentInternalStandard != None:
-			self.legendEntries[self.currentInternalStandard].setVisible(True)
-			self.graphLines[self.currentInternalStandard].setVisible(True)
-		analyte = self.project.eg.internal_standard
-		self.currentInternalStandard = analyte
-		if self.focusStage not in ['rawdata', 'despiked', 'bkgsub']:
-			self.legendEntries[analyte].setVisible(False)
-			self.graphLines[analyte].setVisible(False)
-		else:
-			self.legendEntries[analyte].setVisible(True)
-			self.graphLines[analyte].setVisible(True)
 	
 	def updateLines(self):
 		"""
@@ -377,7 +395,7 @@ class GraphWindow(QWidget):
 			for gRange in self.ranges:
 				graph.removeItem(gRange)
 		self.ranges = []
-		if self.showRanges or self.focusStage not in ['rawdata', 'despiked']:
+		if self.showRanges:
 			for graph in self.graphs:
 				for lims in dat.bkgrng:
 					self.addRegion(graph, lims, pg.mkBrush((255,0,0,25)))
@@ -424,17 +442,6 @@ class GraphWindow(QWidget):
 			self.graphLines[a].curve.setPen(pg.mkPen(self.project.eg.cmaps[a], width=2))
 			self.legendEntries[a].setStyleSheet("color: {:s}".format(self.project.eg.cmaps[a]))
 
-	def toggleLegendItems(self):
-		for i in reversed(range(self.legendLayout.count())):
-			if self.legendLayout.itemAt(i).widget().isChecked():
-				check = False
-			else:
-				check = True
-			self.legendLayout.itemAt(i).widget().setChecked(check)
-			
-			if self.legendLayout.itemAt(i).widget().text() == self.currentInternalStandard:
-				self.graphLines[self.currentInternalStandard].setVisible(False)
-
 	def addRegion(self, targetGraph, lims, brush):
 		region = pg.LinearRegionItem(values=lims, brush=brush, movable=False)
 		region.lines[0].setPen(pg.mkPen((0,0,0,0)))
@@ -455,23 +462,37 @@ class GraphWindow(QWidget):
 		# self.updateGraphs(ranges=self.ranges)
 		newWin.show()
 
-	def showBkgPlot(self, err='stderr'):
-		dat = self.project.eg
-			
-		bkgPlot = pg.PlotWidget(title=self.sampleName)
-		bkgPlot.setWindowTitle("LAtools bkg Plot")
-		bkgPlot.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
+class BkgPlot(GraphWindow):
 
+	def __init__(self, project, err='stderr'):
+		super().__init__(project)
 		self.bkgScatters = []
 		self.bkgLines = []
 		self.bkgFills = []
+		self.err = err
+		
+		self.setWindowTitle("LAtools bkg Plot")
+
+		self.initialiseSamples()
+
+		graph = pg.PlotWidget()
+		graph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
+
+		self.graphs.append(graph)
+
+		self.layout.addWidget(graph, 1)
+
+		self.initialiseLegend()
+
+	def populateGraph(self):
+		dat = self.project.eg
 		for analyte in self.project.eg.analytes:
 			sy = dat.bkg['raw'].loc[:, analyte]
 
 			x = dat.bkg['calc']['uTime']
 			y = dat.bkg['calc'][analyte]['mean']
-			yl = dat.bkg['calc'][analyte]['mean'] - dat.bkg['calc'][analyte][err]
-			yu = dat.bkg['calc'][analyte]['mean'] + dat.bkg['calc'][analyte][err]
+			yl = dat.bkg['calc'][analyte]['mean'] - dat.bkg['calc'][analyte][self.err]
+			yu = dat.bkg['calc'][analyte]['mean'] + dat.bkg['calc'][analyte][self.err]
 
 			if self.yLogCheckBox.isChecked():
 				sy = np.log10(sy)
@@ -481,16 +502,28 @@ class GraphWindow(QWidget):
 
 			scatter = pg.ScatterPlotItem(dat.bkg['raw'].uTime, sy, pen=None, brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 2)), size=3)
 			self.bkgScatters.append(scatter)
-			bkgPlot.addItem(scatter)
-
 
 			line = pg.PlotDataItem(x, y, pen=pg.mkPen(dat.cmaps[analyte], width=2), label=analyte, name=analyte, connect='finite')
 			self.bkgLines.append(line)
-			bkgPlot.addItem(line)
 
 			fill = pg.FillBetweenItem(pg.PlotDataItem(x, yl, pen=pg.mkPen(0,0,0,0)), pg.PlotDataItem(x, yu, pen=pg.mkPen(0,0,0,0)), brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 1.25)))
 			self.bkgFills.append(fill)
-			bkgPlot.addItem(fill)
 
-		self.bkgPlot = bkgPlot
-		self.bkgPlot.show()
+			for graph in self.graphs:
+				graph.addItem(scatter)
+				graph.addItem(line)
+				graph.addItem(fill)
+	
+	def showGraph(self):
+		self.show()
+
+	def swapSample(self):
+		x=1
+
+	# change between log/linear y scale
+	def updateLogScale(self):
+		"""
+		When log(y) checkbox is modified, update y-axis scale
+		"""
+		for graph in self.graphs:
+			graph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())

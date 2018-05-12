@@ -106,7 +106,7 @@ class ProgressPane:
 		#print(self.project.eg.stages_complete)
 
 		currentStage = list(self.focusStages.keys())[self.stagesStack.currentIndex()]
-		if currentStage not in ['rawdata', 'despiked']:
+		if currentStage in ['autorange', 'bkgsub']:
 			ranges = True
 		else:
 			ranges = False
