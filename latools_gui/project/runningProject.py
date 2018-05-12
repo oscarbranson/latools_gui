@@ -1,29 +1,16 @@
-""" This module needs a top level docstring.
-
-"""
+""" Defines and records details from the currently running project """
 
 import ast
 from PyQt5.QtWidgets import *
-from templates import progressUpdater
 
 class RunningProject():
-	""" This class is intended to house everything that is specific to one project.
-
-	When a project is created or loaded, this class is what is created or loaded.
-	The instance of this class is passed to each stage.
-	Currently it just contains a class variable which is later assigned as the la.analyse object.
-
-	Attributes
-	----------
-		dataDictionary : dict
-			A dictionary meant to store var pairs.
-			Defined by calls from outside stages' needs.
+	"""
+	An object that defines and records all the details from the currently running project, and handles
+	the saving and loading.
 	"""
 
 	def __init__(self, mainWidget):
-		""" Initialise a blank unaltered state.
-
-		Creates tabula rasa project state.
+		""" Initialises a blank project state
 		"""
 		self.mainWidget = mainWidget
 
@@ -47,13 +34,17 @@ class RunningProject():
 	def saveProject(self):
 		""" Save overwrites the current save file with the latest file strings """
 
+		# If the project hasn't been saved before it will not have a save file location
 		if not self.hasSaved:
 
+			# The location of the specified data folder is used as a default save location, if there is one.
 			location = '/home'
 			if self.dataLocation is not None:
 				location = self.dataLocation
 
+			# A browse dialog that specifies the save folder location
 			dialogLocaton = QFileDialog.getExistingDirectory(self.mainWidget, 'Open file', location)
+
 			# If cancel was not pressed, set the location
 			if dialogLocaton != '':
 				self.folder = dialogLocaton
@@ -62,10 +53,12 @@ class RunningProject():
 			else:
 				return
 
+		# If a project hasn't been started yet, a blank file is used as a save file
 		if self.eg is None and self.folder is not None:
 			file = open(self.folder + "/" + self.fileName + ".lalog", 'w')
 			return
 
+		# Otherwise the project is saved in the save folder location
 		if self.folder is not None:
 			self.eg.save_log(self.folder, self.fileName + ".lalog")
 		else:
@@ -102,10 +95,7 @@ class RunningProject():
 		for line in logFileStrings:
 
 			if "__init__ :: args=() kwargs=" in line:
-
 				subLine = line.replace("__init__ :: args=() kwargs=", "")
-				subLine = subLine.replace('<', '"')
-				subLine = subLine.replace('>', '"')
 				self.stageParams["import"] = ast.literal_eval(subLine)
 				self.updateLastStage(0)
 
@@ -180,15 +170,19 @@ class RunningProject():
 		return self.stageParams.get(stage, None)
 
 	def updateLastStage(self, i):
+		""" A quick function for updating the last stage if the provided index is greater """
 		if i > self.lastStage:
 			self.lastStage = i
 
 	def setDataLocation(self, location):
+		""" Saves the location of the specified data folder """
 		self.dataLocation = location
 
 	def reSave(self):
+		""" Only saves the project if it already has a save file location. Used when stage apply buttons are pressed """
 		if self.hasSaved:
 			self.saveProject()
 
 	def addRecentProjects(self, recents):
+		""" saves a reference to the recentProjects object, which manages and displays the recent projects """
 		self.recentProjects = recents

@@ -386,5 +386,6 @@ class BackgroundStage():
 		self.pressedSubtractButton()
 
 	def enterPressed(self):
+		""" When enter is pressed on this stage """
 		if self.subtractButton.isEnabled():
 			self.pressedSubtractButton()

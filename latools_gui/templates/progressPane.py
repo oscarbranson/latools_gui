@@ -85,11 +85,26 @@ class ProgressPane:
 		self.rightButton.setEnabled(True)
 
 	def completedStage(self, index):
+		"""
+		Alerts that a stage is completed, so that the tab and button can be enabled
+
+		Parameters
+		----------
+		index : int
+			The index of the completed stage
+		"""
 		self.setRightEnabled()
 		self.stageTabs.completedStage(index)
 
 	def tabChanged(self, index):
+		"""
+		Alerts that a stage is completed, so that the tab and button can be enabled
 
+		Parameters
+		----------
+		index : int
+			The index of the completed stage
+		"""
 		currentStage = list(self.focusStages.keys())[index]
 		if currentStage in ['autorange', 'bkgsub']:
 			ranges = True
@@ -102,4 +117,6 @@ class ProgressPane:
 				stageIndex += 1
 			self.project.eg.set_focus(self.focusStages[currentStage][stageIndex])
 		self.graphPane.updateGraph(showRanges=ranges)
+
+		# Resets the progress bar
 		self.progressUpdater.reset()

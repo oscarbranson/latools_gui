@@ -98,5 +98,6 @@ class RatioStage():
 		self.pressedApplyButton()
 
 	def enterPressed(self):
+		""" When enter is pressed on this stage """
 		if self.applyButton.isEnabled():
 			self.pressedApplyButton()

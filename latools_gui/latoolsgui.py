@@ -73,24 +73,18 @@ class MainWindow(QMainWindow):
 		# And it is added to the mainstack in position 0.
 		self.mainStack.addWidget(self.titleScreenObj.getPane())
 
-		# We create a widget for the stages screen so that it can be added to the main stack.
-		# This way we can move from the title screen to the stages screen.
-		self.stageWidget = QWidget()
-		# By making the stageWidget the "parent" of the stageScreenLayout, the widget will contain the layout:
-		self.stageScreenLayout = QVBoxLayout(self.stageWidget)
-		#self.mainStack.addWidget(self.stageWidget)
-
-		# ----
-
+		# We create a widget for the stages and add this to the main stack
 		self.stageTabsWidget = QWidget()
 		self.stagesLayout = QVBoxLayout(self.stageTabsWidget)
 		self.mainStack.addWidget(self.stageTabsWidget)
 
+		# The stageTabs object is created
 		self.stageTabs = stageTabs.StageTabs(STAGES, self.stagesLayout)
 
+		# The layout for each stage is stored in a list, which is passed to the stageTabs object
 		self.stageLayouts = []
 
-		# First a widget is made, so that it can be added to the stage stack
+		# For each stage, we make a widget, a layout for the widget, and add the layout to the list.
 		self.importStageWidget = QWidget()
 		self.importStageLayout = QVBoxLayout(self.importStageWidget)
 		self.stageLayouts.append(self.importStageLayout)
@@ -119,6 +113,7 @@ class MainWindow(QMainWindow):
 		self.filteringStageLayout = QVBoxLayout(self.filteringStageWidget)
 		self.stageLayouts.append(self.filteringStageLayout)
 
+		# All of the stage layouts are passed to the stageTabs, to be placed in tabs
 		self.stageTabs.passStageLayouts(self.stageLayouts)
 
 		# Here we define the graph pane, so that it could be passed to the controls pane.
@@ -128,8 +123,7 @@ class MainWindow(QMainWindow):
 		# We create the progress pane object but will add it to the stages layout later
 		self.progressPaneObj = progressPane.ProgressPane(STAGES, self.graphPaneObj, self.project, self.stageTabs)
 
-		# A layout for each stage is created, and added to the stage stack
-
+		# The stage objects are then created. Their content will populate the tabs
 		self.importStageObj = importStage.ImportStage(
 			self.importStageLayout, self.graphPaneObj, self.progressPaneObj, self.importStageWidget, self.project)
 		self.despikingStageObj = despikingStage.DespikingStage(
@@ -147,7 +141,7 @@ class MainWindow(QMainWindow):
 		self.filteringStageObj = filteringStage.FilteringStage(
 			self.filteringStageLayout, self.graphPaneObj, self.progressPaneObj, self.filteringStageWidget, self.project)
 
-		# Object that allows updates to stages to occur during runtime
+		# ImportListener handles all interaction between stages at run time.
 		self.importListener = ImportListener(self.importStageObj,
 											self.despikingStageObj,
 											self.autorangeStageObj,
@@ -164,17 +158,23 @@ class MainWindow(QMainWindow):
 		self.titleScreenObj.setImportListener(self.importListener)
 		self.project.setImportListener(self.importListener)
 
-		#Finally, we call methods on the progressPane and graphPane object to add them to the layout.
+		# Finally, we call methods on the progressPane and graphPane object to add them to the layout.
 		self.progressPaneObj.addToLayout(self.stagesLayout)
 		self.graphPaneObj.addToLayout(self.stagesLayout)
 
+		# This bool is used to avoid having to confirm quitting twice
 		self.quitting = False
 
+		# The config window is a popup window that is recorded here so that it is not destroyed after being created.
 		self.configWindow = None
 
 	def keyPressEvent(self, event):
+		""" Keypress events are handled here """
 		if type(event) == QKeyEvent:
+
+			# Pressing the enter key will attempt to press the main activation button on the stages and title screen
 			if event.key() == Qt.Key_Return:
+				# The stages are alerted of the keypress via the Import Listener
 				self.importListener.enterPressed(main=self.mainStack.currentIndex(),
 												 stage=self.stageTabs.tabs.currentIndex())
 
@@ -220,46 +220,61 @@ class MainWindow(QMainWindow):
 			self.project.eg.minimal_export()
 
 	def closeEvent(self, event):
+		""" Attempting to close the window is handled here """
 
 		# If we are not on the title page...
 		if self.mainStack.currentIndex() != 0 and not self.quitting:
 			self.quitting = True
+
+			# A popup message is created to ask to save the project
 			reply = QMessageBox.question(self, 'Message',
 										"Would you like to save before quitting?", QMessageBox.Yes |
 										QMessageBox.No | QMessageBox.Cancel, QMessageBox.Cancel)
-
 			if reply == QMessageBox.Yes:
+				# If yes is selected the project is saved, then closed
 				self.project.saveProject()
 				event.accept()
 			elif reply == QMessageBox.No:
+				# If no, the project is closed
 				event.accept()
 			else:
+				# If cancel, the event is ignored
 				self.quitting = False
 				event.ignore()
 
 	def makeConfig(self):
-		self.configWindow = ConfigWindow()
+		""" Displays the New Configuration popup window """
+		self.configWindow = ConfigWindow(self.importStageObj)
 		self.configWindow.show()
 
 	def setProjectTitle(self, title):
+		""" Updates the program window with the project title """
 		self.setWindowTitle("LAtools - " + title)
 
 class ConfigWindow(QWidget):
+	""" A popup window, accessed via the file menu, that allows the user to define a new configuration for LAtools """
 
-	def __init__(self):
+	def __init__(self, importStage):
+		""" Creates the popup window """
 
 		QWidget.__init__(self)
 		self.setWindowTitle("Create new configuration")
+
+		# We use a bool to determine if the chosen configuration name is acceptable
 		self.nameOK = False
+		self.importStage = importStage
 
+		# We use a grid layout
 		self.configGrid = QGridLayout(self)
-		self.configGrid.addWidget(QLabel("Configuration name:"), 0, 0)
 
+		# The name field
+		self.configGrid.addWidget(QLabel("Configuration name:"), 0, 0)
 		self.configName = QLineEdit()
 		self.configGrid.addWidget(self.configName, 0, 1)
 		self.configName.setFixedWidth(250)
 		self.configName.cursorPositionChanged.connect(self.nameEdited)
 
+		# The data format field and browse button
 		self.configGrid.addWidget(QLabel("dataformat:"), 1, 0)
 		self.configData = QLineEdit()
 		self.configGrid.addWidget(self.configData, 1, 1)
@@ -269,6 +284,7 @@ class ConfigWindow(QWidget):
 		self.configDataButton.clicked.connect(self.dataClicked)
 		self.configGrid.addWidget(self.configDataButton, 1, 3)
 
+		# The srm file field and browse button
 		self.configGrid.addWidget(QLabel("srmfile:"), 2, 0)
 		self.configSrm = QLineEdit()
 		self.configGrid.addWidget(self.configSrm, 2, 1)
@@ -278,52 +294,67 @@ class ConfigWindow(QWidget):
 		self.configSrmButton.clicked.connect(self.srmClicked)
 		self.configGrid.addWidget(self.configSrmButton, 2, 3)
 
+		# The activation button, which is disabled until there is acceptable input parameters
 		self.applyButton = QPushButton("Create configuration")
 		self.applyButton.setEnabled(False)
 		self.configGrid.addWidget(self.applyButton, 4, 3)
 		self.applyButton.clicked.connect(self.applyClicked)
 
+		# A text box that displays the current configurations
 		self.configPrint = QTextEdit()
 
+		# The content for the text box is derived from a list of current configurations
 		configStr = "Current LAtools configurations:\n\n"
 		for key in dict(la.config.read_latoolscfg()[1]):
 			configStr = configStr + key + "\n"
 		self.configPrint.setText(configStr)
 
+		# The text box is displayed and disabled
 		self.configGrid.addWidget(self.configPrint, 5, 0, 1, 4)
 		self.configPrint.setEnabled(False)
 
 	def dataClicked(self):
+		""" The browse button for the data field """
 		location = QFileDialog.getOpenFileName(self, 'Open file', '/home')
 		self.configData.setText(location[0])
 		self.nameEdited()
 
 	def srmClicked(self):
+		""" The browse button for the srm field """
 		location = QFileDialog.getOpenFileName(self, 'Open file', '/home')
 		self.configSrm.setText(location[0])
 		self.nameEdited()
 
 	def applyClicked(self):
+		""" Creates the new configuration when the apply button is pressed """
 
+		# The latools function is called
 		la.config.create(self.configName.text(),
 						 srmfile=self.configSrm.text(),
 						 dataformat=self.configData.text(),
 						 base_on='DEFAULT', make_default=False)
 
+		# The text box is updated
 		configStr = "Current LAtools configurations:\n\n"
 		for key in dict(la.config.read_latoolscfg()[1]):
 			configStr = configStr + key + "\n"
 		self.configPrint.setText(configStr)
 
+		# An info box informs the user that a configuration has been created
 		infoBox = QMessageBox.information(self,
 										"Configuration added",
 										"Configuration added",
 										QMessageBox.Ok)
+
+		# The dropdown in the import stage is relisted to include the new configuration
+		self.importStage.relistConfig()
+		# The apply button is then disabled to avoid creating the config twice
 		self.applyButton.setEnabled(False)
 
 	def nameEdited(self):
-
+		""" Called whenever the name field is edited. Determines when the apply button can be enabled """
 		self.nameOK = self.configName.text() != ""
+		# Can be extended to disallow certain characters in the name field
 		self.applyButton.setEnabled(self.nameOK and self.configData.text() != "" and self.configSrm.text() != "")
 
 class ImportListener():
@@ -372,8 +403,7 @@ class ImportListener():
 		self.backgroundStage.resetButtons()
 
 	def setTitle(self, title):
-		# Sends the project name to the navigation pane to display
-		# and sets the loaded stage index
+		""" Adds the project title to the name of the program's window """
 		self.mainWindow.setProjectTitle(title)
 
 	def setStageIndex(self, index):
@@ -386,9 +416,11 @@ class ImportListener():
 		self.progressPane.progressUpdater.reset()
 
 	def enterPressed(self, main, stage):
+		""" Determines which screen the enter command should be sent to """
 		if main == 0:
 			self.titleScreen.enterPressed()
 		elif main == 1:
+			# If we are on the stages screen, the command is sent to the indexed stage
 			self.stageObjects[stage].enterPressed()
 
 # This is where the GUI is actually created and run.

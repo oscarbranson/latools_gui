@@ -128,6 +128,7 @@ class TitleScreen():
 		self.bottomSpacer = QSpacerItem(0, 125, QSizePolicy.Minimum, QSizePolicy.Expanding)
 		self.mainLayout.addItem(self.bottomSpacer)
 
+		# A progress bar for loading a project
 		self.progressLabel = QLabel("")
 		self.mainLayout.addWidget(self.progressLabel)
 		self.progressLabel.setAlignment(Qt.AlignCenter)
@@ -136,7 +137,10 @@ class TitleScreen():
 		self.progressBar.setAlignment(Qt.AlignCenter)
 		self.mainLayout.addWidget(self.progressBar)
 
+		# The progress bar updater runs the progress bar
 		self.progressUpdater = progressUpdater.ProgressUpdater(self.progressBar)
+
+		# The recent projects are handled in a separate object
 		self.recentProjects = RecentProjects(self.recentDropdown)
 
 
@@ -185,12 +189,12 @@ class TitleScreen():
 			self.projectName = self.recentDropdown.currentText()
 			self.fileLocation = self.recentProjects.getLocation(self.recentDropdown.currentIndex() - 1)
 			self.recentProjects.reorderDropdown(self.recentDropdown.currentIndex() - 1)
-			#try:
-			self.project.loadFile(self.projectName, self.fileLocation, self.progressUpdater)
-			#except:
-				#message = "The .lalog file could not be found."
-				#errorBox = QMessageBox.critical(self.mainWidget, "Error", message, QMessageBox.Ok)
-				#return
+			try:
+				self.project.loadFile(self.projectName, self.fileLocation, self.progressUpdater)
+			except:
+				message = "The .lalog file could not be found."
+				errorBox = QMessageBox.critical(self.mainWidget, "Error", message, QMessageBox.Ok)
+				return
 
 		# The project title is delivered to the stages screen
 		self.importListener.setTitle(self.projectName)
@@ -315,12 +319,16 @@ class RecentProjects:
 		filename = "project/recentProjects.txt"
 		if '_MEIPASS2' in os.environ:
 			filename = os.path.join(os.environ['_MEIPASS2'], filename)
+
+		# If the recentProjects.txt file isn't there we make a new one and open it
 		try:
 			recentFile = open(filename, "r")
 		except IOError:
 			file = open(filename, "w")
 			file.close()
 			recentFile = open(filename, "r")
+
+		# Lists to contain the file contents
 		self.fileContent = []
 		self.splitContent = []
 
@@ -329,6 +337,7 @@ class RecentProjects:
 			self.splitContent.append(name.split('*'))
 		recentFile.close()
 
+		# Legitimate entries in the file are recorded as recent projects
 		i = 0
 		for split in self.splitContent:
 			if len(split) == 2:
@@ -388,5 +397,9 @@ class RecentProjects:
 		return self.fileContent[index].split('*')[1]
 
 	def updateLocation(self, name, location):
+		""" When a new project is saved it will currently have a name but no location.
+			The location is added and saved in the file
+		"""
+		# The new file is added to the end of the list, the list is then reordered and saved
 		self.fileContent.append(name + "*" + location)
 		self.reorderDropdown(len(self.fileContent) - 1)

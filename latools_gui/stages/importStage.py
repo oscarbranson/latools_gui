@@ -117,9 +117,11 @@ class ImportStage():
 
 			self.progressPaneObj.completedStage(0)
 
+			# When the data is imported various stage parameters are updated via the importListener
 			if not self.importListener is None:
 				self.importListener.dataImported()
 
+			# The data location is recorded to be used as the default savefile location
 			self.project.setDataLocation(self.fileLocationLine.text())
 
 			# Automatically saves the project if it already has a save location
@@ -159,6 +161,17 @@ class ImportStage():
 		self.pressedApplyButton()
 
 	def enterPressed(self):
+		""" When enter is pressed on this stage """
 		if self.applyButton.isEnabled():
 			self.pressedApplyButton()
 
+	def relistConfig(self):
+		""" When a new configuration is added the config dropdown box needs to be updated """
+
+		# First each item is removed
+		while self.configOption.count() != 0:
+			self.configOption.removeItem(0)
+
+		# Items are then readded
+		for key in dict(la.config.read_latoolscfg()[1]):
+			self.configOption.addItem(key)
