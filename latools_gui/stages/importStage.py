@@ -112,7 +112,6 @@ class ImportStage():
 										 extension=self.file_extensionOption.text(),
 										 srm_identifier=self.srm_identifierOption.text(),
 										 pbar=self.progressPaneObj.progressUpdater)
-										 #pbar=None)
 
 			self.graphPaneObj.updateGraph(importing=True)
 
@@ -158,4 +157,8 @@ class ImportStage():
 
 		# The loading process then activates the stage's apply command
 		self.pressedApplyButton()
+
+	def enterPressed(self):
+		if self.applyButton.isEnabled():
+			self.pressedApplyButton()
 

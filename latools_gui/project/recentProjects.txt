@@ -1,3 +1,10 @@
+<<<<<<< HEAD
 Test*
+=======
+test98*/Users/simon/Documents/Uni
+test96*/Users/simon/Documents/Uni
+test95*/Users/simon/Documents/Uni
+>>>>>>> 09f78ddc922220762b3dc75cf2ea6a439d4fd969
 test94*/Users/simon/Documents/Uni
+tutorial*/Users/simon/Documents/Uni
 test93*/Users/simon/Documents/Uni

@@ -96,20 +96,6 @@ class TitleScreen():
 		self.nameEdit.setVisible(False)
 		self.nameEdit.setMaxLength(60)
 
-		# self.locationLabel = QLabel("Save location:")
-		# self.titleGrid.addWidget(self.locationLabel, 3, 0)
-		# self.locationLabel.setVisible(False)
-
-		# self.newBrowse = QPushButton("Browse")
-		# self.titleGrid.addWidget(self.newBrowse, 3, 1)
-		# self.newBrowse.setVisible(False)
-		# self.newBrowse.clicked.connect(self.newBrowseClick)
-
-		# self.newLocation = QLineEdit()
-		# self.titleGrid.addWidget(self.newLocation, 4, 0, 1, 2)
-		# self.newLocation.setVisible(False)
-		# self.newLocation.setEnabled(False)
-
 		self.backButton = QPushButton("Back")
 		self.backButton.clicked.connect(self.backButtonClick)
 		self.titleGrid.addWidget(self.backButton, 5, 0)
@@ -226,6 +212,7 @@ class TitleScreen():
 		# self.newBrowse.setVisible(True)
 		# self.newLocation.setVisible(True)
 		self.nextButton.setEnabled(False)
+		self.nameEdit.setFocus()
 
 	def openButtonClick(self):
 		"""
@@ -308,6 +295,10 @@ class TitleScreen():
 		""" Link to online user guide """
 		url = QUrl("https://github.com/oscarbranson/latools")
 		QDesktopServices.openUrl(url)
+
+	def enterPressed(self):
+		if self.nextButton.isEnabled():
+			self.nextButtonClick()
 
 class RecentProjects:
 	"""

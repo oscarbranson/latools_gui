@@ -340,6 +340,10 @@ class BackgroundStage():
 		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.backgroundWidget, "Error", message, QMessageBox.Ok)
 
+	def resetButtons(self):
+		self.popupButton.setEnabled(False)
+		self.subtractButton.setEnabled(False)
+
 	def loadValues(self):
 		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
@@ -380,3 +384,7 @@ class BackgroundStage():
 		# The loading process then activates the stage's apply command
 		self.pressedCalcButton()
 		self.pressedSubtractButton()
+
+	def enterPressed(self):
+		if self.subtractButton.isEnabled():
+			self.pressedSubtractButton()
