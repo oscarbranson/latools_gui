@@ -202,3 +202,7 @@ class DespikingStage():
 
 		# The loading process then activates the stage's apply command
 		self.pressedApplyButton()
+
+	def enterPressed(self):
+		if self.applyButton.isEnabled():
+			self.pressedApplyButton()

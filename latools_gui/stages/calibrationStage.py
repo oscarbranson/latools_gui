@@ -91,7 +91,12 @@ class CalibrationStage():
 		self.reloadButton.clicked.connect(self.pressedReloadButton)
 		self.stageControls.addApplyButton(self.reloadButton)
 
-		# We create the button for the right-most section of the Controls Pane.
+		# We create the buttons for the right-most section of the Controls Pane.
+
+		self.popupButton = QPushButton("Plot in popup")
+		self.popupButton.clicked.connect(self.pressedPopupButton)
+		self.stageControls.addApplyButton(self.popupButton)
+		#self.popupButton.setEnabled(False)
 
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
@@ -108,8 +113,6 @@ class CalibrationStage():
 			except:
 				self.raiseError("The 'n_min' value must be an integer")
 				return
-
-		my = QCheckBox("hi")
 
 		srmParam = []
 		for srm in self.srmList:
@@ -186,3 +189,11 @@ class CalibrationStage():
 
 		# The loading process then activates the stage's apply command
 		self.pressedApplyButton()
+
+	def enterPressed(self):
+		if self.applyButton.isEnabled():
+			self.pressedApplyButton()
+
+	def pressedPopupButton(self):
+		pass
+

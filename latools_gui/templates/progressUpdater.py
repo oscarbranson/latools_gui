@@ -29,10 +29,8 @@ class ProgressUpdater:
 
 	def update(self):
 		self.value += 1
-		if self.value < self.total:
+		if self.value <= self.total:
 			self.progressBar.setValue(self.value)
-		elif self.value == self.total:
-			self.reset()
 		QApplication.processEvents()
 
 	def reset(self):

@@ -51,3 +51,5 @@ class FilteringStage():
 	def loadValues(self):
 		x = 1
 
+	def enterPressed(self):
+		pass

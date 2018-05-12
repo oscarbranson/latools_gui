@@ -1,9 +1,10 @@
 """ This is the main module that builds all aspects of the latools program and runs the GUI."""
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QKeyEvent, QPainter
 from PyQt5.QtCore import Qt, QSize
 import sys 
+import latools as la
 
 # Import the templates
 from templates import titleScreen
@@ -146,27 +147,34 @@ class MainWindow(QMainWindow):
 			self.filteringStageLayout, self.graphPaneObj, self.progressPaneObj, self.filteringStageWidget, self.project)
 
 		# Object that allows updates to stages to occur during runtime
-		importListener = ImportListener(self.importStageObj,
-										self.despikingStageObj,
-										self.autorangeStageObj,
-										self.backgroundStageObj,
-										self.ratioStageObj,
-										self.calibrationStageObj,
-										self.filteringStageObj,
-										self.navigationPaneObj,
-										self.progressPaneObj,
-										self.graphPaneObj)
-		self.importStageObj.setImportListener(importListener)
-		self.titleScreenObj.setImportListener(importListener)
-		self.project.setImportListener(importListener)
-
-
+		self.importListener = ImportListener(self.importStageObj,
+											self.despikingStageObj,
+											self.autorangeStageObj,
+											self.backgroundStageObj,
+											self.ratioStageObj,
+											self.calibrationStageObj,
+											self.filteringStageObj,
+											self.navigationPaneObj,
+											self.progressPaneObj,
+											self.graphPaneObj,
+											self.titleScreenObj)
+		self.importStageObj.setImportListener(self.importListener)
+		self.titleScreenObj.setImportListener(self.importListener)
+		self.project.setImportListener(self.importListener)
 
 		#Finally, we call methods on the progressPane and graphPane object to add them to the layout.
 		self.progressPaneObj.addToLayout(self.stageScreenLayout)
 		self.graphPaneObj.addToLayout(self.stageScreenLayout)
 
 		self.quitting = False
+
+		self.configWindow = None
+
+	def keyPressEvent(self, event):
+		if type(event) == QKeyEvent:
+			if event.key() == Qt.Key_Return:
+				self.importListener.enterPressed(main=self.mainStack.currentIndex(),
+												 stage=self.stagesStack.currentIndex())
 
 	def initFileMenu(self):
 		""" Builds and displays the file menu"""
@@ -199,7 +207,7 @@ class MainWindow(QMainWindow):
 
 		makeConfig = QAction(QIcon('open.png'), 'Make', self)
 		makeConfig.setStatusTip('Make a new configuration')
-		# makeConfig.triggered.connect()
+		makeConfig.triggered.connect(self.makeConfig)
 
 		configMenu = menubar.addMenu('&Configuration')
 		configMenu.addAction(makeConfig)
@@ -231,6 +239,92 @@ class MainWindow(QMainWindow):
 				self.quitting = False
 				event.ignore()
 
+	def makeConfig(self):
+		self.configWindow = ConfigWindow()
+		self.configWindow.show()
+
+class ConfigWindow(QWidget):
+
+	def __init__(self):
+
+		QWidget.__init__(self)
+		self.setWindowTitle("Create new configuration")
+		self.nameOK = False
+
+		self.configGrid = QGridLayout(self)
+		self.configGrid.addWidget(QLabel("Configuration name:"), 0, 0)
+
+		self.configName = QLineEdit()
+		self.configGrid.addWidget(self.configName, 0, 1)
+		self.configName.setFixedWidth(250)
+		self.configName.cursorPositionChanged.connect(self.nameEdited)
+
+		self.configGrid.addWidget(QLabel("dataformat:"), 1, 0)
+		self.configData = QLineEdit()
+		self.configGrid.addWidget(self.configData, 1, 1)
+		self.configData.setEnabled(False)
+
+		self.configDataButton = QPushButton("Browse")
+		self.configDataButton.clicked.connect(self.dataClicked)
+		self.configGrid.addWidget(self.configDataButton, 1, 3)
+
+		self.configGrid.addWidget(QLabel("srmfile:"), 2, 0)
+		self.configSrm = QLineEdit()
+		self.configGrid.addWidget(self.configSrm, 2, 1)
+		self.configSrm.setEnabled(False)
+
+		self.configSrmButton = QPushButton("Browse")
+		self.configSrmButton.clicked.connect(self.srmClicked)
+		self.configGrid.addWidget(self.configSrmButton, 2, 3)
+
+		self.applyButton = QPushButton("Create configuration")
+		self.applyButton.setEnabled(False)
+		self.configGrid.addWidget(self.applyButton, 4, 3)
+		self.applyButton.clicked.connect(self.applyClicked)
+
+		self.configPrint = QTextEdit()
+
+		configStr = "Current LAtools configurations:\n\n"
+		for key in dict(la.config.read_latoolscfg()[1]):
+			configStr = configStr + key + "\n"
+		self.configPrint.setText(configStr)
+
+		self.configGrid.addWidget(self.configPrint, 5, 0, 1, 4)
+		self.configPrint.setEnabled(False)
+
+	def dataClicked(self):
+		location = QFileDialog.getOpenFileName(self, 'Open file', '/home')
+		self.configData.setText(location[0])
+		self.nameEdited()
+
+	def srmClicked(self):
+		location = QFileDialog.getOpenFileName(self, 'Open file', '/home')
+		self.configSrm.setText(location[0])
+		self.nameEdited()
+
+	def applyClicked(self):
+
+		la.config.create(self.configName.text(),
+						 srmfile=self.configSrm.text(),
+						 dataformat=self.configData.text(),
+						 base_on='DEFAULT', make_default=False)
+
+		configStr = "Current LAtools configurations:\n\n"
+		for key in dict(la.config.read_latoolscfg()[1]):
+			configStr = configStr + key + "\n"
+		self.configPrint.setText(configStr)
+
+		infoBox = QMessageBox.information(self,
+										"Configuration added",
+										"Configuration added",
+										QMessageBox.Ok)
+		self.applyButton.setEnabled(False)
+
+	def nameEdited(self):
+
+		self.nameOK = self.configName.text() != ""
+		self.applyButton.setEnabled(self.nameOK and self.configData.text() != "" and self.configSrm.text() != "")
+
 class ImportListener():
 	""" Handles the passing of information between modules during runtime """
 
@@ -244,7 +338,8 @@ class ImportListener():
 				 filteringStage,
 				 navigationPane,
 				 progressPane,
-				 graphPane):
+				 graphPane,
+				 titleScreen):
 		self.importStage = importStage
 		self.despikingStage = despikingStage
 		self.autorangeStage = autorangeStage
@@ -255,6 +350,15 @@ class ImportListener():
 		self.navigationPane = navigationPane
 		self.progressPane = progressPane
 		self.graphPane = graphPane
+		self.titleScreen = titleScreen
+
+		self.stageObjects = [self.importStage,
+							 self.despikingStage,
+							 self.autorangeStage,
+							 self.backgroundStage,
+							 self.ratioStage,
+							 self.calibrationStage,
+							 self.filteringStage]
 
 	def dataImported(self):
 		""" When data is first imported in the Import Stage, several fields can be updated in later
@@ -262,6 +366,7 @@ class ImportListener():
 		self.autorangeStage.updateStageInfo()
 		self.ratioStage.updateStageInfo()
 		self.calibrationStage.updateStageInfo()
+		self.backgroundStage.resetButtons()
 
 	def setTitle(self, title):
 		# Sends the project name to the navigation pane to display
@@ -274,22 +379,28 @@ class ImportListener():
 
 	def loadStage(self, index):
 		""" Tells a stage to load the saved stage parameter info, based on an identifying stage index """
-		if index == 0:
-			self.importStage.loadValues()
-		elif index == 1:
-			self.despikingStage.loadValues()
-		elif index == 2:
-			self.autorangeStage.loadValues()
-		elif index == 3:
-			self.backgroundStage.loadValues()
-		elif index == 4:
-			self.ratioStage.loadValues()
-		elif index == 5:
-			self.calibrationStage.loadValues()
-		elif index == 6:
-			self.filteringStage.loadValues()
+		self.stageObjects[index].loadValues()
+		# if index == 0:
+		# 	self.importStage.loadValues()
+		# elif index == 1:
+		# 	self.despikingStage.loadValues()
+		# elif index == 2:
+		# 	self.autorangeStage.loadValues()
+		# elif index == 3:
+		# 	self.backgroundStage.loadValues()
+		# elif index == 4:
+		# 	self.ratioStage.loadValues()
+		# elif index == 5:
+		# 	self.calibrationStage.loadValues()
+		# elif index == 6:
+		# 	self.filteringStage.loadValues()
+		self.progressPane.progressUpdater.reset()
 
-
+	def enterPressed(self, main, stage):
+		if main == 0:
+			self.titleScreen.enterPressed()
+		elif main == 1:
+			self.stageObjects[stage].enterPressed()
 
 # This is where the GUI is actually created and run.
 # Autodocs executes side effects when it imports modules to be read. Therefore the GUI must be created and

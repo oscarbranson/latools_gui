@@ -45,7 +45,6 @@ class ProgressPane:
 
 		# The object that updates the progress bar
 		self.progressUpdater = progressUpdater.ProgressUpdater(self.progressBar)
-		#self.progressProvider = progressUpdater.ProgressUpdaterProvider(self.progressBar)
 
 		# We add a right button
 		self.rightButton = QPushButton("➡")
@@ -95,6 +94,9 @@ class ProgressPane:
 		# The right button should be enabled
 		self.rightButton.setEnabled(True)
 
+		# The progress bar is reset
+		self.progressUpdater.reset()
+
 		# We send the current stage index to the nameTags object to handle the highlighting.
 		self.navPane.setStage(self.stagesStack.currentIndex())
 
@@ -120,7 +122,12 @@ class ProgressPane:
 		# If it's a new stage, the right button is disabled until the apply button is pressed
 		if currentStage not in self.project.eg.stages_complete and currentStage != 'despiked':
 			self.rightButton.setEnabled(False)
+
 		self.leftButton.setEnabled(True)
+
+		#The progress bar is reset
+		self.progressUpdater.reset()
+
 		self.navPane.setStage(self.stagesStack.currentIndex())
 
 	def setRightEnabled(self):

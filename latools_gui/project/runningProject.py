@@ -106,7 +106,6 @@ class RunningProject():
 				subLine = line.replace("__init__ :: args=() kwargs=", "")
 				subLine = subLine.replace('<', '"')
 				subLine = subLine.replace('>', '"')
-				print(subLine)
 				self.stageParams["import"] = ast.literal_eval(subLine)
 				self.updateLastStage(0)
 
