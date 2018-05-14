@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtCore import QUrl
 import os
+import sys
 from templates import progressUpdater
 
 class TitleScreen():
@@ -316,9 +317,13 @@ class RecentProjects:
 		"""
 
 		# Opens and reads the recentProjects text file.
-		filename = "project/recentProjects.txt"
-		if '_MEIPASS2' in os.environ:
-			filename = os.path.join(os.environ['_MEIPASS2'], filename)
+		if getattr(sys, 'frozen', False):
+			# If the program is running as a bundle, then get the relative directory
+			filename = os.path.join(os.path.dirname(sys.executable), 'project/recentProjects.txt')
+			filename = filename.replace('\\', '/')
+		else:
+			# Otherwise the program is running in a normal python environment
+			filename = "project/recentProjects.txt"
 
 		# If the recentProjects.txt file isn't there we make a new one and open it
 		try:
