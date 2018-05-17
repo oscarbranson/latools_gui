@@ -49,9 +49,10 @@ class RatioStage():
 
 		self.internal_standardOption = QComboBox()
 		self.internal_standardOption.addItem(" ")
-		self.optionsGrid.addWidget(QLabel("internal_standard"), 0, 0)
+		self.optionsGrid.addWidget(QLabel("Internal Standard"), 0, 0)
 		self.optionsGrid.addWidget(self.internal_standardOption, 0, 1)
 		self.internal_standardOption.activated.connect(self.internal_standardClicked)
+		self.internal_standardOption.setToolTip("<qt/>Choose an analyte to use as an internal standard.")
 
 		# We create the button for the right-most section of the Controls Pane.
 

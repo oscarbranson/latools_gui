@@ -71,14 +71,17 @@ class DespikingStage():
 		self.pane1Layout = QGridLayout(self.pane1Frame)
 		self.optionsGrid.addWidget(self.pane1Frame)
 
-		self.pane1expdecayOption = QCheckBox("exponential decay despike")
+		self.pane1expdecayOption = QCheckBox("Cell Washout Despiking")
 		self.pane1expdecayOption.setChecked(self.defaultParams['expdecay_despiker'] == 'True')
 		self.pane1Layout.addWidget(self.pane1expdecayOption, 0, 0, 1, 0)
+		self.pane1expdecayOption.setToolTip("<qt/>Remove physically impossible data based on the washout characteristics "
+											"of your ablation cell.")
 
 		self.pane1Exponent = QLineEdit(self.defaultParams['exponent'])
-		self.pane1Layout.addWidget(QLabel("exponent"), 1, 0)
+		self.pane1Layout.addWidget(QLabel("Washout Exponent"), 1, 0)
 		self.pane1Layout.addWidget(self.pane1Exponent, 1, 1)
-		self.pane1Exponent.setToolTip("The exponent for the exponential decay filter.")
+		self.pane1Exponent.setToolTip("<qt/>The exponential decay coefficient that describes your ablation cell washout "
+									  "speed. If blank, this is calculated automatically from SRM washouts.")
 
 		#self.pane1Maxiter = QLineEdit(self.defaultParams('maxiter'))
 		#self.pane1Layout.addWidget(QLabel("maxiter"), 2, 0)
@@ -92,26 +95,30 @@ class DespikingStage():
 		self.pane2Layout = QGridLayout(self.pane2Frame)
 		self.optionsGrid.addWidget(self.pane2Frame)
 
-		self.pane2NoiseOption = QCheckBox("noise despike")
+		self.pane2NoiseOption = QCheckBox("Signal Smoothing")
 		self.pane2NoiseOption.setChecked(self.defaultParams['noise_despiker'] == 'True')
 		self.pane2Layout.addWidget(self.pane2NoiseOption, 0, 0, 1, 0)
+		self.pane2NoiseOption.setToolTip("<qt/>Apply a moving standard-deviation filter to your data to remove outliers.")
 
 		self.pane2win = QLineEdit(self.defaultParams['win'])
-		self.pane2Layout.addWidget(QLabel("\'win\'"), 1, 0)
+		self.pane2Layout.addWidget(QLabel("Smoothing Window"), 1, 0)
 		self.pane2Layout.addWidget(self.pane2win, 1, 1)
-		self.pane2win.setToolTip("The rolling window over which the spike filter calculates the trace statistics.")
+		self.pane2win.setToolTip("<qt/>The width of the window (number of data points) used to calculate the running mean "
+								 "and standard deviation of the data.")
 
 
-		self.pane2nlim = QLineEdit(self.defaultParams['nlim'])
-		self.pane2Layout.addWidget(QLabel("nlim"), 2, 0)
+		self.pane2nlim = QLineEdit(self.defaultParams['nlim']) #nlim
+		self.pane2Layout.addWidget(QLabel("N-Standard Deviations"), 2, 0)
 		self.pane2Layout.addWidget(self.pane2nlim, 2, 1)
-		self.pane2nlim.setToolTip("The number of standard deviations above the rolling mean that data are excluded.")
+		self.pane2nlim.setToolTip("<qt/>Data greater than N*the standard deviation from the mean will be removed. This "
+								  "number should be large enough to only remove outliers, to avoid over-smoothing your data.")
 
 
 		self.pane2Maxiter = QLineEdit(self.defaultParams['maxiter'])
-		self.pane2Layout.addWidget(QLabel("maxiter"), 3, 0)
+		self.pane2Layout.addWidget(QLabel("Maximum Cycles"), 3, 0)
 		self.pane2Layout.addWidget(self.pane2Maxiter, 3, 1)
-		self.pane2Maxiter.setToolTip("The maximum number of times that the fitler is applied.")
+		self.pane2Maxiter.setToolTip("<qt/>The filter will be re-applied until no more data are removed, or it has been "
+									 "applied this many times.")
 
 
 		# We create the button for the right-most section of the Controls Pane.
