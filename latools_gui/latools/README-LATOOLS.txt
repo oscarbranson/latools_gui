@@ -1,0 +1,1 @@
+This folder contains duplicate data from the original LAtools module. The reason this is necessary is that PyInstaller only detects Python module dependencies, and will only include additional files if they are explicitcly specified on build. 
