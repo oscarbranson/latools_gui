@@ -71,30 +71,32 @@ class ImportStage():
 		self.findDataButton.setMaximumWidth(100)
 		self.findDataButton.clicked.connect(self.findDataButtonClicked)
 		self.optionsGrid.addWidget(self.findDataButton,0,0)
-		self.findDataButton.setToolTip("File path to the directory containing the data files.")
 
 		self.fileLocationLine = QLineEdit("./data/")
 		self.optionsGrid.addWidget(self.fileLocationLine, 0, 1)
 		self.fileLocationLine.setReadOnly(True)
+		self.fileLocationLine.setToolTip("<qt/>File path to the directory containing the data files.")
 
 		self.configOption = QComboBox()
 		# The configOption values are added based on the read_latoolscfg values
 		for key in dict(la.config.read_latoolscfg()[1]):
 			self.configOption.addItem(key)
 
-		self.optionsGrid.addWidget(QLabel("config"), 1,0)
+		self.optionsGrid.addWidget(QLabel("Configuration"), 1,0)
 		self.optionsGrid.addWidget(self.configOption, 1,1)
-		self.configOption.setToolTip("Configuration for your files.")
+		self.configOption.setToolTip("<qt/>The name of the LAtools configuration you want to use to import the data.")
 
 		self.srm_identifierOption = QLineEdit(self.defaultParams['srm_identifier'])
-		self.optionsGrid.addWidget(QLabel("SRM identifier"), 2, 0)
+		self.optionsGrid.addWidget(QLabel("SRM File Identifier"), 2, 0)
 		self.optionsGrid.addWidget(self.srm_identifierOption, 2, 1)
-		self.srm_identifierOption.setToolTip("The string present in the file names of all standards.")
+		self.srm_identifierOption.setToolTip("<qt/>This is used to identify SRM measurements in your data file, "
+											 "and should be present in the file names of all analyses containing SRMs.")
 
 		self.file_extensionOption = QLineEdit(self.defaultParams['extension'])
-		self.optionsGrid.addWidget(QLabel("file extension"), 3, 0)
+		self.optionsGrid.addWidget(QLabel("Data File Extension"), 3, 0)
 		self.optionsGrid.addWidget(self.file_extensionOption, 3, 1)
-		self.file_extensionOption.setToolTip("The file extension used in your data files")
+		self.file_extensionOption.setToolTip("<qt/>This is used to identify data files in the analysis directory."
+											 "All files in the directory with this extension will be imported.")
 
 		# We create the button for the right-most section of the Controls Pane.
 

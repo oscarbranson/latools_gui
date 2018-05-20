@@ -299,6 +299,8 @@ class BackgroundStage():
 				self.raiseError("A problem occurred. There may be a problem with the input values.")
 				return
 
+		self.graphPaneObj.updateBkg()
+
 		# The background calculation is now complete, and can now be subtracted and plotted
 		self.subtractButton.setEnabled(True)
 		self.popupButton.setEnabled(True)

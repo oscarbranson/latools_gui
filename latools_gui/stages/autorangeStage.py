@@ -58,54 +58,66 @@ class AutorangeStage():
 
 		self.analyteBox = QComboBox()
 		self.analyteBox.addItem("total_counts")
-		self.optionsGrid.addWidget(QLabel("analyte"), 0, 0)
+		self.optionsGrid.addWidget(QLabel("Analyte"), 0, 0)
 		self.optionsGrid.addWidget(self.analyteBox, 0, 1)
+		self.analyteBox.setToolTip("<qt/>The analyte you would like to use to discriminate between signal and background. "
+								   "'total_counts' normally gives best results.")
 
 		self.gwinEdit = QLineEdit(self.defaultParams['gwin'])
-		self.optionsGrid.addWidget(QLabel("gwin"), 1, 0)
+		self.optionsGrid.addWidget(QLabel("Gradient Window"), 1, 0)
 		self.optionsGrid.addWidget(self.gwinEdit, 1, 1)
-		self.gwinEdit.setToolTip("The window used for calculating first derivative.")
+		self.gwinEdit.setToolTip("<qt/>The width (number of data points) of the window used to calculate the first "
+								 "derivative of the smoothed signal.")
 
 
 		self.swinEdit = QLineEdit(self.defaultParams['swin'])
-		self.optionsGrid.addWidget(QLabel("swin"), 2, 0)
+		self.optionsGrid.addWidget(QLabel("Smoothing Window"), 2, 0)
 		self.optionsGrid.addWidget(self.swinEdit, 2, 1)
-		self.swinEdit.setToolTip("The window used for signal smoothing.")
+		self.swinEdit.setToolTip("<qt/>The width (number of data points) of the window used to smooth the raw data.")
 
 
 		self.winEdit = QLineEdit(self.defaultParams['win'])
-		self.optionsGrid.addWidget(QLabel("win"), 3, 0)
+		self.optionsGrid.addWidget(QLabel("Transition Window"), 3, 0)
 		self.optionsGrid.addWidget(self.winEdit, 3, 1)
-		self.winEdit.setToolTip("The width (c +/- win) of the transition data subsets.")
+		self.winEdit.setToolTip("<qt/>The number of points either side of identified transitions to include when "
+								"determining transition width.")
 
 
 		self.on_multEdit1 = QLineEdit("1.0")
 		self.on_multEdit2 = QLineEdit("1.5")
-		self.optionsGrid.addWidget(QLabel("on_mult"), 0, 2)
+		self.optionsGrid.addWidget(QLabel("Transition Width: Start"), 0, 2)
 		self.optionsGrid.addWidget(self.on_multEdit1, 0, 3)
 		self.optionsGrid.addWidget(self.on_multEdit2, 0, 4)
-		self.on_multEdit1.setToolTip("need text")
-		self.on_multEdit2.setToolTip("need text")
+		self.on_multEdit1.setToolTip("<qt/>The amount of the data to exclude before and after 'laser on' transitions. "
+									 "Defined relative to the overall width of the transition.")
+		self.on_multEdit2.setToolTip("<qt/>The amount of the data to exclude before and after 'laser on' transitions. "
+									 "Defined relative to the overall width of the transition.")
 
 
 		self.off_multEdit1 = QLineEdit("1.5")
 		self.off_multEdit2 = QLineEdit("1.0")
-		self.optionsGrid.addWidget(QLabel("off_mult"), 1, 2)
+		self.optionsGrid.addWidget(QLabel("Transition Width: End"), 1, 2)
 		self.optionsGrid.addWidget(self.off_multEdit1, 1, 3)
 		self.optionsGrid.addWidget(self.off_multEdit2, 1, 4)
-		self.off_multEdit1.setToolTip("need text")
-		self.off_multEdit2.setToolTip("need text")
+		self.off_multEdit1.setToolTip("<qt/>The amount of the data to exclude before and after 'laser off' transitions. "
+									  "Defined relative to the overall width of the transition.")
+		self.off_multEdit2.setToolTip("<qt/>The amount of the data to exclude before and after 'laser off' transitions. "
+									  "Defined relative to the overall width of the transition.")
 
 		self.nbinEdit = QLineEdit(self.defaultParams['nbin'])
-		self.optionsGrid.addWidget(QLabel("nbin"), 2, 2)
+		self.optionsGrid.addWidget(QLabel("Initial Transition Sensitivity"), 2, 2)
 		self.optionsGrid.addWidget(self.nbinEdit, 2, 3, 1, 2)
-		self.nbinEdit.setToolTip("Used to calculate the number of bins in the data histogram.")
+		self.nbinEdit.setToolTip("<qt/>The mean number of points in each histogram bin used to identify approximate "
+								 "laser on/off transitions. Lower numbers will increase the sensitvity to identifying "
+								 "transitions, but if it's too low you might start picking up background oscillations. "
+								 "~10 usually works well.")
 
 
-		self.logTransformCheck = QCheckBox("log transform")
+		self.logTransformCheck = QCheckBox("Log Transform")
 		self.logTransformCheck.setChecked(self.defaultParams['transform'] == 'True')
 		self.optionsGrid.addWidget(self.logTransformCheck, 3, 2, 1, 2)
-		self.logTransformCheck.setToolTip("need text")
+		self.logTransformCheck.setToolTip("<qt/>If your signals are highly heterogeneous, log transformation can make "
+										  "autorange work better.")
 
 		# We create the button for the right-most section of the Controls Pane.
 
