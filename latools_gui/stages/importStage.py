@@ -106,6 +106,7 @@ class ImportStage():
 		""" Imports data into the project when the apply button is pressed. """
 
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
+		print (os.path.realpath(self.fileLocationLine.text()))
 		try:
 			self.project.eg = la.analyse(data_folder=self.fileLocationLine.text(),
 										 config=self.configOption.currentText(),
