@@ -170,7 +170,7 @@ texinfo_documents = [
 # -- Extension configuration -------------------------------------------------
 
 # Add napoleon to the extensions list
-extensions = ['sphinx.ext.napoleon']
+extensions = ['sphinx.ext.napoleon', 'sphinx.ext.autosectionlabel']
 
 # -- Options for intersphinx extension ---------------------------------------
 

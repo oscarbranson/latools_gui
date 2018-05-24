@@ -1,43 +1,49 @@
 Starting a project
 ******************
 
-LAtools allows you to create new projects, or open existing projects that you or someone else has created.
+Welcome to LAtools! This short tutorial will guide you through an entire analysis session using sample ablation data included with LAtools. We highly recommend working through this example to understand the mechanics of the software before working on your own data.
 
+.. where will the data be? still default?
 
 Project Options
 ===============
+LAtools allows you to create new projects, or open existing projects that you or someone else has created. In this tutorial, we will be creating a new project.
 
-Starting a new project
+
+Creating a new project
 ----------------------
-To start a new project, click on :guilabel:`&New project`. Type the name of your new project in the :guilabel:`&Project name` dialogue box.
+To create a new project, click :guilabel:`&New project`. Type the name of your new project in the :guilabel:`&Project name` dialogue box - in this example, we are going to call the project **LAtools_Demo**. Click :guilabel:`&Begin` to start.
 
+.. image:: gifs/02-createproject.gif
+        :width: 689px
+        :height: 496px
+        :scale: 100 %
+        :alt: creating a new project
+        :align: center
 
-[image/gif here]
-
-You now need to select a save location for your project. Click :guilabel:`&Browse`. This will open your computers file explorer. From here, you can choose where you would like to save your new project.
-
-.. to do: perhaps some hints about good places to save a project
-
-[image/gif here]
-
-Click :guilabel:`&Begin` to start your new project.
-
-
+.. _existing-project:
 Opening an existing project
 ---------------------------
-If you would like to open an existing project, click :guilabel:`&Open project`. This will open your computers file explorer. Navigate to the  location of your project and open it.
+If you would like to open an existing project, click :guilabel:`&Open project`. This will open your computers file explorer. Navigate to the location of your project, then open the file. This action will drop you into the last step that was completed in that particular analysis session.
 
-.. to do: maybe write something about what the project folder should look like/what files it should have; default save locations*
+.. image:: gifs/02-openexisting.gif
+        :width: 689px
+        :height: 496px
+        :scale: 100 %
+        :alt: open existing project
+        :align: center
 
-[image/gif here]
+.. note:: Project files have a **.lalog** file extension.
 
 
 Recent projects
-+++++++++++++++
+---------------
 
-You can also access existing projects from the :guilabel:`&Recent projects`  drop down menu. Simply click :guilabel:`&Recent projects` and select the project you would like to open. Then click :guilabel:`&Begin`. If the project you wish to open is not there, you will have to manually find and open it using the :guilabel:`&Open project` method.
+You can also open existing projects from the :guilabel:`&Recent projects`  drop down menu. Simply click :guilabel:`&Recent projects` and select the project you would like to open. Then click :guilabel:`&Begin`. If the project you wish to open is not there, you will have to manually find and open it using the :ref:`Opening an existing project` method.
 
-[image/gif here]
-
-
-
+.. image:: gifs/02-recentprojects.gif
+        :width: 689px
+        :height: 496px
+        :scale: 100 %
+        :alt: open existing project
+        :align: center

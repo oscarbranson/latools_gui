@@ -40,7 +40,7 @@ class RatioStage():
 
 		self.stageControls.setDescription("Ratio Calculation", """
 			Your data now needs to be converted to ratios using your internal standard. Select your internal standard, 
-			and then click APPLY. >""")
+			and then click APPLY.""")
 
 		# The space for the stage options is provided by the Controls Pane.
 		self.optionsGrid = QGridLayout(self.stageControls.getOptionsWidget())

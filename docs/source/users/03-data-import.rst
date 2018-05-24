@@ -1,89 +1,60 @@
 Data Import
 ***********
 
-You are now ready to start your analysis session! In this step, you will be loading your sample and standards data, choosing a configuration, stating your standards identifier and specifying the file extension of your  data files.
+You are now ready to start the analysis session! In this stage of the analysis, you will:
+
+    - Load your data and standards,
+    - Choose or create a configuration,
+    - State your standards identifier, and
+    - Specifying the file extension of your data files.
 
 .. to do: need to add trouble shooting links and advice for each section; need to create a page for configuration when our program can do it;
 
+Selecting your data and standards
+=================================
+To start the analysis session, you will need to load your data. The data in this demo analysis is stored within the LAtools directory under **latools_gui\\data**. This directory contains the following files:
 
-.. warning:: **Have you configured LAtools?** Different LA-ICPMS system produce different results in a variety of data formats. Before you begin to analyse your data, you will need to configure LAtools to your instrument and SRMs. If this is your first time using LAtools, or you are using data from a LA-ICPMS machine that you have not configured, click here.
+    -   Sample-1.csv
+    -   Sample-2.csv
+    -   Sample-3.csv
+    -   STD-1.csv
+    -   STD-2.csv
 
-.. http://latools.readthedocs.io/en/latest/users/configuration/howto.html, http://latools.readthedocs.io/en/latest/users/configuration/data-formats.html#data-formats
-.. need to create a new page for configuring latools
+To load these files, open your computers file explorer by clicking :guilabel:`&Browse`. Navigate to the folder containing the data - your data and standards - that you will be using in your project, then open it.
 
-
-Selecting your data
-===================
-To start your analysis session, you will need to load your data. Do this by clicking :guilabel:`&Browse`. This will open your computers file explorer. Navigate to the folder containing all the data - your samples and standards - that you will be using in your project and select it.
-
-[image/gif here]
-
-.. Why am I getting errors when I load my data?
+.. trouble shoot: why am I getting errors when I load my data?
 
 
-Configurating LAtools
+Configuring LAtools
 =====================
-A configuration stores information about the way your data is formatted, and what SRMs table is to be used in your analysis session. .. one srm table or more?
+A configuration stores information about the way your data is formatted, and where on your computer your SRM tables are saved. In this example, we will use the **DEFAULT** configuration. Click on the :guilabel:`&Configuration` drop down menu, then select **DEFAULT**. This configuration states that you files
 
-
-
-If you have not configured your
-
-
-.. list what they are
-
-.. How to create a configuration
-
-
-.. do we need to select an internal standard ?? or is it always ca43 ?
+If you are using your own data, you may need to create a new configuration. For instructions on how to do this, see :ref:`Creating or modifying a configuration`. Note that multiple configurations can be set up and chosen during data import, allowing LAtools to flexibly work with data from different instruments.
 
 
 Selecting a SRM identifier
-=============================================
+==========================
+The SRM identifier identifies which of your analyses contain standard reference materials. In this demo, we have loaded two SRMs: STD-1.csv and STD-2.csv. By default, this value is set to **'STD'**. This means that any data file with **'STD'** in its name will be flagged as an SRM measurement.
 
-The SRM identifier is required to help the program separate your sample files and standard files. It may help to set up all your files as suggested in this link.
-    .. need to create a page about how users should set up their files
-
-The value for this parameter is defaulted to "STD". This means that all the standard files in your folder contain the string "STD" in their file name. If you do not have a unique identifier in your standards file names, you will need to change this. Do this by opening your project folder, and rename your standards files so they include the string "STD", or some other identifier. If you have identified your standards files, enter your identifier in the :guilabel:`&SRM Identifier` dialogue box.
-
-.. probs need to tell the user where there files are moved/copy to after import?
-
-.. link to http://latools.readthedocs.io/en/latest/users/configuration/srm-file.html#srm-file
+When using your own data, you need to have a unique identifier in your standard file names, be it "STD" or something else. You can specify your SRM identifiers by modifying the :guilabel:`&SRM Identifier` dialogue box.
 
 
-
-
-
-
-
-Data extention
+Data extension
 ==============
-Lastly, you will need to specify the extension type of the files you are using. This parameter is defaulted to **.csv**. If you are using files of another kind, e.g. --------, then you will need to type them into the :guilabel:`&n_min` dialogue box.
+Lastly, you will need to specify the extension type of the files you are using. All the files used in this demo are .csv files. The default value for this is **.csv**, so no change is required by us.
+
+However, if you are using your own data files of a different kind, then you will need to type them into the :guilabel:`&n_min` dialogue box.
 
 
 Start plotting!
 ===============
+Once you have finished all these steps, you can now start plotting! To plot your data, click :guilabel:`&APPLY`. Your data plots should be visible in the plotting panel.
 
-Once you have loaded your data, configured LAtools, and chosen your SRMs, you can now start plotting! To plot your data, click :guilabel:`&apply`. Your data plots should be visible in the plotting panel.
+Navigating the plotting panel is quite easy - however, if you're having difficulties see :ref:`Navigating the plotting panel`.
 
-
-Navigating the plotting panel
-==============================
-
-.. will talk about what the grpah is actually showing and what the axes mean
-.. talk about log graphing option
+How to check that everything has loaded
+=======================================
+In the graphing pane, the panel on the right hand side tells us that all five of our files were loaded. The legend on the left pane tells us which analytes are present in the data - in this demo, we have Mg24, Mg25, Al27, Ca43, Ca44, Mn55, Sr88, Ba137, and Ba138.
 
 
-You can view each sample by selecting it in the samples panel.
-
-[image/gif here]
-
-You can toggle elements on and off by deselecting and reselected them in the elements panel.
-
-[image/gif here]
-
-You can zoom the graph in and out by scrolling your mouse over the graph. You can also drag the graph around by clicking on the graph and dragging around.
-
-[image/gif here]
-
-To reset the graph, simply click :guilabel:`&Reset`
+.. can possible add where users can see their output/report folders

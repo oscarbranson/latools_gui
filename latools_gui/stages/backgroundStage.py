@@ -48,7 +48,6 @@ class BackgroundStage():
 
 		self.stageControls.setDescription("Background Correction", """
 			This stage will separate signal (laser-on) and background (laser-off) data, using your internal standard.  
-			<p> - talk about variables 
 			<p>To see the regions of your data identified as signal and background, change any parameters you need to 
 			and then click APPLY. Red regions are signal; grey regions are background.			
 			""")
