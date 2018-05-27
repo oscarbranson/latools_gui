@@ -22,6 +22,7 @@ from stages import calibrationStage
 from stages import filteringStage
 
 from project import runningProject
+from project.ErrLogger import *
 
 # List the stages
 STAGES = ["Import","De-Spiking","Autorange","Background","Ratio","Calibration","Filtering"]
@@ -40,6 +41,8 @@ class MainWindow(QMainWindow):
 		# Moves the window x pixels to the right, and y pixels down
 		self.move(200, 0)
 		self.setWindowTitle("LAtools")
+
+		initlog() #initialise logging
 		
 		# We move on to build the UI
 		self.initUI()
@@ -167,7 +170,7 @@ class MainWindow(QMainWindow):
 
 		# The config window is a popup window that is recorded here so that it is not destroyed after being created.
 		self.configWindow = None
-
+	
 	def keyPressEvent(self, event):
 		""" Keypress events are handled here """
 		if type(event) == QKeyEvent:
@@ -177,7 +180,7 @@ class MainWindow(QMainWindow):
 				# The stages are alerted of the keypress via the Import Listener
 				self.importListener.enterPressed(main=self.mainStack.currentIndex(),
 												 stage=self.stageTabs.tabs.currentIndex())
-
+	
 	def initFileMenu(self):
 		""" Builds and displays the file menu"""
 
@@ -209,16 +212,16 @@ class MainWindow(QMainWindow):
 
 		configMenu = menubar.addMenu('&Configuration')
 		configMenu.addAction(makeConfig)
-
+	
 	def saveButton(self):
 		""" Runs the save command on the current running project """
 		self.project.saveProject()
-
+	
 	def exportButton(self):
 		""" Runs the export command on the current running project """
 		if self.project.eg is not None:
 			self.project.eg.minimal_export()
-
+	@logged
 	def closeEvent(self, event):
 		""" Attempting to close the window is handled here """
 

@@ -6,6 +6,8 @@ import inspect
 import templates.controlsPane as controlsPane
 import ast
 
+from project.ErrLogger import logged
+
 class DespikingStage():
 	"""
 	Each stage has its own Controls Pane, where it defines a description and the unique options for that
@@ -126,7 +128,7 @@ class DespikingStage():
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
-
+	@logged
 	def pressedApplyButton(self):
 		""" Applies a despiking filter to the project data when a button is pressed. """
 

@@ -9,6 +9,8 @@ import os
 
 import time
 
+from project.ErrLogger import logged
+
 class ImportStage():
 	"""
 	Each stage has its own Controls Pane, where it defines a description and the unique options for that
@@ -103,7 +105,8 @@ class ImportStage():
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
-
+		
+	@logged
 	def pressedApplyButton(self):
 		""" Imports data into the project when the apply button is pressed. """
 
