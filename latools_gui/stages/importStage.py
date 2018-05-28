@@ -17,6 +17,7 @@ class ImportStage():
 	step of the data-processing. It updates the graph pane based on the modifications that are made to the
 	project.
 	"""
+	@logged
 	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, importStageWidget, project):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
@@ -145,7 +146,7 @@ class ImportStage():
 
 		self.fileLocation = QFileDialog.getExistingDirectory(self.importStageWidget, 'Open file', '/home')
 		self.fileLocationLine.setText(self.fileLocation)
-
+	@logged
 	def setImportListener(self, importListener):
 		self.importListener = importListener
 

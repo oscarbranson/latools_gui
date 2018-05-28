@@ -7,18 +7,27 @@ import logging
 from functools import wraps
 
 def initlog():
-        logging.basicConfig(filename='Log-%s.log' % time.strftime('%Y-%m-%d-%H%M%S'), format='%(asctime)s: %(message)s', datefmt='%Y-%m-%d %I:%M:%S', level=logging.DEBUG)
+	logging.basicConfig(filename='Log-%s.log' % time.strftime('%Y-%m-%d-%H%M%S'), format='%(asctime)s: %(message)s', datefmt='%Y-%m-%d %I:%M:%S', level=logging.DEBUG)
 
 
 
 def logged(func):
-    @wraps(func)
-    def logf(*args, **kwargs):
-        logging.debug('Entering function %s with args %s and kwargs %s', func.__name__, args, kwargs)
-        try:
-            return func(*args, **kwargs)
-            logging.debug('Exited function %s', func.__name__)
-        except:
-            logging.error('ERROR: Function %s triggered exception', func.__name__)
-    return logf
-        
+	@wraps(func)
+	def logf(self, *args, **kwargs):             
+		logging.critical('Entering function '+func.__name__+' with args {} and kwargs {}'.format(args, kwargs))
+		try:
+			r = func(self, *args, **kwargs)
+			logging.debug('Exited function %s', func.__name__)
+			return r
+		except TypeError:
+                        try:
+                                logging.debug('Retrying with zero-length args')
+                                r = func(self)
+                                return r
+                        except: raise
+		except:
+			logging.exception('ERROR: Function %s triggered exception', func.__name__)
+	
+	return logf
+
+

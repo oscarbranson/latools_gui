@@ -14,6 +14,7 @@ class DespikingStage():
 	step of the data-processing. It updates the graph pane based on the modifications that are made to the
 	project.
 	"""
+	@logged
 	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, despikingWidget, project):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
@@ -128,7 +129,7 @@ class DespikingStage():
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
-	@logged
+	#@logged
 	def pressedApplyButton(self):
 		""" Applies a despiking filter to the project data when a button is pressed. """
 
