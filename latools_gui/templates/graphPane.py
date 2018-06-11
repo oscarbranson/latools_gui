@@ -129,10 +129,10 @@ class GraphWindow(QWidget):
 			print(k, v, type(v))
 
 	# convert hex to rgb colour
-	def hex_2_rgba(self, value, alpha=1):
+	def hex_2_rgba(self, value, alpha=255):
 		value = value.lstrip('#')
 		lv = len(value)
-		rgba = [int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3)] + [int(255/alpha)]
+		rgba = [int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3)] + [int(alpha)]
 		srgba = ['{:.0f}'.format(s) for s in rgba]
 		return rgba
 		#return 'rgba(' + ','.join(srgba) + ')'
@@ -250,12 +250,12 @@ class GraphWindow(QWidget):
 			self.graphLines[analyte].setVisible(True)
 
 	def toggleLegendItems(self):
-		for i in reversed(range(self.legendLayout.count())):
-			if self.legendLayout.itemAt(i).widget().isChecked():
-				self.legendLayout.itemAt(i).widget().setChecked(False)
+		for item in reversed(range(self.legendLayout.count())):
+			if self.legendLayout.itemAt(item).widget().isChecked():
+				self.legendLayout.itemAt(item).widget().setChecked(False)
 			else:
-				self.legendLayout.itemAt(i).widget().setChecked(True)
-				if self.legendLayout.itemAt(i).widget().text() == self.currentInternalStandard:
+				self.legendLayout.itemAt(item).widget().setChecked(True)
+				if self.legendLayout.itemAt(item).widget().text() == self.currentInternalStandard:
 					self.hideInternalStandard()
 
 class MainGraph(GraphWindow):
@@ -499,60 +499,55 @@ class bkgGraph(GraphWindow):
 
 	def populateGraph(self):
 		dat = self.project.eg
-		for analyte in self.project.eg.analytes:
-			sy = dat.bkg['raw'].loc[:, analyte]
-
-			x = dat.bkg['calc']['uTime']
-			y = dat.bkg['calc'][analyte]['mean']
-			yl = dat.bkg['calc'][analyte]['mean'] - dat.bkg['calc'][analyte][self.err]
-			yu = dat.bkg['calc'][analyte]['mean'] + dat.bkg['calc'][analyte][self.err]
-
-			if self.yLogCheckBox.isChecked():
-				sy = np.log10(sy)
-				yl = np.log10(yl)
-				yu = np.log10(yu)
-
-			if not self.populated:
-
-				scatter = pg.ScatterPlotItem(dat.bkg['raw'].uTime, sy, pen=None, brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 2)), size=3)
-				self.bkgScatters[analyte] = scatter
-
-				line = pg.PlotDataItem(x, y, pen=pg.mkPen(dat.cmaps[analyte], width=2), label=analyte, name=analyte, connect='finite')
-				self.bkgLines[analyte] = line
-
-				fill = pg.FillBetweenItem(pg.PlotDataItem(x, yl, pen=pg.mkPen(0,0,0,0)), pg.PlotDataItem(x, yu, pen=pg.mkPen(0,0,0,0)), brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 1.25)))
-				self.bkgFills[analyte] = fill
-
-				self.graphLines[analyte] = (scatter, line, fill)
-
-				for graph in self.graphs:
-					graph.addItem(scatter)
-					graph.addItem(line)
-					graph.addItem(fill)
-
-			else:
-				self.bkgScatters[analyte].setData(dat.bkg['raw'].uTime, sy)
-				self.bkgLines[analyte].setData(x, y)
-				self.bkgFills[analyte].setCurves(pg.PlotDataItem(x, yl, pen=pg.mkPen(0,0,0,0)), pg.PlotDataItem(x, yu, pen=pg.mkPen(0,0,0,0)))
-
-		lastSamplePoint = 0
-		lastSampleName = ''
 		for graph in self.graphs:
-			for s, d in dat.data.items():
+			for analyte in self.project.eg.analytes:
+				sy = dat.bkg['raw'].loc[:, analyte]
+
+				x = dat.bkg['calc']['uTime']
+				y = dat.bkg['calc'][analyte]['mean']
+				yl = dat.bkg['calc'][analyte]['mean'] - dat.bkg['calc'][analyte][self.err]
+				yu = dat.bkg['calc'][analyte]['mean'] + dat.bkg['calc'][analyte][self.err]
+
+				if self.yLogCheckBox.isChecked():
+					sy = np.log10(sy)
+					#x = np.log10(x)
+					#y = np.log10(y)
+					yl = np.log10(yl)
+					yu = np.log10(yu)
+
 				if not self.populated:
-					sampleLine = pg.InfiniteLine(pos=d.uTime[0], pen=pg.mkPen(color=(0,0,0,51), style=Qt.DashLine, width=2), label=s, labelOpts={'position': .999, 'anchors': ((0., 0.), (0., 0.))})
-					self.bkgSamplelines[d] = sampleLine
-					graph.addItem(sampleLine)
-					if not lastSamplePoint == 0:
-						
-						self.addRegion(lastSampleName, graph, (lastSamplePoint.uTime[0], d.uTime[0]), pg.mkBrush((0,0,0,25)))
+
+					scatter = pg.ScatterPlotItem(dat.bkg['raw'].uTime, sy, pen=None, brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 127)), size=3)
+					self.bkgScatters[analyte] = scatter
+
+					line = pg.PlotDataItem(x, y, pen=pg.mkPen(dat.cmaps[analyte], width=2), label=analyte, name=analyte, connect='finite')
+					self.bkgLines[analyte] = line
+
+					fill = pg.FillBetweenItem(pg.PlotDataItem(x, yl, pen=pg.mkPen(0,0,0,0)), pg.PlotDataItem(x, yu, pen=pg.mkPen(0,0,0,0)), brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 204)))
+					self.bkgFills[analyte] = fill
+
+					self.graphLines[analyte] = (scatter, line, fill)
+
+					for graph in self.graphs:
+						graph.addItem(scatter)
+						graph.addItem(line)
+						graph.addItem(fill)
+
 				else:
-					self.bkgSamplelines[d].setValue(d.uTime[0])
+					self.bkgScatters[analyte].setData(dat.bkg['raw'].uTime, sy)
+					self.bkgLines[analyte].setData(x, y)
+					self.bkgFills[analyte].setCurves(pg.PlotDataItem(x, yl, pen=pg.mkPen(0,0,0,0)), pg.PlotDataItem(x, yu, pen=pg.mkPen(0,0,0,0)))
 
-				lastSamplePoint = d
-				lastSampleName = s
-
-			self.addRegion(lastSampleName, graph, (lastSamplePoint.uTime[0], lastSamplePoint.uTime[-1]), pg.mkBrush((0,0,0,25)))
+			for graph in self.graphs:
+				for s, d in dat.data.items():
+					if not self.populated:
+						self.addRegion(s, graph, (d.uTime[0], d.uTime[-1]), pg.mkBrush((0,0,0,25)))
+						sampleLine = pg.InfiniteLine(pos=d.uTime[0], pen=pg.mkPen(color=(0,0,0,51), style=Qt.DashLine, width=2), label=s, labelOpts={'position': .999, 'anchors': ((0., 0.), (0., 0.))})
+						self.bkgSamplelines[d] = sampleLine
+						graph.addItem(sampleLine)
+					else:
+						self.highlightRegions[s].setRegion((d.uTime[0], d.uTime[-1]))
+						self.bkgSamplelines[d].setValue(d.uTime[0])
 
 		self.populated = True
 		self.sampleList.setCurrentItem(self.sampleList.item(0))
@@ -582,7 +577,7 @@ class bkgGraph(GraphWindow):
 			self.sampleName = selectedSample.text()
 
 			for s, d in self.project.eg.data.items():
-				if self.sampleName == 'NONE' or s == self.sampleName:
+				if self.sampleName == 'NONE' or s != self.sampleName:
 					self.highlightRegions[s].setVisible(False)
 				else:
 					self.highlightRegions[s].setVisible(True)
@@ -592,9 +587,13 @@ class bkgGraph(GraphWindow):
 		"""
 		Actions to perform when legend check box changes state
 		"""
-		# change line visibility
-		for item in self.graphLines[analyte]:
+
+		for item in self.graphLines[analyte]:\
 			item.setVisible(self.legendEntries[analyte].isChecked())
+
+		for graph in self.graphs:
+			box = graph.getViewBox()
+			box.update()
 
 	# change between log/linear y scale
 	def updateLogScale(self):
@@ -603,6 +602,7 @@ class bkgGraph(GraphWindow):
 		"""
 		for graph in self.graphs:
 			graph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
+		self.populateGraph()
 
 	def addRegion(self, name, targetGraph, lims, brush):
 		region = pg.LinearRegionItem(values=lims, brush=brush, movable=False)
