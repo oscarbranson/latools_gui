@@ -93,14 +93,19 @@ class CalibrationStage():
 
 		# We create the buttons for the right-most section of the Controls Pane.
 
+		self.calcButton = QPushButton("Calculate calibration")
+		self.calcButton.clicked.connect(self.pressedCalculateButton)
+		self.stageControls.addApplyButton(self.calcButton)
+
 		self.popupButton = QPushButton("Plot in popup")
 		self.popupButton.clicked.connect(self.pressedPopupButton)
 		self.stageControls.addApplyButton(self.popupButton)
-		#self.popupButton.setEnabled(False)
+		# self.popupButton.setEnabled(False)
 
-		self.applyButton = QPushButton("APPLY")
+		self.applyButton = QPushButton("Apply calibration")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
+		self.applyButton.setEnabled(False)
 
 	def pressedApplyButton(self):
 		""" Calibrates the project data when a button is pressed. """
@@ -197,4 +202,8 @@ class CalibrationStage():
 
 	def pressedPopupButton(self):
 		pass
+
+	def pressedCalculateButton(self):
+
+		self.applyButton.setEnabled(True)
 
