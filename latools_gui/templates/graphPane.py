@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 
 import latools.helpers as helpers
+import re
 import pyqtgraph as pg
 import numpy as np
 import uncertainties.unumpy as un
@@ -43,8 +44,8 @@ class GraphPane():
 		# GRAPH
 		# The project object is sent to the GraphWindow object
 		self.graph = MainGraph(project)
-		self.bkgGraph = bkgGraph(project)
-		self.caliGraph = None
+		self.bkgGraph = BkgGraph(project)
+		self.caliGraph = CaliGraph(project)
 
 		#  We add the graph to the pane and set minimum dimensions
 		self.graphLayout.addWidget(self.graph)
@@ -88,9 +89,12 @@ class GraphPane():
 	def updateBkg(self):
 		self.bkgGraph.populateGraph()
 
-	def showAuxGraph(self, bkg=False):
+	def showAuxGraph(self, bkg=False, cali=False):
 		if bkg:
-			self.bkgGraph.showGraph()	
+			self.bkgGraph.showGraph()
+		elif cali:
+			self.caliGraph.populateGraph()
+			self.caliGraph.showGraph()
 
 class GraphWindow(QWidget):
 	def __init__(self, project):
@@ -463,8 +467,8 @@ class MainGraph(GraphWindow):
 
 		# self.updateGraphs(ranges=self.ranges)
 		newWin.show()
-
-class bkgGraph(GraphWindow):
+		
+class BkgGraph(GraphWindow):
 
 	def __init__(self, project, err='stderr'):
 		super().__init__(project)
@@ -588,7 +592,7 @@ class bkgGraph(GraphWindow):
 		Actions to perform when legend check box changes state
 		"""
 
-		for item in self.graphLines[analyte]:\
+		for item in self.graphLines[analyte]:
 			item.setVisible(self.legendEntries[analyte].isChecked())
 
 		for graph in self.graphs:
@@ -611,3 +615,212 @@ class bkgGraph(GraphWindow):
 		region.setVisible(False)
 		self.highlightRegions[name] = region
 		targetGraph.addItem(region)
+
+class CaliGraph(GraphWindow):
+
+	def __init__(self, project):
+		super().__init__(project)
+		self.errPlots = {}
+		self.errorbars = {}
+		self.caliScatters = {}
+		self.analyteTexts = {}
+		self.eqTexts = {}
+
+		self.populated = False
+
+		# Add legend widget to the settings
+
+		scroll = QScrollArea()
+		scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+		scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+		scroll.setWidgetResizable(True)
+
+		self.scroll = scroll
+
+		self.setWindowTitle("LAtools calibration Plot")
+
+		graph = QWidget()
+		graphLayout = QGridLayout()
+		graph.setLayout(graphLayout)
+		minSize = graph.minimumSize()
+		minSize.scale(1000, 1000, Qt.KeepAspectRatio)
+		graph.setMinimumSize(minSize)
+
+		self.graph = graph
+		self.graphLayout = graphLayout
+
+		self.layout.addWidget(scroll, 1)
+
+	def populateGraph(self):
+		dat = self.project.eg
+		analytes = [a for a in dat.analytes if dat.internal_standard not in a]
+
+		dat.get_focus()
+
+		row = 0
+		for i in range(0, len(analytes)):
+			analyte = analytes[i]
+			if i % 3 == 0:
+				row += 1
+
+			cell = QWidget()
+			cellLayout = QHBoxLayout()
+			cell.setLayout(cellLayout)
+
+			self.graphs.append(cell)
+
+			errPlot = pg.PlotWidget()
+			errPlot.hideButtons()
+
+			self.errPlots[analyte] = errPlot
+
+			# xAxis = plot.getAxis('bottom')
+			# print(dat.srmtabs.loc[analyte, 'meas_mean'].values)
+			# xs = dat.srmtabs.loc[analyte, 'meas_mean'].values
+			# sxs = ['{:.2f}'.format(x) for x in dat.srmtabs.loc[analyte, 'meas_mean'].values]
+			# ticks = zip(xs, sxs)
+			# xAxis.setTicks([list(ticks)[::2], list(ticks)[1::2]])
+
+			cellLayout.addWidget(errPlot)
+			viewbox = errPlot.getViewBox()
+			viewbox.setMouseEnabled(False, False)
+			# plot calibration data
+			errorbar = pg.ErrorBarItem(x=dat.srmtabs.loc[analyte, 'meas_mean'].values,
+			y=dat.srmtabs.loc[analyte, 'srm_mean'].values,
+			width=dat.srmtabs.loc[analyte, 'meas_err'].values,
+			height=dat.srmtabs.loc[analyte, 'srm_err'].values,
+			pen=pg.mkPen(self.hex_2_rgba(dat.cmaps[analyte], 153), width=2),
+			beam=0)
+			
+			self.errorbars[analyte] = errorbar
+			errPlot.addItem(errorbar)
+
+			scatter = pg.ScatterPlotItem(x=dat.srmtabs.loc[analyte, 'meas_mean'].values,
+			y=dat.srmtabs.loc[analyte, 'srm_mean'].values,
+			pen=None, brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 153)), size=8)
+			
+			self.caliScatters[analyte] = scatter
+			errPlot.addItem(scatter)
+			
+			# work out axis scaling
+			xmax = np.nanmax(helpers.stat_fns.nominal_values(dat.srmtabs.loc[analyte, 'meas_mean'].values) +
+			helpers.stat_fns.nominal_values(dat.srmtabs.loc[analyte, 'meas_err'].values))
+			ymax = np.nanmax(helpers.stat_fns.nominal_values(dat.srmtabs.loc[analyte, 'srm_mean'].values) +
+			helpers.stat_fns.nominal_values(dat.srmtabs.loc[analyte, 'srm_err'].values))
+			xlim = [0, 1.05 * xmax]
+			ylim = [0, 1.05 * ymax]
+			viewbox.setRange(xRange=xlim, yRange=ylim, disableAutoRange=True)
+
+			# calculate line and R2
+			x = np.array(xlim)
+
+			coefs = dat.calib_params[analyte]
+			m = coefs.m.values.mean()
+			m_nom = helpers.stat_fns.nominal_values(m)
+			# calculate case-specific paramers
+			if 'c' in coefs:
+				c = coefs.c.values.mean()
+				c_nom = helpers.stat_fns.nominal_values(c)
+				# calculate R2
+				ym = dat.srmtabs.loc[analyte, 'meas_mean'] * m_nom + c_nom
+				R2 = helpers.stat_fns.R2calc(dat.srmtabs.loc[analyte, 'srm_mean'], ym, force_zero=False)
+				# generate line and label
+				line = x * m_nom + c_nom
+				label = 'y = {:.2e} x'.format(m)
+				if c > 0:
+					label += '<br />+ {:.2e}'.format(c)
+				else:
+					label += '<br /> {:.2e}'.format(c)
+			else:
+				# calculate R2
+				ym = dat.srmtabs.loc[analyte, 'meas_mean'] * m_nom
+				R2 = helpers.stat_fns.R2calc(dat.srmtabs.loc[analyte, 'srm_mean'], ym, force_zero=True)
+				# generate line and label
+				line = x * m_nom
+				label = 'y = {:.2e} x'.format(m)
+
+			# plot line of best fit
+			graphLine = pg.PlotDataItem(x, line, pen=pg.mkPen(color=self.hex_2_rgba(dat.cmaps[analyte], 127), style=Qt.DashLine, width=2))
+
+			self.graphLines[analyte] = graphLine
+			errPlot.addItem(graphLine)
+
+			# add R2 to label
+			if round(R2, 3) == 1:
+				label = 'R<sup>2</sup>: >0.999<br />' + label
+			else:
+				label = 'R<sup>2</sup>: {:.3f}<br />'.format(R2) + label
+
+			analyteText = pg.TextItem(color='k')
+			el = re.match('.*?([A-z]{1,3}).*?', analyte).groups()[0]
+			m = re.match('.*?([0-9]{1,3}).*?', analyte).groups()[0]
+			analyteText.setHtml('<div style="text-align: center"><span style="font-size:10pt;"><sup>%(m)s</sup>%(el)s</span></div>'%{"el":el, "m":m})
+			analyteText.setPos(0,line[-1])
+
+			self.analyteTexts[analyte] = analyteText
+			errPlot.addItem(analyteText)
+
+			errPlot.setLabel('bottom', 'counts/counts ' + dat.internal_standard)
+			errPlot.setLabel('left', 'mol/mol ' + dat.internal_standard)
+			# write calibration equation on graph happens after data distribution
+
+			'''
+
+			# plot data distribution historgram alongside calibration plot
+			# isolate data
+			meas = nominal_values(dat.focus[analyte])
+			meas = meas[~np.isnan(meas)]
+
+			# check and set y scale
+			if np.nanmin(meas) < ylim[0]:
+				if loglog:
+					mmeas = meas[meas > 0]
+					ylim[0] = 10**np.floor(np.log10(np.nanmin(mmeas)))
+				else:
+					ylim[0] = 0
+					ax.set_ylim(ylim)
+
+			m95 = np.percentile(meas[~np.isnan(meas)], 95) * 1.05
+			if m95 > ylim[1]:
+				if loglog:
+					ylim[1] = 10**np.ceil(np.log10(m95))
+				else:
+					ylim[1] = m95
+
+			# hist
+			if loglog:
+				bins = np.logspace(*np.log10(ylim), 30)
+			else:
+				bins = np.linspace(*ylim, 30)
+
+			axh.hist(meas, bins=bins, orientation='horizontal',
+			color=dat.cmaps[analyte], lw=0.5, alpha=0.5)
+
+			if loglog:
+				axh.set_yscale('log')
+			axh.set_ylim(ylim) # ylim of histogram axis
+			ax.set_ylim(ylim) # ylim of calibration axis
+			axh.set_xticks([])
+			axh.set_yticklabels([])
+
+			'''
+
+			# write calibration equation on graph
+			cmax = np.nanmean(dat.srmtabs.loc[analyte, 'srm_mean'].values)
+			if cmax / ylim[1] > 0.5:
+				eqText = pg.TextItem(anchor=(1,1), color='k')
+				eqText.setHtml('<div style="text-align: center"><span style="font-size:8pt;"><p>%(label)s</p></span></div>'%{"label":label})
+				eqText.setPos(x[-1],line[0])
+			else:
+				eqText = pg.TextItem(anchor=(0,-1), color='k')
+				eqText.setHtml('<div style="text-align: center"><span style="font-size:8pt;"><p>%(label)s</p></span></div>'%{"label":label})
+				eqText.setPos(0,line[-1])
+
+			self.eqTexts[analyte] = eqText
+			errPlot.addItem(eqText)
+
+			self.graphLayout.addWidget(cell, row, i%3)
+		self.scroll.setWidget(self.graph)
+
+	def showGraph(self):
+		self.show()

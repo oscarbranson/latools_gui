@@ -100,12 +100,12 @@ class CalibrationStage():
 		self.popupButton = QPushButton("Plot in popup")
 		self.popupButton.clicked.connect(self.pressedPopupButton)
 		self.stageControls.addApplyButton(self.popupButton)
-		# self.popupButton.setEnabled(False)
+		self.popupButton.setEnabled(False)
 
 		self.applyButton = QPushButton("Apply calibration")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
-		self.applyButton.setEnabled(False)
+		# self.applyButton.setEnabled(False)
 
 	def pressedApplyButton(self):
 		""" Calibrates the project data when a button is pressed. """
@@ -136,6 +136,8 @@ class CalibrationStage():
 			return
 
 		self.graphPaneObj.updateGraph()
+
+		self.popupButton.setEnabled(True)
 
 		self.progressPaneObj.completedStage(5)
 
@@ -201,7 +203,7 @@ class CalibrationStage():
 			self.pressedApplyButton()
 
 	def pressedPopupButton(self):
-		pass
+		self.graphPaneObj.showAuxGraph(cali=True)
 
 	def pressedCalculateButton(self):
 
