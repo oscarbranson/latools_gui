@@ -71,10 +71,10 @@ class CalibrationStage():
 		self.drift_correctOption = QCheckBox("Drift Correction")
 		self.drift_correctOption.setChecked(self.defaultParams['drift_correct'] == 'True')
 		self.optionsLeft.addWidget(self.drift_correctOption, 0, 0, 1, 2)
-		self.drift_correctOption.setToolTip("<qt/>Whether to interpolate calibration paraemters between SRM measurements.")
+		self.drift_correctOption.setToolTip("<qt/>Whether to interpolate calibration parameters between SRM measurements.")
 
 
-		self.optionsRight.addWidget(QLabel("srms_used"))
+		self.optionsRight.addWidget(QLabel("Standard Materials"))
 
 		self.zero_interceptOption = QCheckBox("Force Zero Intercept")
 		self.zero_interceptOption.setChecked(self.defaultParams['zero_intercept'] == 'True')

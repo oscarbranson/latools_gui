@@ -58,12 +58,15 @@ class BackgroundStage():
 		# We define the stage options and add them to the Controls Pane
 
 		self.methodOption = QComboBox()
-		self.methodOption.addItem("bkg_calc_weightedmean")
-		self.methodOption.addItem("bkg_calc_interp1d")
+		# self.methodOption.addItem("bkg_calc_weightedmean")
+		# self.methodOption.addItem("bkg_calc_interp1d")
+		self.methodOption.addItem("Weighted Mean")
+		self.methodOption.addItem("1D Interpolation")
+
 
 		# When methodOption is changed, it calls methodUpdate
 		self.methodOption.activated.connect(self.methodUpdate)
-		self.optionsGrid.addWidget(QLabel("method"), 0, 0)
+		self.optionsGrid.addWidget(QLabel("Background Correction Method"), 0, 0)
 		self.optionsGrid.addWidget(self.methodOption, 0, 1)
 
 		# Set up a layout that will only be displayed when bkg_calc_weightedmean is selected
@@ -71,21 +74,20 @@ class BackgroundStage():
 		self.methodLayout1 = QGridLayout(self.methodWidget1)
 
 		self.weight_fwhmOption = QLineEdit(self.defaultWeightParams['weight_fwhm'])
-		self.methodLayout1.addWidget(QLabel("weight_fwhm"), 0, 0)
+		self.methodLayout1.addWidget(QLabel("Gaussian FWHM"), 0, 0)
 		self.methodLayout1.addWidget(self.weight_fwhmOption, 0, 1)
-		self.weight_fwhmOption.setToolTip("The full-width-at-half-max of the gaussian used to calculate the weighted"
-										  " average.")
+		self.weight_fwhmOption.setToolTip("The full-width-at-half-max of the gaussian used to calculate the weighted average.")
 
 
 		self.n_minOption = QLineEdit(self.defaultWeightParams['n_min'])
-		self.methodLayout1.addWidget(QLabel("n_min"), 0, 2)
+		self.methodLayout1.addWidget(QLabel("Minimum Points"), 0, 2)
 		self.methodLayout1.addWidget(self.n_minOption, 0, 3)
 		self.n_minOption.setToolTip("The minimum number of points a background region must have to be included in "
 									"calculation.")
 
 
 		self.n_maxOption = QLineEdit(self.defaultWeightParams['n_max'])
-		self.methodLayout1.addWidget(QLabel("n_max"), 0, 4)
+		self.methodLayout1.addWidget(QLabel("Maximum Points"), 0, 4)
 		self.methodLayout1.addWidget(self.n_maxOption, 0, 5)
 		self.n_maxOption.setToolTip("The maximum number of points a background region must have to be included in "
 									"calculation.")
@@ -100,8 +102,9 @@ class BackgroundStage():
 		self.methodLayout2 = QGridLayout(self.methodWidget2)
 
 		self.kindOption = QLineEdit(self.defaultInterParams['kind'])
-		self.methodLayout2.addWidget(QLabel("kind"), 0, 0)
+		self.methodLayout2.addWidget(QLabel("Polynomial Order"), 0, 0)
 		self.methodLayout2.addWidget(self.kindOption, 0, 1)
+		self.kindOption.setToolTip("The order of polynomial used to fit the background. If zero, flat lines will be interpolated between the background regions.")
 
 		self.n_minOption2 = QLineEdit(self.defaultInterParams['n_min'])
 		self.methodLayout2.addWidget(QLabel("n_min"), 0, 2)
@@ -113,11 +116,11 @@ class BackgroundStage():
 
 		# Add the universal options
 		self.cstepOption = QLineEdit(self.defaultWeightParams['cstep'])
-		self.optionsGrid.addWidget(QLabel("cstep"), 2, 0)
+		self.optionsGrid.addWidget(QLabel("Calculation Steps"), 2, 0)
 		self.optionsGrid.addWidget(self.cstepOption, 2, 1, 1, 1)
 		self.cstepOption.setToolTip("The interval between calculated background points.")
 
-		self.bkg_filterOption = QCheckBox("bkg_filter")
+		self.bkg_filterOption = QCheckBox("Remove Anomalies")
 		self.optionsGrid.addWidget(self.bkg_filterOption, 3, 0)
 		self.bkg_filterOption.setChecked(self.defaultWeightParams['bkg_filter'] == 'True')
 		self.bkg_filterOption.setToolTip("Applies a rolling filter to the isolated background regions to exclude regions with anomalously high values.")

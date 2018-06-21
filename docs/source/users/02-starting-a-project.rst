@@ -1,7 +1,7 @@
 Starting a project
 ******************
 
-Welcome to LAtools! This short tutorial will guide you through an entire analysis session using sample ablation data included with LAtools. We highly recommend working through this example to understand the mechanics of the software before working on your own data.
+Welcome to LAtools! This short tutorial will guide you through an entire analysis session using sample ablation data included with LAtools. We highly recommend working through this tutorial to understand the mechanics of the software before working on your own data.
 
 .. where will the data be? still default?
 
@@ -33,7 +33,7 @@ If you would like to open an existing project, click :guilabel:`&Open project`. 
         :alt: open existing project
         :align: center
 
-.. note:: Project files have a **.lalog** file extension.
+.. note:: LAtools project files have a **.lalog** file extension.
 
 
 Recent projects
