@@ -95,7 +95,7 @@ class CalibrationStage():
 
 		self.calcButton = QPushButton("Calculate calibration")
 		self.calcButton.clicked.connect(self.pressedCalculateButton)
-		self.stageControls.addApplyButton(self.calcButton)
+		#self.stageControls.addApplyButton(self.calcButton)
 
 		self.popupButton = QPushButton("Plot in popup")
 		self.popupButton.clicked.connect(self.pressedPopupButton)

@@ -596,7 +596,7 @@ class BkgGraph(GraphWindow):
 			item.setVisible(self.legendEntries[analyte].isChecked())
 
 		for graph in self.graphs:
-			box = graph.getViewBox()
+			box = graph.geterrViewbox()
 			box.update()
 
 	# change between log/linear y scale
@@ -618,17 +618,9 @@ class BkgGraph(GraphWindow):
 
 class CaliGraph(GraphWindow):
 
-	def __init__(self, project):
+	def __init__(self, project, loglog=False):
 		super().__init__(project)
-		self.errPlots = {}
-		self.errorbars = {}
-		self.caliScatters = {}
-		self.analyteTexts = {}
-		self.eqTexts = {}
-
-		self.populated = False
-
-		# Add legend widget to the settings
+		self.loglog = loglog
 
 		scroll = QScrollArea()
 		scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -650,8 +642,24 @@ class CaliGraph(GraphWindow):
 		self.graphLayout = graphLayout
 
 		self.layout.addWidget(scroll, 1)
+	
+	def clearGraph(self):
+		self.errPlots = {}
+		self.errorbars = {}
+		self.caliScatters = {}
+		self.analyteTexts = {}
+		self.histPlots = {}
+		self.histograms = {}
+		self.eqTexts = {}
+
+		for graph in self.graphs:
+			graph.deleteLater()
+
+		self.scroll.update()
 
 	def populateGraph(self):
+		self.clearGraph()
+
 		dat = self.project.eg
 		analytes = [a for a in dat.analytes if dat.internal_standard not in a]
 
@@ -663,13 +671,15 @@ class CaliGraph(GraphWindow):
 			if i % 3 == 0:
 				row += 1
 
-			cell = QWidget()
-			cellLayout = QHBoxLayout()
-			cell.setLayout(cellLayout)
+			cell = pg.GraphicsLayoutWidget()
+			cell.ci.setSpacing(0)
+			cell.ci.layout.setColumnStretchFactor(1,2)
+			cell.addLabel('mol/mol ' + dat.internal_standard, 0, 0, angle=-90, rowspan=2)
+			cell.addLabel('counts/counts ' + dat.internal_standard, 1, 1, colspan=2)
 
 			self.graphs.append(cell)
 
-			errPlot = pg.PlotWidget()
+			errPlot = cell.addPlot(0, 1)
 			errPlot.hideButtons()
 
 			self.errPlots[analyte] = errPlot
@@ -681,9 +691,8 @@ class CaliGraph(GraphWindow):
 			# ticks = zip(xs, sxs)
 			# xAxis.setTicks([list(ticks)[::2], list(ticks)[1::2]])
 
-			cellLayout.addWidget(errPlot)
-			viewbox = errPlot.getViewBox()
-			viewbox.setMouseEnabled(False, False)
+			errViewbox = errPlot.getViewBox()
+			errViewbox.setMouseEnabled(False, False)
 			# plot calibration data
 			errorbar = pg.ErrorBarItem(x=dat.srmtabs.loc[analyte, 'meas_mean'].values,
 			y=dat.srmtabs.loc[analyte, 'srm_mean'].values,
@@ -709,7 +718,7 @@ class CaliGraph(GraphWindow):
 			helpers.stat_fns.nominal_values(dat.srmtabs.loc[analyte, 'srm_err'].values))
 			xlim = [0, 1.05 * xmax]
 			ylim = [0, 1.05 * ymax]
-			viewbox.setRange(xRange=xlim, yRange=ylim, disableAutoRange=True)
+			errViewbox.setRange(xRange=xlim, yRange=ylim, disableAutoRange=True)
 
 			# calculate line and R2
 			x = np.array(xlim)
@@ -751,73 +760,90 @@ class CaliGraph(GraphWindow):
 			else:
 				label = 'R<sup>2</sup>: {:.3f}<br />'.format(R2) + label
 
-			analyteText = pg.TextItem(color='k')
+			analyteText = pg.TextItem(anchor=(0,0), color='k')
 			el = re.match('.*?([A-z]{1,3}).*?', analyte).groups()[0]
 			m = re.match('.*?([0-9]{1,3}).*?', analyte).groups()[0]
 			analyteText.setHtml('<div style="text-align: center"><span style="font-size:10pt;"><sup>%(m)s</sup>%(el)s</span></div>'%{"el":el, "m":m})
-			analyteText.setPos(0,line[-1])
 
 			self.analyteTexts[analyte] = analyteText
 			errPlot.addItem(analyteText)
 
-			errPlot.setLabel('bottom', 'counts/counts ' + dat.internal_standard)
-			errPlot.setLabel('left', 'mol/mol ' + dat.internal_standard)
+			#errPlot.setLabel('bottom', 'counts/counts ' + dat.internal_standard)
+			#errPlot.setLabel('left', 'mol/mol ' + dat.internal_standard)
 			# write calibration equation on graph happens after data distribution
-
-			'''
 
 			# plot data distribution historgram alongside calibration plot
 			# isolate data
-			meas = nominal_values(dat.focus[analyte])
+			meas = helpers.stat_fns.nominal_values(dat.focus[analyte])
 			meas = meas[~np.isnan(meas)]
 
 			# check and set y scale
 			if np.nanmin(meas) < ylim[0]:
-				if loglog:
+				if self.loglog:
 					mmeas = meas[meas > 0]
 					ylim[0] = 10**np.floor(np.log10(np.nanmin(mmeas)))
 				else:
 					ylim[0] = 0
-					ax.set_ylim(ylim)
+					errViewbox.setRange(yRange=ylim)
 
 			m95 = np.percentile(meas[~np.isnan(meas)], 95) * 1.05
 			if m95 > ylim[1]:
-				if loglog:
+				if self.loglog:
 					ylim[1] = 10**np.ceil(np.log10(m95))
 				else:
 					ylim[1] = m95
 
 			# hist
-			if loglog:
+			if self.loglog:
 				bins = np.logspace(*np.log10(ylim), 30)
 			else:
 				bins = np.linspace(*ylim, 30)
+			
+			hy,hx = np.histogram(meas, bins=bins)
 
-			axh.hist(meas, bins=bins, orientation='horizontal',
-			color=dat.cmaps[analyte], lw=0.5, alpha=0.5)
+			histPlot = cell.addPlot(0, 2)
+			histPlot.hideButtons()
+			histViewbox = histPlot.getViewBox()
+			histViewbox.setMouseEnabled(False, False)
+			self.histPlots[analyte] = histPlot
 
-			if loglog:
-				axh.set_yscale('log')
-			axh.set_ylim(ylim) # ylim of histogram axis
-			ax.set_ylim(ylim) # ylim of calibration axis
-			axh.set_xticks([])
-			axh.set_yticklabels([])
+			hist = pg.PlotDataItem(hx, hy, stepMode=True, fillLevel=0, brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 127)), pen=pg.mkPen(color=self.hex_2_rgba(dat.cmaps[analyte], 127), width=0.5))
+			
+			self.histograms[analyte] = hist
+			histPlot.addItem(hist)
 
-			'''
+			hist.rotate(90)
+
+			if self.loglog:
+				hist.setLogMode(xMode=False, yMode=True)
+			histViewbox.setRange(yRange=ylim) # ylim of histogram axis
+			errViewbox.setRange(yRange=ylim) # ylim of calibration axis
+			histViewbox.invertX(True)
+			#histLeft = histPlot.getAxis('left')
+			#histLeft.setTicks([])
+			histBottom = histPlot.getAxis('bottom')
+			histBottom.setStyle()
+			histBottom.setTicks([])
+			histPlot.hideAxis('left')
+			#histPlot.hideAxis('bottom')
+			
+			histRange = histViewbox.viewRange()
 
 			# write calibration equation on graph
 			cmax = np.nanmean(dat.srmtabs.loc[analyte, 'srm_mean'].values)
 			if cmax / ylim[1] > 0.5:
 				eqText = pg.TextItem(anchor=(1,1), color='k')
-				eqText.setHtml('<div style="text-align: center"><span style="font-size:8pt;"><p>%(label)s</p></span></div>'%{"label":label})
+				eqText.setHtml('<div style="text-align: right"><span style="font-size:8pt">%(label)s</span></div>'%{"label":label})
 				eqText.setPos(x[-1],line[0])
 			else:
 				eqText = pg.TextItem(anchor=(0,-1), color='k')
-				eqText.setHtml('<div style="text-align: center"><span style="font-size:8pt;"><p>%(label)s</p></span></div>'%{"label":label})
-				eqText.setPos(0,line[-1])
+				eqText.setHtml('<div style="text-align: left"><span style="font-size:8pt">%(label)s</span></div>'%{"label":label})
+				eqText.setPos(0,histRange[1][1])
 
 			self.eqTexts[analyte] = eqText
 			errPlot.addItem(eqText)
+
+			analyteText.setPos(0,histRange[1][1])
 
 			self.graphLayout.addWidget(cell, row, i%3)
 		self.scroll.setWidget(self.graph)
