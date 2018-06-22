@@ -14,10 +14,10 @@ def initlog():
 def logged(func):
 	@wraps(func)
 	def logf(self, *args, **kwargs):             
-		logging.critical('Entering function '+func.__name__+' with args {} and kwargs {}'.format(args, kwargs))
+		logging.critical('Entering function '+func.__qualname__+' with args {} and kwargs {}'.format(args, kwargs))
 		try:
 			r = func(self, *args, **kwargs)
-			logging.debug('Exited function %s', func.__name__)
+			logging.debug('Exited function %s', func.__qualname__)
 			return r
 		except TypeError:
                         try:
@@ -26,7 +26,7 @@ def logged(func):
                                 return r
                         except: raise
 		except:
-			logging.exception('ERROR: Function %s triggered exception', func.__name__)
+			logging.exception('ERROR: Function %s triggered exception', func.__qualname__)
 	
 	return logf
 
