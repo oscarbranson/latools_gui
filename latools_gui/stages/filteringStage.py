@@ -3,12 +3,15 @@
 from PyQt5.QtWidgets import *
 import templates.filterControls as filterControls
 
+from project.ErrLogger import logged
+
 class FilteringStage():
 	"""
 	Each stage has its own Controls Pane, where it defines a description and the unique options for that
 	step of the data-processing. It updates the graph pane based on the modifications that are made to the
 	project.
 	"""
+	@logged
 	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, filteringWidget, project):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
@@ -44,12 +47,14 @@ class FilteringStage():
 		#self.applyButton.clicked.connect(self.pressedApplyButton)
 		#self.stageControls.addApplyButton(self.applyButton)
 
+	@logged
 	def pressedApplyButton(self):
 		#Add apply button functionality
 		pass
-
+	@logged
 	def loadValues(self):
 		x = 1
 
+	logged
 	def enterPressed(self):
 		pass

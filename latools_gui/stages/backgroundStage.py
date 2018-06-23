@@ -6,12 +6,15 @@ import inspect
 import templates.controlsPane as controlsPane
 import ast
 
+from project.ErrLogger import logged
+
 class BackgroundStage():
 	"""
 	Each stage has its own Controls Pane, where it defines a description and the unique options for that
 	step of the data-processing. It updates the graph pane based on the modifications that are made to the
 	project.
 	"""
+	@logged
 	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, backgroundWidget, project):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
@@ -167,6 +170,7 @@ class BackgroundStage():
 		self.subtractButton.setEnabled(False)
 
 
+	@logged
 	def pressedCalcButton(self):
 		""" Applies a background calculation on the project data when a button is pressed, making sure there are
 		no illegal inputs.
@@ -310,17 +314,20 @@ class BackgroundStage():
 		# Automatically saves the project if it already has a save location
 		self.project.reSave()
 
+	@logged
 	def pressedPopupButton(self):
 		""" Creates a popup for the background calculation when a button is pressed. """
 
 		self.graphPaneObj.showAuxGraph(bkg=True)
 
+	@logged
 	def pressedSubtractButton(self):
 		""" Subtracts an existing background calculation from the project data when a button is pressed. """
 		self.project.eg.bkg_subtract(analytes=None, errtype='stderr', focus_stage='despiked')
 		self.graphPaneObj.updateGraph()
 		self.progressPaneObj.completedStage(3)
 
+	@logged
 	def methodUpdate(self):
 		""" Updates the current method. """
 		if (self.currentlyMethod1):
@@ -331,6 +338,7 @@ class BackgroundStage():
 			self.optionsGrid.addWidget(self.methodWidget1, 1, 0, 1, 2)
 		self.currentlyMethod1 = not self.currentlyMethod1
 
+	@logged
 	def bkgUpdate(self):
 		""" Hides the last two input fields unless the bkg_filter button is ticked """
 		if self.bkg_filterOption.isChecked():
@@ -340,14 +348,17 @@ class BackgroundStage():
 			self.f_winOption.setVisible(False)
 			self.f_n_limOption.setVisible(False)
 
+	@logged
 	def raiseError(self, message):
 		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.backgroundWidget, "Error", message, QMessageBox.Ok)
 
+	@logged
 	def resetButtons(self):
 		self.popupButton.setEnabled(False)
 		self.subtractButton.setEnabled(False)
 
+	@logged
 	def loadValues(self):
 		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
@@ -389,6 +400,7 @@ class BackgroundStage():
 		self.pressedCalcButton()
 		self.pressedSubtractButton()
 
+	@logged
 	def enterPressed(self):
 		""" When enter is pressed on this stage """
 		if self.subtractButton.isEnabled():

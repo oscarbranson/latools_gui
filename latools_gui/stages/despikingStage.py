@@ -129,7 +129,7 @@ class DespikingStage():
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
-	#@logged
+	@logged
 	def pressedApplyButton(self):
 		""" Applies a despiking filter to the project data when a button is pressed. """
 
@@ -190,10 +190,12 @@ class DespikingStage():
 		# Automatically saves the project if it already has a save location
 		self.project.reSave()
 
+	@logged
 	def raiseError(self, message):
 		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.despikingWidget, "Error", message, QMessageBox.Ok)
 
+	@logged
 	def loadValues(self):
 		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
@@ -213,6 +215,7 @@ class DespikingStage():
 		# The loading process then activates the stage's apply command
 		self.pressedApplyButton()
 
+	@logged
 	def enterPressed(self):
 		""" When enter is pressed on this stage """
 		if self.applyButton.isEnabled():

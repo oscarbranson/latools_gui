@@ -5,12 +5,16 @@ import ast
 
 import templates.controlsPane as controlsPane
 
+from project.ErrLogger import logged
+
 class RatioStage():
 	"""
 	Each stage has its own Controls Pane, where it defines a description and the unique options for that
 	step of the data-processing. It updates the graph pane based on the modifications that are made to the
 	project.
 	"""
+	
+	@logged
 	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, ratioWidget, project):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
@@ -61,6 +65,7 @@ class RatioStage():
 		self.stageControls.addApplyButton(self.applyButton)
 		self.applyButton.setEnabled(False)
 
+	@logged
 	def pressedApplyButton(self):
 		""" Ratios the project data with a given standard when a button is pressed. """
 
@@ -73,17 +78,20 @@ class RatioStage():
 		self.graphPaneObj.updateGraph()
 		self.progressPaneObj.completedStage(4)
 
+	@logged
 	def updateStageInfo(self):
 		""" Updates the stage after data is imported at runtime """
 		for analyte in self.project.eg.analytes:
 			self.internal_standardOption.addItem(str(analyte))
 
+	@logged
 	def internal_standardClicked(self):
 		if self.internal_standardOption.currentIndex() != 0:
 			self.applyButton.setEnabled(True)
 		else:
 			self.applyButton.setEnabled(False)
 
+	@logged
 	def loadValues(self):
 		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
@@ -98,6 +106,7 @@ class RatioStage():
 		# The loading process then activates the stage's apply command
 		self.pressedApplyButton()
 
+	@logged
 	def enterPressed(self):
 		""" When enter is pressed on this stage """
 		if self.applyButton.isEnabled():

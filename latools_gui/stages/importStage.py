@@ -138,18 +138,20 @@ class ImportStage():
 			errorBox = QMessageBox.critical(self.importStageWidget,
 											"Error loading data files",
 											"An error occurred while attempting to load the data files. \n" +
-											"Please check that the specified data folder contains the correct data files",
-											QMessageBox.Ok)
-
+										"Please check that the specified data folder contains the correct data files",
+										QMessageBox.Ok)
+	@logged
 	def findDataButtonClicked(self):
 		""" Opens a file dialog to find a file directory for data import when a button is pressed. """
 
 		self.fileLocation = QFileDialog.getExistingDirectory(self.importStageWidget, 'Open file', '/home')
 		self.fileLocationLine.setText(self.fileLocation)
+	
 	@logged
 	def setImportListener(self, importListener):
 		self.importListener = importListener
 
+	@logged
 	def loadValues(self):
 		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
@@ -166,11 +168,13 @@ class ImportStage():
 		# The loading process then activates the stage's apply command
 		self.pressedApplyButton()
 
+	@logged
 	def enterPressed(self):
 		""" When enter is pressed on this stage """
 		if self.applyButton.isEnabled():
 			self.pressedApplyButton()
 
+	@logged
 	def relistConfig(self):
 		""" When a new configuration is added the config dropdown box needs to be updated """
 
