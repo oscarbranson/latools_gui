@@ -7,7 +7,7 @@ import logging
 from functools import wraps
 
 def initlog():
-	logging.basicConfig(filename='Log-%s.log' % time.strftime('%Y-%m-%d-%H%M%S'), format='%(asctime)s: %(message)s', datefmt='%Y-%m-%d %I:%M:%S', level=logging.DEBUG)
+	logging.basicConfig(filename='logs/Log-%s.log' % time.strftime('%Y-%m-%d-%H%M%S'), format='%(asctime)s: %(message)s', datefmt='%Y-%m-%d %I:%M:%S', level=logging.DEBUG)
 
 
 
