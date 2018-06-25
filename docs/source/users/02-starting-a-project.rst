@@ -24,7 +24,7 @@ To create a new project, click :guilabel:`&New project`. Type the name of your n
 .. _existing-project:
 Opening an existing project
 ---------------------------
-If you would like to open an existing project, click :guilabel:`&Open project`. This will open your computers file explorer. Navigate to the location of your project, then open the file. This action will drop you into the last step that was completed in that particular analysis session.
+If you would like to open an existing project, click :guilabel:`&Open project`. This will open your computers file explorer. Navigate to the location of your project, then open the project file. This will drop you into the last stage that was completed in that particular analysis session.
 
 .. image:: gifs/02-openexisting.gif
         :width: 689px
