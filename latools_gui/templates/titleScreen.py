@@ -43,7 +43,7 @@ class TitleScreen():
 		self.mainLayout.setAlignment(Qt.AlignCenter)
 
 		# We currently use spacers to center the content vertically
-		self.topSpacer = QSpacerItem(0, 125, QSizePolicy.Minimum, QSizePolicy.Expanding)
+		self.topSpacer = QSpacerItem(0, 75, QSizePolicy.Minimum, QSizePolicy.Expanding)
 		self.mainLayout.addItem(self.topSpacer)
 
 		# We display the logo using a label
@@ -54,7 +54,7 @@ class TitleScreen():
 		self.mainLayout.addWidget(self.logoImage)
 		
 		# Small spacer after the logo
-		self.logoSpacer = QSpacerItem(0, 25, QSizePolicy.Minimum, QSizePolicy.Expanding) 
+		self.logoSpacer = QSpacerItem(0, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 		self.mainLayout.addItem(self.logoSpacer)
 
 		# Hard-coded welcome message. We can update this with the appropriate text
@@ -64,7 +64,7 @@ class TitleScreen():
 		self.mainLayout.addWidget(self.welcomeLabel)
 
 		# Small spacer after the text
-		self.welcomeSpacer = QSpacerItem(0, 25, QSizePolicy.Minimum, QSizePolicy.Expanding) 
+		self.welcomeSpacer = QSpacerItem(0, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 		self.mainLayout.addItem(self.welcomeSpacer)
 
 		# A small grid of buttons and fields for starting or loading a project
@@ -113,7 +113,7 @@ class TitleScreen():
 		# Calls nameEdited() when the cursor position changes on NameEdit
 		self.nameEdit.cursorPositionChanged.connect(self.nameEdited)
 
-		self.logoSpacer = QSpacerItem(0, 50, QSizePolicy.Minimum, QSizePolicy.Expanding)
+		self.logoSpacer = QSpacerItem(0, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
 		self.mainLayout.addItem(self.logoSpacer)
 
 		# A button at the bottom which links to the online user guide
@@ -126,7 +126,7 @@ class TitleScreen():
 		self.helpButton.clicked.connect(self.helpButtonClick)
 
 		# A spacer at the bottom.
-		self.bottomSpacer = QSpacerItem(0, 125, QSizePolicy.Minimum, QSizePolicy.Expanding)
+		self.bottomSpacer = QSpacerItem(0, 75, QSizePolicy.Minimum, QSizePolicy.Expanding)
 		self.mainLayout.addItem(self.bottomSpacer)
 
 		# A progress bar for loading a project
