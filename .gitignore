@@ -103,7 +103,6 @@ ENV/
 .DS_Store
 .venv/
 .idea/
-.log
 
 # instance-specific files
 recentProjects.txt
