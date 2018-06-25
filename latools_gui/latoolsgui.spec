@@ -15,7 +15,10 @@ hiddenimports = ['pandas._libs.tslibs.timedeltas',
 		'sklearn.neighbors.quad_tree',
 		'sklearn.tree',
 		'sklearn',
-		'sklearn.tree._utils']
+		'sklearn.tree._utils',
+		'pandas._libs.tslibs.np_datetime',
+		'pandas._libs.tslibs.nattype',
+		'pandas._libs.skiplist']
 
 a = Analysis(['latoolsgui.py'],
              pathex=[folder],

@@ -39,7 +39,7 @@ class MainWindow(QMainWindow):
 		
 		# Determines where the offset for where the window appears on the screen.
 		# Moves the window x pixels to the right, and y pixels down
-		self.move(200, 0)
+		self.move(100, 0)
 		self.setWindowTitle("LAtools")
 
 		initlog() #initialise logging

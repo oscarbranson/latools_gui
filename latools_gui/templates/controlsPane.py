@@ -44,7 +44,7 @@ class ControlsPane():
 		# We create a widget to house the stage options. These will be filled in via function calls from
 		# the stage object.
 		self.optionsWidget = QWidget()
-		self.optionsWidget.setMinimumWidth(400)
+		self.optionsWidget.setMinimumWidth(500)
 		self.controlsLayout.addWidget(self.optionsWidget)
 
 		# The layout for the right-most section where the Apply button(s) will be added.

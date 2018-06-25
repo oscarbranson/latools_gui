@@ -34,7 +34,7 @@ class ProgressPane:
 		self.stageTabs.addProgressPane(self)
 
 		# We add a 'left' button for moving through the stages
-		self.leftButton = QPushButton("⬅")
+		self.leftButton = QPushButton("←")
 		self.progressLayout.addWidget(self.leftButton)
 		# The click functionality is defined in a method below.
 		self.leftButton.clicked.connect(self.leftButtonClick)
@@ -48,7 +48,7 @@ class ProgressPane:
 		self.progressUpdater = progressUpdater.ProgressUpdater(self.progressBar)
 
 		# We add a right button
-		self.rightButton = QPushButton("➡")
+		self.rightButton = QPushButton("→")
 		self.rightButton.clicked.connect(self.rightButtonClick)
 		self.progressLayout.addWidget(self.rightButton)
 
