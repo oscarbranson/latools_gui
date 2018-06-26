@@ -295,7 +295,7 @@ class TitleScreen():
 
 	def helpButtonClick(self):
 		""" Link to online user guide """
-		url = QUrl("https://github.com/oscarbranson/latools")
+		url = QUrl("https://bearisdriving.com/LAtoolsGUIUserGuide/index.html")
 		QDesktopServices.openUrl(url)
 
 	def enterPressed(self):
