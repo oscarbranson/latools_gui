@@ -7,7 +7,8 @@ folder = os.getcwd()
 extra_datas = [('graphics', 'graphics'), 
 		('project/recentProjects.txt', 'project'),
 		('data', 'data'),
-		('latools', 'latools')]
+		('latools', 'latools'),
+		('logs', 'logs')]
 
 hiddenimports = ['pandas._libs.tslibs.timedeltas',
 		'scipy._lib.messagestream',
