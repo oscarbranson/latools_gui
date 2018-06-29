@@ -596,7 +596,7 @@ class BkgGraph(GraphWindow):
 			item.setVisible(self.legendEntries[analyte].isChecked())
 
 		for graph in self.graphs:
-			box = graph.geterrViewbox()
+			box = graph.getViewBox()
 			box.update()
 
 	# change between log/linear y scale
