@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
+import json
 import ast
 import os
 
@@ -50,63 +51,68 @@ class ImportStage():
 		# We capture the default parameters for this stage's function call
 		self.defaultParams = self.stageControls.getDefaultParameters(inspect.signature(la.analyse))
 
+		# We import the stage information from a json file
+		with open("information/importStageInfo.json", "r") as read_file:
+			self.stageInfo = json.load(read_file)
+			read_file.close()
+
 		# We set the title and description for the stage
 
-		self.stageControls.setDescription("Import Data", """
-			In this stage you will be importing and configuring all the data required for your analysis session. Specifically, you will:
-			<ul>
-			<li style="margin-left:-20px;">  Locate the folder containing your sample and standards data</li>
-			<li style="margin-left:-20px;">  Select or create a configuration</li>
-			<li style="margin-left:-20px;">  Specify your SRM file identifier</li>
-			<li style="margin-left:-20px;">  Specify your file extension</li>
-			</ul>
-			
-			<p>Once specified, graph your sample and standard data by clicking APPLY.
-			
-			""")
+		self.stageControls.setDescription("Import Data", self.stageInfo["stage_description"])
 
 		# The space for the stage options is provided by the Controls Pane.
 		self.optionsGrid = QGridLayout(self.stageControls.getOptionsWidget())
 
 		# We define the stage options and add them to the Controls Pane
 
-		self.findDataButton = QPushButton("Browse")
+		self.findDataButton = QPushButton(self.stageInfo["find_data_label"])
 		self.findDataButton.setMaximumWidth(100)
 		self.findDataButton.clicked.connect(self.findDataButtonClicked)
 		self.optionsGrid.addWidget(self.findDataButton,0,0)
+		self.findDataButton.setToolTip(self.stageInfo["find_data_description"])
 
 		self.fileLocationLine = QLineEdit("./data/")
 		self.optionsGrid.addWidget(self.fileLocationLine, 0, 1)
 		self.fileLocationLine.setReadOnly(True)
-		self.fileLocationLine.setToolTip("<qt/>File path to the directory containing the data files.")
+		self.fileLocationLine.setToolTip(self.stageInfo["find_data_description"])
 
 		self.configOption = QComboBox()
 		# The configOption values are added based on the read_latoolscfg values
 		for key in dict(la.config.read_latoolscfg()[1]):
 			self.configOption.addItem(key)
 
-		self.optionsGrid.addWidget(QLabel("Configuration"), 1,0)
+		self.config_label = QLabel(self.stageInfo["config_label"])
+		self.optionsGrid.addWidget(self.config_label, 1,0)
 		self.optionsGrid.addWidget(self.configOption, 1,1)
-		self.configOption.setToolTip("<qt/>The name of the LAtools configuration you want to use to import the data.")
+		self.configOption.setToolTip(self.stageInfo["config_description"])
+		self.config_label.setToolTip(self.stageInfo["config_description"])
 
+		self.srm_identifierLabel = QLabel(self.stageInfo["srm_label"])
 		self.srm_identifierOption = QLineEdit(self.defaultParams['srm_identifier'])
-		self.optionsGrid.addWidget(QLabel("SRM File Identifier"), 2, 0)
+		self.optionsGrid.addWidget(self.srm_identifierLabel, 2, 0)
 		self.optionsGrid.addWidget(self.srm_identifierOption, 2, 1)
-		self.srm_identifierOption.setToolTip("<qt/>This is used to identify SRM measurements in your data file, "
-											 "and should be present in the file names of all analyses containing SRMs.")
+		self.srm_identifierOption.setToolTip(self.stageInfo["srm_description"])
+		self.srm_identifierLabel.setToolTip(self.stageInfo["srm_description"])
 
+		self.file_extensionLabel = QLabel(self.stageInfo["file_extension_label"])
 		self.file_extensionOption = QLineEdit(self.defaultParams['extension'])
-		self.optionsGrid.addWidget(QLabel("Data File Extension"), 3, 0)
+		self.optionsGrid.addWidget(self.file_extensionLabel, 3, 0)
 		self.optionsGrid.addWidget(self.file_extensionOption, 3, 1)
-		self.file_extensionOption.setToolTip("<qt/>This is used to identify data files in the analysis directory."
-											 "All files in the directory with this extension will be imported.")
+		self.file_extensionOption.setToolTip(self.stageInfo["file_extension_description"])
+		self.file_extensionLabel.setToolTip(self.stageInfo["file_extension_description"])
+
+		# We create a reset to default button
+
+		self.defaultButton = QPushButton("Defaults")
+		self.defaultButton.clicked.connect(self.defaultButtonPress)
+		self.stageControls.addDefaultButton(self.defaultButton)
 
 		# We create the button for the right-most section of the Controls Pane.
 
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
-		
+
 	@logged
 	def pressedApplyButton(self):
 		""" Imports data into the project when the apply button is pressed. """
@@ -136,9 +142,8 @@ class ImportStage():
 			print("An error occured")
 
 			errorBox = QMessageBox.critical(self.importStageWidget,
-											"Error loading data files",
-											"An error occurred while attempting to load the data files. \n" +
-										"Please check that the specified data folder contains the correct data files",
+											"""self.stageInfo["general_error_label"]""",
+											"""self.stageInfo["general_error_description"]""",
 										QMessageBox.Ok)
 	@logged
 	def findDataButtonClicked(self):
@@ -159,14 +164,19 @@ class ImportStage():
 		params = self.project.getStageParams("import")
 
 		# The stage parameters are applied to the input fields
+		self.fillValues(params)
+
+		# The loading process then activates the stage's apply command
+		self.pressedApplyButton()
+
+	def fillValues(self, params):
+		""" Fills the stage parameters from a given dictionary """
+
 		if params is not None:
 			self.fileLocationLine.setText(params.get("data_folder", ""))
 			self.configOption.setCurrentText(params.get("config", ""))
 			self.file_extensionOption.setText(params.get("extension", ""))
 			self.srm_identifierOption.setText(params.get("srm_identifier", ""))
-
-		# The loading process then activates the stage's apply command
-		self.pressedApplyButton()
 
 	@logged
 	def enterPressed(self):
@@ -185,3 +195,17 @@ class ImportStage():
 		# Items are then readded
 		for key in dict(la.config.read_latoolscfg()[1]):
 			self.configOption.addItem(key)
+
+	@logged
+	def defaultButtonPress(self):
+
+		params = {
+			"data_folder": "./data/",
+			"config": self.defaultParams["config"],
+			"extension": self.defaultParams["extension"],
+			"srm_identifier": self.defaultParams["srm_identifier"]
+		}
+
+		self.fillValues(params)
+
+

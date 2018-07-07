@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
+import json
 import ast
 
 from project.ErrLogger import logged
@@ -47,13 +48,14 @@ class BackgroundStage():
 		self.defaultInterParams = self.stageControls.getDefaultParameters(
 			inspect.signature(la.analyse.bkg_calc_interp1d))
 
+		# We import the stage information from a json file
+		read_file = open("information/backgroundStageInfo.json", "r")
+		self.stageInfo = json.load(read_file)
+		read_file.close()
+
 		# We set the title and description for the stage
 
-		self.stageControls.setDescription("Background Correction", """
-			This stage will separate signal (laser-on) and background (laser-off) data, using your internal standard.  
-			<p>To see the regions of your data identified as signal and background, change any parameters you need to 
-			and then click APPLY. Red regions are signal; grey regions are background.			
-			""")
+		self.stageControls.setDescription("Background Correction", self.stageInfo["stage_description"])
 
 		# The space for the stage options is provided by the Controls Pane.
 		self.optionsGrid = QGridLayout(self.stageControls.getOptionsWidget())
@@ -61,39 +63,39 @@ class BackgroundStage():
 		# We define the stage options and add them to the Controls Pane
 
 		self.methodOption = QComboBox()
-		# self.methodOption.addItem("bkg_calc_weightedmean")
-		# self.methodOption.addItem("bkg_calc_interp1d")
-		self.methodOption.addItem("Weighted Mean")
-		self.methodOption.addItem("1D Interpolation")
+		self.methodOption.addItem(self.stageInfo["bkg_method_1_label"])
+		self.methodOption.addItem(self.stageInfo["bkg_method_2_label"])
 
 
 		# When methodOption is changed, it calls methodUpdate
 		self.methodOption.activated.connect(self.methodUpdate)
-		self.optionsGrid.addWidget(QLabel("Background Correction Method"), 0, 0)
+		self.optionsGrid.addWidget(QLabel(self.stageInfo["bkg_method_label"]), 0, 0)
 		self.optionsGrid.addWidget(self.methodOption, 0, 1)
 
 		# Set up a layout that will only be displayed when bkg_calc_weightedmean is selected
 		self.methodWidget1 = QWidget()
 		self.methodLayout1 = QGridLayout(self.methodWidget1)
 
+		self.weight_fwhmLabel = QLabel(self.stageInfo["weight_fwhm_label"])
 		self.weight_fwhmOption = QLineEdit(self.defaultWeightParams['weight_fwhm'])
-		self.methodLayout1.addWidget(QLabel("Gaussian FWHM"), 0, 0)
+		self.methodLayout1.addWidget(self.weight_fwhmLabel, 0, 0)
 		self.methodLayout1.addWidget(self.weight_fwhmOption, 0, 1)
-		self.weight_fwhmOption.setToolTip("The full-width-at-half-max of the gaussian used to calculate the weighted average.")
+		self.weight_fwhmOption.setToolTip(self.stageInfo["weight_fwhm_description"])
+		self.weight_fwhmLabel.setToolTip(self.stageInfo["weight_fwhm_description"])
 
-
+		self.n_minLabel = QLabel(self.stageInfo["n_min_label"])
 		self.n_minOption = QLineEdit(self.defaultWeightParams['n_min'])
-		self.methodLayout1.addWidget(QLabel("Minimum Points"), 0, 2)
+		self.methodLayout1.addWidget(self.n_minLabel, 0, 2)
 		self.methodLayout1.addWidget(self.n_minOption, 0, 3)
-		self.n_minOption.setToolTip("The minimum number of points a background region must have to be included in "
-									"calculation.")
+		self.n_minOption.setToolTip(self.stageInfo["n_min_description"])
+		self.n_minLabel.setToolTip(self.stageInfo["n_min_description"])
 
-
+		self.n_maxLabel = QLabel(self.stageInfo["n_max_label"])
 		self.n_maxOption = QLineEdit(self.defaultWeightParams['n_max'])
-		self.methodLayout1.addWidget(QLabel("Maximum Points"), 0, 4)
+		self.methodLayout1.addWidget(self.n_maxLabel, 0, 4)
 		self.methodLayout1.addWidget(self.n_maxOption, 0, 5)
-		self.n_maxOption.setToolTip("The maximum number of points a background region must have to be included in "
-									"calculation.")
+		self.n_maxOption.setToolTip(self.stageInfo["n_max_description"])
+		self.n_maxLabel.setToolTip(self.stageInfo["n_max_description"])
 
 
 		# Apply the bkg_calc_weightedmean options as default
@@ -104,29 +106,39 @@ class BackgroundStage():
 		self.methodWidget2 = QWidget()
 		self.methodLayout2 = QGridLayout(self.methodWidget2)
 
+		self.kind_label = QLabel(self.stageInfo["kind_label"])
 		self.kindOption = QLineEdit(self.defaultInterParams['kind'])
-		self.methodLayout2.addWidget(QLabel("Polynomial Order"), 0, 0)
+		self.methodLayout2.addWidget(self.kind_label, 0, 0)
 		self.methodLayout2.addWidget(self.kindOption, 0, 1)
-		self.kindOption.setToolTip("The order of polynomial used to fit the background. If zero, flat lines will be interpolated between the background regions.")
+		self.kindOption.setToolTip(self.stageInfo["kind_description"])
+		self.kind_label.setToolTip(self.stageInfo["kind_description"])
 
+		self.n_min2Label = QLabel(self.stageInfo["n_min_label"])
 		self.n_minOption2 = QLineEdit(self.defaultInterParams['n_min'])
-		self.methodLayout2.addWidget(QLabel("n_min"), 0, 2)
+		self.methodLayout2.addWidget(self.n_min2Label, 0, 2)
 		self.methodLayout2.addWidget(self.n_minOption2, 0, 3)
+		self.n_minOption2.setToolTip(self.stageInfo["n_min_description"])
+		self.n_min2Label.setToolTip(self.stageInfo["n_min_description"])
 
+		self.n_max2Label = QLabel(self.stageInfo["n_max_label"])
 		self.n_maxOption2 = QLineEdit(self.defaultInterParams['n_max'])
-		self.methodLayout2.addWidget(QLabel("n_max"), 0, 4)
+		self.methodLayout2.addWidget(self.n_max2Label, 0, 4)
 		self.methodLayout2.addWidget(self.n_maxOption2, 0, 5)
+		self.n_maxOption2.setToolTip(self.stageInfo["n_max_description"])
+		self.n_max2Label.setToolTip(self.stageInfo["n_max_description"])
 
 		# Add the universal options
+		self.cstepLabel = QLabel(self.stageInfo["cstep_label"])
 		self.cstepOption = QLineEdit(self.defaultWeightParams['cstep'])
-		self.optionsGrid.addWidget(QLabel("Calculation Steps"), 2, 0)
+		self.optionsGrid.addWidget(self.cstepLabel, 2, 0)
 		self.optionsGrid.addWidget(self.cstepOption, 2, 1, 1, 1)
-		self.cstepOption.setToolTip("The interval between calculated background points.")
+		self.cstepOption.setToolTip(self.stageInfo["cstep_description"])
+		self.cstepLabel.setToolTip(self.stageInfo["cstep_description"])
 
-		self.bkg_filterOption = QCheckBox("Remove Anomalies")
+		self.bkg_filterOption = QCheckBox(self.stageInfo["bkg_filter_label"])
 		self.optionsGrid.addWidget(self.bkg_filterOption, 3, 0)
 		self.bkg_filterOption.setChecked(self.defaultWeightParams['bkg_filter'] == 'True')
-		self.bkg_filterOption.setToolTip("Applies a rolling filter to the isolated background regions to exclude regions with anomalously high values.")
+		self.bkg_filterOption.setToolTip(self.stageInfo["bkg_filter_description"])
 
 		# We set up a click function for the checkbox
 		self.bkg_filterOption.stateChanged.connect(self.bkgUpdate)
@@ -136,22 +148,29 @@ class BackgroundStage():
 		self.bkgLayout = QGridLayout(self.bkgWidget)
 
 		self.f_winOption = QLineEdit(self.defaultWeightParams['f_win'])
-		self.f_winLabel = QLabel("f_win")
+		self.f_winLabel = QLabel(self.stageInfo["f_win_label"])
 		self.bkgLayout.addWidget(self.f_winLabel, 0, 0)
 		self.bkgLayout.addWidget(self.f_winOption, 0, 1)
-		self.f_winOption.setToolTip("The size of the rolling window.")
-
+		self.f_winOption.setToolTip(self.stageInfo["f_win_description"])
+		self.f_winLabel.setToolTip(self.stageInfo["f_win_description"])
 
 		self.f_n_limOption = QLineEdit(self.defaultWeightParams['f_n_lim'])
-		self.f_n_limLabel = QLabel("f_n_lim")
+		self.f_n_limLabel = QLabel(self.stageInfo["f_n_lim_label"])
 		self.bkgLayout.addWidget(self.f_n_limLabel, 0, 2)
 		self.bkgLayout.addWidget(self.f_n_limOption, 0, 3)
-		self.f_n_limOption.setToolTip("The number of standard deviations above the rolling mean to set the threshold.")
+		self.f_n_limOption.setToolTip(self.stageInfo["f_n_lim_description"])
+		self.f_n_limLabel.setToolTip(self.stageInfo["f_n_lim_description"])
 
 		self.optionsGrid.addWidget(self.bkgWidget, 3, 1)
 
-		self.f_winOption.setVisible(False)
-		self.f_n_limOption.setVisible(False)
+		self.f_winOption.setEnabled(False)
+		self.f_n_limOption.setEnabled(False)
+
+		# We create a reset to default button
+
+		self.defaultButton = QPushButton("Defaults")
+		self.defaultButton.clicked.connect(self.defaultButtonPress)
+		self.stageControls.addDefaultButton(self.defaultButton)
 
 		# We create the buttons for the right-most section of the Controls Pane.
 
@@ -330,23 +349,25 @@ class BackgroundStage():
 	@logged
 	def methodUpdate(self):
 		""" Updates the current method. """
-		if (self.currentlyMethod1):
-			self.methodWidget1.setParent(None)
-			self.optionsGrid.addWidget(self.methodWidget2, 1, 0, 1, 2)
-		else:
+
+		if self.methodOption.currentText() == self.stageInfo["bkg_method_1_label"]:
 			self.methodWidget2.setParent(None)
 			self.optionsGrid.addWidget(self.methodWidget1, 1, 0, 1, 2)
-		self.currentlyMethod1 = not self.currentlyMethod1
+			self.currentlyMethod1 = True
+		else:
+			self.methodWidget1.setParent(None)
+			self.optionsGrid.addWidget(self.methodWidget2, 1, 0, 1, 2)
+			self.currentlyMethod1 = False
 
 	@logged
 	def bkgUpdate(self):
 		""" Hides the last two input fields unless the bkg_filter button is ticked """
 		if self.bkg_filterOption.isChecked():
-			self.f_winOption.setVisible(True)
-			self.f_n_limOption.setVisible(True)
+			self.f_winOption.setEnabled(True)
+			self.f_n_limOption.setEnabled(True)
 		else:
-			self.f_winOption.setVisible(False)
-			self.f_n_limOption.setVisible(False)
+			self.f_winOption.setEnabled(False)
+			self.f_n_limOption.setEnabled(False)
 
 	@logged
 	def raiseError(self, message):
@@ -405,3 +426,24 @@ class BackgroundStage():
 		""" When enter is pressed on this stage """
 		if self.subtractButton.isEnabled():
 			self.pressedSubtractButton()
+
+	@logged
+	def defaultButtonPress(self):
+
+		self.methodOption.setCurrentText(self.stageInfo["bkg_method_1_label"])
+
+		self.weight_fwhmOption.setText(self.defaultWeightParams['weight_fwhm'])
+		self.n_minOption.setText(self.defaultWeightParams['n_min'])
+		self.n_maxOption.setText(self.defaultWeightParams['n_max'])
+
+		self.cstepOption.setText(self.defaultWeightParams['cstep'])
+		self.bkg_filterOption.setChecked(self.defaultWeightParams['bkg_filter'] == 'True')
+		self.f_winOption.setText(self.defaultWeightParams['f_win'])
+		self.f_n_limOption.setText(self.defaultWeightParams['f_n_lim'])
+
+		self.kindOption.setText(self.defaultInterParams['kind'])
+		self.n_minOption2.setText(self.defaultInterParams['n_min'])
+		self.n_maxOption2.setText(self.defaultInterParams['n_max'])
+
+		self.methodUpdate()
+		self.bkgUpdate()

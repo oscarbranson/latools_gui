@@ -1,0 +1,31 @@
+{
+	"stage_description": "This stage will separate signal (laser-on) and background (laser-off) data, using your internal standard. <p>To see the regions of your data identified as signal and background, change any parameters you need to and then click APPLY. Red regions are signal; grey regions are background.",
+
+	"bkg_method_label": "Background Correction Method",
+	"bkg_method_1_label": "Weighted Mean",
+	"bkg_method_2_label": "1D Interpolation",
+
+	"weight_fwhm_label": "Gaussian FWHM",
+	"weight_fwhm_description": "<qt/>The full-width-at-half-max of the gaussian used to calculate the weighted average.",
+
+	"n_min_label": "Minimum Points",
+	"n_min_description": "<qt/>The minimum number of points a background region must have to be included in calculation.",
+
+	"n_max_label": "Maximum Points",
+	"n_max_description": "<qt/>The maximum number of points a background region must have to be included in calculation.",
+
+	"kind_label": "Polynomial Order",
+	"kind_description": "<qt/>The order of polynomial used to fit the background. If zero, flat lines will be interpolated between the background regions.",
+
+	"cstep_label": "Calculation Steps",
+	"cstep_description": "<qt/>The interval between calculated background points.",
+
+	"bkg_filter_label": "Remove Anomalies",
+	"bkg_filter_description": "<qt/>Applies a rolling filter to the isolated background regions to exclude regions with anomalously high values.",
+
+	"f_win_label": "f_win",
+	"f_win_description": "<qt/>The size of the rolling window.",
+
+	"f_n_lim_label": "f_n_lim",
+	"f_n_lim_description": "<qt/>The number of standard deviations above the rolling mean to set the threshold."
+}

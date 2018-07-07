@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
+import json
 import ast
 
 from project.ErrLogger import logged
@@ -43,23 +44,14 @@ class DespikingStage():
 		# We capture the default parameters for this stage's function call
 		self.defaultParams = self.stageControls.getDefaultParameters(inspect.signature(la.analyse.despike))
 
+		# We import the stage information from a json file
+		read_file = open("information/despikeStageInfo.json", "r")
+		self.stageInfo = json.load(read_file)
+		read_file.close()
+
 		# We set the title and description for the stage
 
-		self.stageControls.setDescription("Data De-spiking", """
-			Despiking remotes all physically unrealistic outliers from your data. There are two despiking methods 
-			available to use, both of which can be applied.			
-
-			<p><b>Exponential decay despiker</b>
-			<p>Removes low outliers, and replaces them with the average of the adjacent values. If you know the 
-			exponetial decay constant of your laser you may specify it; otherwise, leave it blank and LAtools will fit 
-			an exponential decay function to your data for you. 
-			
-			<p><b>Noise despiker</b>
-			<p>Removes high outliers greater than a specified standard deviation from a rolling mean of your data.
-			
-			<p>To graph your selected despiking method/s, click APPLY.
-		
-			""")
+		self.stageControls.setDescription("Data De-spiking", self.stageInfo["stage_description"])
 
 		# The space for the stage options is provided by the Controls Pane.
 
@@ -67,62 +59,86 @@ class DespikingStage():
 
 		# We define the stage options and add them to the Controls Pane
 
+		self.pane1VWidget = QWidget()
+		self.pane1VLayout = QVBoxLayout(self.pane1VWidget)
+		self.exponentialLabel = QLabel(self.stageInfo["despike_1"])
+		self.pane1VLayout.addWidget(self.exponentialLabel)
+
 		self.pane1Frame = QFrame()
 		self.pane1Frame.setFrameShape(QFrame.StyledPanel)
 		self.pane1Frame.setFrameShadow(QFrame.Raised)
 
 		self.pane1Layout = QGridLayout(self.pane1Frame)
-		self.optionsGrid.addWidget(self.pane1Frame)
+		self.pane1VLayout.addWidget(self.pane1Frame)
 
-		self.pane1expdecayOption = QCheckBox("Cell Washout Despiking")
+		self.pane1VLayout.addStretch(1)
+
+		self.optionsGrid.addWidget(self.pane1VWidget)
+
+		self.pane1expdecayOption = QCheckBox(self.stageInfo["exp_decay_label"])
 		self.pane1expdecayOption.setChecked(self.defaultParams['expdecay_despiker'] == 'True')
 		self.pane1Layout.addWidget(self.pane1expdecayOption, 0, 0, 1, 0)
-		self.pane1expdecayOption.setToolTip("<qt/>Remove physically impossible data based on the washout characteristics "
-											"of your ablation cell.")
+		self.pane1expdecayOption.setToolTip(self.stageInfo["exp_decay_description"])
 
+		self.pane1ExponentLabel = QLabel(self.stageInfo["exponent_label"])
 		self.pane1Exponent = QLineEdit(self.defaultParams['exponent'])
-		self.pane1Layout.addWidget(QLabel("Washout Exponent"), 1, 0)
+		self.pane1Layout.addWidget(self.pane1ExponentLabel, 1, 0)
 		self.pane1Layout.addWidget(self.pane1Exponent, 1, 1)
-		self.pane1Exponent.setToolTip("<qt/>The exponential decay coefficient that describes your ablation cell washout "
-									  "speed. If blank, this is calculated automatically from SRM washouts.")
+		self.pane1Exponent.setToolTip(self.stageInfo["exponent_description"])
+		self.pane1ExponentLabel.setToolTip(self.stageInfo["exponent_description"])
 
 		#self.pane1Maxiter = QLineEdit(self.defaultParams('maxiter'))
 		#self.pane1Layout.addWidget(QLabel("maxiter"), 2, 0)
 		#self.pane1Layout.addWidget(self.pane1Maxiter, 2, 1)
 
 		# Second pane
+
+		self.pane2VWidget = QWidget()
+		self.pane2VLayout = QVBoxLayout(self.pane2VWidget)
+		self.noiseLabel = QLabel(self.stageInfo["despike_2"])
+		self.pane2VLayout.addWidget(self.noiseLabel)
+
 		self.pane2Frame = QFrame()
 		self.pane2Frame.setFrameShape(QFrame.StyledPanel)
 		self.pane2Frame.setFrameShadow(QFrame.Raised)
 
 		self.pane2Layout = QGridLayout(self.pane2Frame)
-		self.optionsGrid.addWidget(self.pane2Frame)
+		self.pane2VLayout.addWidget(self.pane2Frame)
+		self.pane2VLayout.addStretch(1)
 
-		self.pane2NoiseOption = QCheckBox("Signal Smoothing")
+		self.optionsGrid.addWidget(self.pane2VWidget)
+
+		self.pane2NoiseOption = QCheckBox(self.stageInfo["noise_label"])
 		self.pane2NoiseOption.setChecked(self.defaultParams['noise_despiker'] == 'True')
 		self.pane2Layout.addWidget(self.pane2NoiseOption, 0, 0, 1, 0)
-		self.pane2NoiseOption.setToolTip("<qt/>Apply a moving standard-deviation filter to your data to remove outliers.")
+		self.pane2NoiseOption.setToolTip(self.stageInfo["noise_description"])
 
+		self.winLabel = QLabel(self.stageInfo["win_label"])
 		self.pane2win = QLineEdit(self.defaultParams['win'])
-		self.pane2Layout.addWidget(QLabel("Smoothing Window"), 1, 0)
+		self.pane2Layout.addWidget(self.winLabel, 1, 0)
 		self.pane2Layout.addWidget(self.pane2win, 1, 1)
-		self.pane2win.setToolTip("<qt/>The width of the window (number of data points) used to calculate the running mean "
-								 "and standard deviation of the data.")
+		self.pane2win.setToolTip(self.stageInfo["win_description"])
+		self.winLabel.setToolTip(self.stageInfo["win_description"])
 
-
+		self.nlimLabel = QLabel(self.stageInfo["nlim_label"])
 		self.pane2nlim = QLineEdit(self.defaultParams['nlim']) #nlim
-		self.pane2Layout.addWidget(QLabel("N-Standard Deviations"), 2, 0)
+		self.pane2Layout.addWidget(self.nlimLabel, 2, 0)
 		self.pane2Layout.addWidget(self.pane2nlim, 2, 1)
-		self.pane2nlim.setToolTip("<qt/>Data greater than N*the standard deviation from the mean will be removed. This "
-								  "number should be large enough to only remove outliers, to avoid over-smoothing your data.")
+		self.pane2nlim.setToolTip(self.stageInfo["nlim_description"])
+		self.nlimLabel.setToolTip(self.stageInfo["nlim_description"])
 
-
+		self.maxiterLabel = QLabel(self.stageInfo["maxiter_label"])
 		self.pane2Maxiter = QLineEdit(self.defaultParams['maxiter'])
-		self.pane2Layout.addWidget(QLabel("Maximum Cycles"), 3, 0)
+		self.pane2Layout.addWidget(self.maxiterLabel, 3, 0)
 		self.pane2Layout.addWidget(self.pane2Maxiter, 3, 1)
-		self.pane2Maxiter.setToolTip("<qt/>The filter will be re-applied until no more data are removed, or it has been "
-									 "applied this many times.")
+		self.pane2Maxiter.setToolTip(self.stageInfo["maxiter_description"])
+		self.maxiterLabel.setToolTip(self.stageInfo["maxiter_description"])
 
+		# We create a reset to default button
+
+		self.defaultButton = QPushButton("Defaults")
+		self.defaultButton.clicked.connect(self.defaultButtonPress)
+		self.stageControls.addDefaultButton(self.defaultButton)
 
 		# We create the button for the right-most section of the Controls Pane.
 
@@ -203,6 +219,14 @@ class DespikingStage():
 		params = self.project.getStageParams("despike")
 
 		# The stage parameters are applied to the input fields
+		self.fillValues(params)
+
+		# The loading process then activates the stage's apply command
+		self.pressedApplyButton()
+
+	def fillValues(self, params):
+		""" Fills the stage parameters from a given dictionary """
+
 		if params is not None:
 			self.pane1expdecayOption.setChecked(params.get("expdecay_despiker", False))
 			self.pane1Exponent.setText(params.get("exponent", ""))
@@ -212,11 +236,21 @@ class DespikingStage():
 			# exponentplot value?
 			self.pane2Maxiter.setText(str(params.get("maxiter", 4)))
 
-		# The loading process then activates the stage's apply command
-		self.pressedApplyButton()
-
 	@logged
 	def enterPressed(self):
 		""" When enter is pressed on this stage """
 		if self.applyButton.isEnabled():
 			self.pressedApplyButton()
+
+	@logged
+	def defaultButtonPress(self):
+
+		params = {
+			"expdecay_despiker": self.defaultParams['expdecay_despiker'] == 'True',
+			"exponent": self.defaultParams["exponent"],
+			"noise_despiker": self.defaultParams['noise_despiker'] == 'True',
+			"win": self.defaultParams['win'],
+			"nlim": self.defaultParams['nlim'],
+			"maxiter": self.defaultParams['maxiter']
+		}
+		self.fillValues(params)

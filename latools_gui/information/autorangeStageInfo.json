@@ -1,0 +1,27 @@
+{
+	"stage_description": "Autorange uses your internal standard to discriminate between signal (\"laser on\") and background (\"laser off\") regions. <p> To see the regions identified as signal and background, change any parameters required, and then click APPLY.",
+
+	"analyte_label": "Analyte",
+	"analyte_description": "<qt/>The analyte you would like to use to discriminate between signal and background. 'total_counts' normally gives best results.",
+
+	"gwin_label": "Gradient Window",
+	"gwin_description": "<qt/>The width (number of data points) of the window used to calculate the first derivative of the smoothed signal.",
+
+	"swin_label": "Smoothing Window",
+	"swin_description": "<qt/>The width (number of data points) of the window used to smooth the raw data.",
+
+	"win_label": "Transition Window",
+	"win_description": "<qt/>The number of points either side of identified transitions to include when determining transition width.",
+
+	"on_mult_label": "Transition Width: Start",
+	"on_mult_description": "<qt/>The amount of the data to exclude before and after 'laser on' transitions. Defined relative to the overall width of the transition.",
+
+	"off_mult_label": "Transition Width: End",
+	"off_mult_description": "<qt/>The amount of the data to exclude before and after 'laser off' transitions. Defined relative to the overall width of the transition.",
+
+	"nbin_label": "Initial Transition Sensitivity",
+	"nbin_description": "<qt/>The mean number of points in each histogram bin used to identify approximate laser on/off transitions. Lower numbers will increase the sensitvity to identifying transitions, but if it's too low you might start picking up background oscillations. ~10 usually works well.",
+
+	"log_transform_label": "Log Transform",
+	"log_transform_description": "<qt/>If your signals are highly heterogeneous, log transformation can make autorange work better."
+}

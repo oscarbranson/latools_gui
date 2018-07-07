@@ -39,7 +39,7 @@ class ControlsPane():
 		
 		# We fix the width and height
 		self.controlDescriptionBox.setFixedWidth(300)
-		self.controlsFrame.setFixedHeight(220)
+		# self.controlsFrame.setFixedHeight(220)
 
 		# We create a widget to house the stage options. These will be filled in via function calls from
 		# the stage object.
@@ -98,3 +98,13 @@ class ControlsPane():
 			else:
 				params[key] = str(params[key])
 		return params
+
+	def addDefaultButton(self, button):
+		""" Adds a default button to the top of the right-most section of the Controls pane
+
+			Parameters
+			----------
+			button : QPushButton
+				A button to be added to the right-most layout
+		"""
+		self.controlStandardsLayout.insertWidget(0, button)

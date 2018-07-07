@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
+import json
 import ast
 
 
@@ -43,15 +44,14 @@ class AutorangeStage():
 		# We capture the default parameters for this stage's function call
 		self.defaultParams = self.stageControls.getDefaultParameters(inspect.signature(la.analyse.autorange))
 
+		# We import the stage information from a json file
+		read_file = open("information/autorangeStageInfo.json", "r")
+		self.stageInfo = json.load(read_file)
+		read_file.close()
+
 		# We set the title and description for the stage
 
-		self.stageControls.setDescription("Autorange", """
-			Autorange uses your internal standard to discriminate between signal ("laser on") and background 
-			("laser off") regions. 
-			
-			<p> To see the regions identified as signal and background, change any parameters required, and then click 
-			APPLY.
-			""")
+		self.stageControls.setDescription("Autorange", self.stageInfo["stage_description"])
 
 		# The space for the stage options is provided by the Controls Pane.
 
@@ -60,67 +60,71 @@ class AutorangeStage():
 		# We define the stage options and add them to the Controls Pane
 
 		self.analyteBox = QComboBox()
+		self.analyteLabel = QLabel(self.stageInfo["analyte_label"])
 		self.analyteBox.addItem("total_counts")
-		self.optionsGrid.addWidget(QLabel("Analyte"), 0, 0)
+		self.optionsGrid.addWidget(self.analyteLabel, 0, 0)
 		self.optionsGrid.addWidget(self.analyteBox, 0, 1)
-		self.analyteBox.setToolTip("<qt/>The analyte you would like to use to discriminate between signal and background. "
-								   "'total_counts' normally gives best results.")
+		self.analyteBox.setToolTip(self.stageInfo["analyte_description"])
+		self.analyteLabel.setToolTip(self.stageInfo["analyte_description"])
 
+		self.gwinLabel = QLabel(self.stageInfo["gwin_label"])
 		self.gwinEdit = QLineEdit(self.defaultParams['gwin'])
-		self.optionsGrid.addWidget(QLabel("Gradient Window"), 1, 0)
+		self.optionsGrid.addWidget(self.gwinLabel, 1, 0)
 		self.optionsGrid.addWidget(self.gwinEdit, 1, 1)
-		self.gwinEdit.setToolTip("<qt/>The width (number of data points) of the window used to calculate the first "
-								 "derivative of the smoothed signal.")
+		self.gwinEdit.setToolTip(self.stageInfo["gwin_description"])
+		self.gwinLabel.setToolTip(self.stageInfo["gwin_description"])
 
-
+		self.swinLabel = QLabel(self.stageInfo["swin_label"])
 		self.swinEdit = QLineEdit(self.defaultParams['swin'])
-		self.optionsGrid.addWidget(QLabel("Smoothing Window"), 2, 0)
+		self.optionsGrid.addWidget(self.swinLabel, 2, 0)
 		self.optionsGrid.addWidget(self.swinEdit, 2, 1)
-		self.swinEdit.setToolTip("<qt/>The width (number of data points) of the window used to smooth the raw data.")
+		self.swinEdit.setToolTip(self.stageInfo["swin_description"])
+		self.swinLabel.setToolTip(self.stageInfo["swin_description"])
 
-
+		self.winLabel = QLabel(self.stageInfo["win_label"])
 		self.winEdit = QLineEdit(self.defaultParams['win'])
-		self.optionsGrid.addWidget(QLabel("Transition Window"), 3, 0)
+		self.optionsGrid.addWidget(self.winLabel, 3, 0)
 		self.optionsGrid.addWidget(self.winEdit, 3, 1)
-		self.winEdit.setToolTip("<qt/>The number of points either side of identified transitions to include when "
-								"determining transition width.")
+		self.winEdit.setToolTip(self.stageInfo["win_description"])
+		self.winLabel.setToolTip(self.stageInfo["win_description"])
 
-
+		self.on_multLabel = QLabel(self.stageInfo["on_mult_label"])
 		self.on_multEdit1 = QLineEdit("1.0")
 		self.on_multEdit2 = QLineEdit("1.5")
-		self.optionsGrid.addWidget(QLabel("Transition Width: Start"), 0, 2)
+		self.optionsGrid.addWidget(self.on_multLabel, 0, 2)
 		self.optionsGrid.addWidget(self.on_multEdit1, 0, 3)
 		self.optionsGrid.addWidget(self.on_multEdit2, 0, 4)
-		self.on_multEdit1.setToolTip("<qt/>The amount of the data to exclude before and after 'laser on' transitions. "
-									 "Defined relative to the overall width of the transition.")
-		self.on_multEdit2.setToolTip("<qt/>The amount of the data to exclude before and after 'laser on' transitions. "
-									 "Defined relative to the overall width of the transition.")
+		self.on_multEdit1.setToolTip(self.stageInfo["on_mult_description"])
+		self.on_multEdit2.setToolTip(self.stageInfo["on_mult_description"])
+		self.on_multLabel.setToolTip(self.stageInfo["on_mult_description"])
 
-
+		self.off_multLabel = QLabel(self.stageInfo["off_mult_label"])
 		self.off_multEdit1 = QLineEdit("1.5")
 		self.off_multEdit2 = QLineEdit("1.0")
-		self.optionsGrid.addWidget(QLabel("Transition Width: End"), 1, 2)
+		self.optionsGrid.addWidget(self.off_multLabel, 1, 2)
 		self.optionsGrid.addWidget(self.off_multEdit1, 1, 3)
 		self.optionsGrid.addWidget(self.off_multEdit2, 1, 4)
-		self.off_multEdit1.setToolTip("<qt/>The amount of the data to exclude before and after 'laser off' transitions. "
-									  "Defined relative to the overall width of the transition.")
-		self.off_multEdit2.setToolTip("<qt/>The amount of the data to exclude before and after 'laser off' transitions. "
-									  "Defined relative to the overall width of the transition.")
+		self.off_multEdit1.setToolTip(self.stageInfo["off_mult_description"])
+		self.off_multEdit2.setToolTip(self.stageInfo["off_mult_description"])
+		self.off_multLabel.setToolTip(self.stageInfo["off_mult_description"])
 
+		self.nbinLabel = QLabel(self.stageInfo["nbin_label"])
 		self.nbinEdit = QLineEdit(self.defaultParams['nbin'])
-		self.optionsGrid.addWidget(QLabel("Initial Transition Sensitivity"), 2, 2)
+		self.optionsGrid.addWidget(self.nbinLabel, 2, 2)
 		self.optionsGrid.addWidget(self.nbinEdit, 2, 3, 1, 2)
-		self.nbinEdit.setToolTip("<qt/>The mean number of points in each histogram bin used to identify approximate "
-								 "laser on/off transitions. Lower numbers will increase the sensitvity to identifying "
-								 "transitions, but if it's too low you might start picking up background oscillations. "
-								 "~10 usually works well.")
+		self.nbinEdit.setToolTip(self.stageInfo["nbin_description"])
+		self.nbinLabel.setToolTip(self.stageInfo["nbin_description"])
 
-
-		self.logTransformCheck = QCheckBox("Log Transform")
+		self.logTransformCheck = QCheckBox(self.stageInfo["log_transform_label"])
 		self.logTransformCheck.setChecked(self.defaultParams['transform'] == 'True')
 		self.optionsGrid.addWidget(self.logTransformCheck, 3, 2, 1, 2)
-		self.logTransformCheck.setToolTip("<qt/>If your signals are highly heterogeneous, log transformation can make "
-										  "autorange work better.")
+		self.logTransformCheck.setToolTip(self.stageInfo["log_transform_description"])
+
+		# We create a reset to default button
+
+		self.defaultButton = QPushButton("Defaults")
+		self.defaultButton.clicked.connect(self.defaultButtonPress)
+		self.stageControls.addDefaultButton(self.defaultButton)
 
 		# We create the button for the right-most section of the Controls Pane.
 
@@ -225,6 +229,14 @@ class AutorangeStage():
 		params = self.project.getStageParams("autorange")
 
 		# The stage parameters are applied to the input fields
+		self.fillValues(params)
+
+		# The loading process then activates the stage's apply command
+		self.pressedApplyButton()
+
+	def fillValues(self, params):
+		""" Fills the stage parameters from a given dictionary """
+
 		if params is not None:
 			self.analyteBox.setCurrentText(params.get("analyte", "total_counts"))
 			self.gwinEdit.setText(str(params.get("gwin", 5)))
@@ -237,11 +249,22 @@ class AutorangeStage():
 			self.nbinEdit.setText(str(params.get("nbin", 10)))
 			self.logTransformCheck.setChecked(params.get("transform", False))
 
-		# The loading process then activates the stage's apply command
-		self.pressedApplyButton()
-
 	@logged
 	def enterPressed(self):
 		""" When enter is pressed on this stage """
 		if self.applyButton.isEnabled():
 			self.pressedApplyButton()
+
+	@logged
+	def defaultButtonPress(self):
+
+		params = {
+			"analyte": self.defaultParams["analyte"],
+			"gwin": self.defaultParams["gwin"],
+			"swin": self.defaultParams["swin"],
+			"win": self.defaultParams["win"],
+			"nbin": self.defaultParams["nbin"],
+			"transform": self.defaultParams['transform'] == 'True'
+		}
+
+		self.fillValues(params)

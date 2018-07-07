@@ -1,0 +1,25 @@
+{
+	"stage_description": "Despiking remotes all physically unrealistic outliers from your data. There are two despiking methods available to use, both of which can be applied. <p><b>Exponential decay despiker</b> <p>Removes low outliers, and replaces them with the average of the adjacent values. If you know the exponetial decay constant of your laser you may specify it; otherwise, leave it blank and LAtools will fit an exponential decay function to your data for you. <p><b>Noise despiker</b> <p>Removes high outliers greater than a specified standard deviation from a rolling mean of your data. <p>To graph your selected despiking method/s, click APPLY.",
+	
+	"despike_1": "Exponential decay despiker",
+	
+	"exp_decay_label": "Cell Washout Despiking",
+	"exp_decay_description": "<qt/>Remove physically impossible data based on the washout characteristics of your ablation cell.",
+	
+	"exponent_label": "Washout Exponent",
+	"exponent_description": "<qt/>The exponential decay coefficient that describes your ablation cell washout speed. If blank, this is calculated automatically from SRM washouts.",
+
+	"despike_2": "Noise despiker",
+
+	"noise_label": "Signal Smoothing",
+	"noise_description": "<qt/>Apply a moving standard-deviation filter to your data to remove outliers.",
+
+	"win_label": "Smoothing Window",
+	"win_description": "<qt/>The width of the window (number of data points) used to calculate the running mean and standard deviation of the data.",
+
+	"nlim_label": "N-Standard Deviations",
+	"nlim_description": "<qt/>Data greater than N*the standard deviation from the mean will be removed. This number should be large enough to only remove outliers, to avoid over-smoothing your data.",
+
+	"maxiter_label": "Maximum Cycles",
+	"maxiter_description": "<qt/>The filter will be re-applied until no more data are removed, or it has been applied this many times."
+}

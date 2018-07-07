@@ -1,0 +1,18 @@
+{
+	"stage_description": "In this stage you will be importing and configuring all the data required for your analysis session. Specifically, you will:<ul><li style=\"margin-left:-20px;\">  Locate the folder containing your sample and standards data</li><li style=\"margin-left:-20px;\">  Select or create a configuration</li><li style=\"margin-left:-20px;\">  Specify your SRM file identifier</li><li style=\"margin-left:-20px;\">  Specify your file extension</li></ul><p>Once specified, graph your sample and standard data by clicking APPLY.",
+
+	"find_data_label": "Browse",
+	"find_data_description": "<qt/>File path to the directory containing the data files.",
+	
+	"config_label": "Configuration",
+	"config_description": "<qt/>The name of the LAtools configuration you want to use to import the data.",
+
+	"srm_label": "SRM File Identifier",
+	"srm_description": "<qt/>This is used to identify SRM measurements in your data file, and should be present in the file names of all analyses containing SRMs.",
+
+	"file_extension_label": "Data File Extension",
+	"file_extension_description": "<qt/>This is used to identify data files in the analysis directory. All files in the directory with this extension will be imported.",
+
+	"general_error_label": "Error loading data files",
+	"general_error_description": "An error occurred while attempting to load the data files. \n Please check that the specified data folder contains the correct data files"
+}
