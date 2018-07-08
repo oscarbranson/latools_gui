@@ -6,6 +6,7 @@ from PyQt5.QtCore import QUrl, Qt
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
+import json
 import ast
 
 
@@ -44,16 +45,19 @@ class CalibrationStage():
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 		self.srmfile = None
 		self.srmList = []
+		self.autoApplyButton = False
 
 		# We capture the default parameters for this stage's function call
 		self.defaultParams = self.stageControls.getDefaultParameters(inspect.signature(la.analyse.calibrate))
 
+		# We import the stage information from a json file
+		read_file = open("information/calibrationStageInfo.json", "r")
+		self.stageInfo = json.load(read_file)
+		read_file.close()
+
 		# We set the title and description for the stage
 
-		self.stageControls.setDescription("Calibration", """
-			Once all your data are normalised to an internal standard, you’re ready to calibrate 
-			the data. This is done by creating a calibration curve for each element based on SRMs 
-			measured throughout your analysis session, and a table of known SRM values.""")
+		self.stageControls.setDescription("Calibration", self.stageInfo["stage_description"])
 
 		# The space for the stage options is provided by the Controls Pane.
 		self.optionsHBox = QHBoxLayout(self.stageControls.getOptionsWidget())
@@ -72,30 +76,41 @@ class CalibrationStage():
 
 		# We define the stage options and add them to the Controls Pane
 
-		self.drift_correctOption = QCheckBox("Drift Correction")
+		self.drift_correctOption = QCheckBox(self.stageInfo["drift_correct_label"])
 		self.drift_correctOption.setChecked(self.defaultParams['drift_correct'] == 'True')
 		self.optionsLeft.addWidget(self.drift_correctOption, 0, 0, 1, 2)
-		self.drift_correctOption.setToolTip("<qt/>Whether to interpolate calibration parameters between SRM measurements.")
+		self.drift_correctOption.setToolTip(self.stageInfo["drift_correct_description"])
 
+		self.optionsRight.addWidget(QLabel(self.stageInfo["standard_label"]))
 
-		self.optionsRight.addWidget(QLabel("Standard Materials"))
-
-		self.zero_interceptOption = QCheckBox("Force Zero Intercept")
+		self.zero_interceptOption = QCheckBox(self.stageInfo["zero_intercept_label"])
 		self.zero_interceptOption.setChecked(self.defaultParams['zero_intercept'] == 'True')
 		self.optionsLeft.addWidget(self.zero_interceptOption, 1, 0)
-		self.zero_interceptOption.setToolTip("<qt/>Whether to force calibration lines through zero (y = mx) or not (y = mx + c).")
+		self.zero_interceptOption.setToolTip(self.stageInfo["zero_intercept_description"])
 
-
+		self.n_minLabel = QLabel(self.stageInfo["n_min_label"])
 		self.n_minOption = QLineEdit(self.defaultParams['n_min'])
-		self.optionsLeft.addWidget(QLabel("Minimum Points"), 2, 0)
+		self.optionsLeft.addWidget(self.n_minLabel, 2, 0)
 		self.optionsLeft.addWidget(self.n_minOption, 2, 1)
-		self.n_minOption.setToolTip("<qt/>The minimum number of data points an SRM measurement must have to be included.")
+		self.n_minOption.setToolTip(self.stageInfo["n_min_description"])
+		self.n_minLabel.setToolTip(self.stageInfo["n_min_description"])
 
 		self.reloadButton = QPushButton("View SRM table")
 		self.reloadButton.clicked.connect(self.pressedReloadButton)
 		self.stageControls.addApplyButton(self.reloadButton)
+		self.reloadButton.setToolTip(self.stageInfo["srm_button_description"])
 
-		# We create the buttons for the right-most section of the Controls Pane.
+		# We create the buttons for the top of the right-most section of the Controls Pane.
+
+		self.ChooseCalibrationButton = QPushButton("Choose Calibration")
+		self.ChooseCalibrationButton.clicked.connect(self.ChooseCalibrationButtonPress)
+		self.stageControls.addDefaultButton(self.ChooseCalibrationButton)
+
+		self.defaultButton = QPushButton("Defaults")
+		self.defaultButton.clicked.connect(self.defaultButtonPress)
+		self.stageControls.addDefaultButton(self.defaultButton)
+
+		# We create the buttons for the bottom of the right-most section of the Controls Pane.
 
 		self.calcButton = QPushButton("Calculate calibration")
 		self.calcButton.clicked.connect(self.pressedCalculateButton)
@@ -149,6 +164,12 @@ class CalibrationStage():
 		# Automatically saves the project if it already has a save location
 		self.project.reSave()
 
+		# Pop-up button press added to the apply button
+		# TO DO: review this.
+		if not self.autoApplyButton:
+			self.pressedPopupButton()
+		self.autoApplyButton = False
+
 	@logged
 	def pressedReloadButton(self):
 		""" Performs a reload when the button is pressed. """
@@ -185,27 +206,34 @@ class CalibrationStage():
 		params = self.project.getStageParams("calibrate")
 
 		# The stage parameters are applied to the input fields
+		self.fillValues(params)
+
+		# Setting the srms_used, we get the saved list of strings
+		srms = params.get("srms_used", None)
+		if srms is not None:
+
+			# All srms are turned off
+			for box in self.srmList:
+				box[0].setChecked(False)
+
+			# The listed srms are turned on
+			for srmString in srms:
+				for box in self.srmList:
+					if box[1] == srmString:
+						box[0].setChecked(True)
+
+		# The loading process then activates the stage's apply command
+		self.autoApplyButton = True
+		self.pressedApplyButton()
+
+	def fillValues(self, params):
+		""" Fills the stage parameters from a given dictionary """
+
 		if params is not None:
 			self.drift_correctOption.setChecked(params.get("drift_correct", True))
 			self.zero_interceptOption.setChecked(params.get("zero_intercept", True))
 			self.n_minOption.setText(str(params.get("n_min", 10)))
 
-			# Setting the srms_used, we get the saved list of strings
-			srms = params.get("srms_used", None)
-			if srms is not None:
-
-				# All srms are turned off
-				for box in self.srmList:
-					box[0].setChecked(False)
-
-				# The listed srms are turned on
-				for srmString in srms:
-					for box in self.srmList:
-						if box[1] == srmString:
-							box[0].setChecked(True)
-
-		# The loading process then activates the stage's apply command
-		self.pressedApplyButton()
 
 	@logged
 	def enterPressed(self):
@@ -219,6 +247,22 @@ class CalibrationStage():
 
 	@logged
 	def pressedCalculateButton(self):
-
 		self.applyButton.setEnabled(True)
 
+	@logged
+	def defaultButtonPress(self):
+
+		params = {
+			"drift_correct": self.defaultParams['drift_correct'] == 'True',
+			"zero_intercept": self.defaultParams['zero_intercept'] == 'True',
+			"n_min": self.defaultParams['n_min']
+		}
+
+		for box in self.srmList:
+			box[0].setChecked(True)
+
+		self.fillValues(params)
+
+	@logged
+	def ChooseCalibrationButtonPress(self):
+		pass

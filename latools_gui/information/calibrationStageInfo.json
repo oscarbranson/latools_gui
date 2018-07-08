@@ -1,0 +1,16 @@
+{
+	"stage_description": "Once all your data are normalised to an internal standard, you’re ready to calibrate the data. This is done by creating a calibration curve for each element based on SRMs measured throughout your analysis session, and a table of known SRM values.",
+
+	"drift_correct_label": "Drift Correction",
+	"drift_correct_description": "<qt/>Whether to interpolate calibration parameters between SRM measurements.",
+
+	"standard_label": "Standard Materials",
+
+	"zero_intercept_label": "Force Zero Intercept",
+	"zero_intercept_description": "<qt/>Whether to force calibration lines through zero (y = mx) or not (y = mx + c).",
+
+	"n_min_label": "Minimum Points",
+	"n_min_description": "<qt/>The minimum number of data points an SRM measurement must have to be included.",
+
+	"srm_button_description": "Open the SRM table in a spreadsheet editor"
+}

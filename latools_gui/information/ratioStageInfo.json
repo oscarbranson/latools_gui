@@ -1,0 +1,6 @@
+{
+	"stage_description": "Your data now needs to be converted to ratios using your internal standard. Select your internal standard, and then click APPLY.",
+
+	"standard_label": "Internal Standard",
+	"standard_description": "<qt/>Choose an analyte to use as an internal standard."
+}

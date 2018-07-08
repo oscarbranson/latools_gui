@@ -1,6 +1,7 @@
 """ A stage of the program that defines and executes one step of the data-processing """
 
 from PyQt5.QtWidgets import *
+import json
 import ast
 
 import templates.controlsPane as controlsPane
@@ -40,11 +41,14 @@ class RatioStage():
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
+		# We import the stage information from a json file
+		read_file = open("information/ratioStageInfo.json", "r")
+		self.stageInfo = json.load(read_file)
+		read_file.close()
+
 		# We set the title and description for the stage
 
-		self.stageControls.setDescription("Ratio Calculation", """
-			Your data now needs to be converted to ratios using your internal standard. Select your internal standard, 
-			and then click APPLY.""")
+		self.stageControls.setDescription("Ratio Calculation", self.stageInfo["stage_description"])
 
 		# The space for the stage options is provided by the Controls Pane.
 		self.optionsGrid = QGridLayout(self.stageControls.getOptionsWidget())
@@ -53,10 +57,13 @@ class RatioStage():
 
 		self.internal_standardOption = QComboBox()
 		self.internal_standardOption.addItem(" ")
-		self.optionsGrid.addWidget(QLabel("Internal Standard"), 0, 0)
+		self.standardLabel = QLabel(self.stageInfo["standard_label"])
+		self.optionsGrid.addWidget(self.standardLabel, 0, 0)
 		self.optionsGrid.addWidget(self.internal_standardOption, 0, 1)
 		self.internal_standardOption.activated.connect(self.internal_standardClicked)
-		self.internal_standardOption.setToolTip("<qt/>Choose an analyte to use as an internal standard.")
+		self.internal_standardOption.setToolTip(self.stageInfo["standard_description"])
+		self.standardLabel.setToolTip(self.stageInfo["standard_description"])
+		self.standardLabel.setMaximumWidth(150)
 
 		# We create the button for the right-most section of the Controls Pane.
 
@@ -100,7 +107,7 @@ class RatioStage():
 
 		# The stage parameters are applied to the input fields
 		if params is not None:
-			self.internal_standardOption.setCurrentText(params.get("internal_standard", ""))
+			self.internal_standardOption.setCurrentText(params.get("internal_standard", " "))
 			self.internal_standardClicked()
 
 		# The loading process then activates the stage's apply command
