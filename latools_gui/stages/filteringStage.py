@@ -35,7 +35,7 @@ class FilteringStage():
 		self.filteringWidget = filteringWidget
 		self.project = project
 
-		self.stageControls = filterControls.FilterControls(stageLayout)
+		self.stageControls = filterControls.FilterControls(stageLayout, project)
 
 		# The space for the stage options is provided by the Controls Pane.
 
@@ -55,6 +55,10 @@ class FilteringStage():
 	def loadValues(self):
 		x = 1
 
-	logged
+	@logged
 	def enterPressed(self):
 		pass
+
+	def updateStageInfo(self):
+		""" Updates the stage after data is imported at runtime """
+		self.stageControls.updateStageInfo()

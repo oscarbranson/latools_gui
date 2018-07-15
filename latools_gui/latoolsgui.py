@@ -229,10 +229,11 @@ class MainWindow(QMainWindow):
 		if self.mainStack.currentIndex() != 0 and not self.quitting:
 			self.quitting = True
 
-			# A popup message is created to ask to save the project
+			#A popup message is created to ask to save the project
 			reply = QMessageBox.question(self, 'Message',
 										"Would you like to save before quitting?", QMessageBox.Yes |
 										QMessageBox.No | QMessageBox.Cancel, QMessageBox.Cancel)
+			reply = QMessageBox.No
 			if reply == QMessageBox.Yes:
 				# If yes is selected the project is saved, then closed
 				self.project.saveProject()
@@ -403,6 +404,7 @@ class ImportListener():
 		self.autorangeStage.updateStageInfo()
 		self.ratioStage.updateStageInfo()
 		self.calibrationStage.updateStageInfo()
+		self.filteringStage.updateStageInfo()
 		self.backgroundStage.resetButtons()
 
 	def setTitle(self, title):
