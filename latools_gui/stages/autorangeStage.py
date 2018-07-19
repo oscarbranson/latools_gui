@@ -43,6 +43,7 @@ class AutorangeStage():
 
 		# We capture the default parameters for this stage's function call
 		self.defaultParams = self.stageControls.getDefaultParameters(inspect.signature(la.analyse.autorange))
+		print(self.defaultParams)
 
 		# We import the stage information from a json file
 		read_file = open("information/autorangeStageInfo.json", "r")
@@ -109,7 +110,7 @@ class AutorangeStage():
 		self.off_multLabel.setToolTip(self.stageInfo["off_mult_description"])
 
 		self.nbinLabel = QLabel(self.stageInfo["nbin_label"])
-		self.nbinEdit = QLineEdit(self.defaultParams['nbin'])
+		self.nbinEdit = QLineEdit(self.defaultParams.get('nbin', "10"))
 		self.optionsGrid.addWidget(self.nbinLabel, 2, 2)
 		self.optionsGrid.addWidget(self.nbinEdit, 2, 3, 1, 2)
 		self.nbinEdit.setToolTip(self.stageInfo["nbin_description"])
@@ -196,7 +197,7 @@ class AutorangeStage():
 								win=localWin,
 								on_mult=localOn_mult,
 								off_mult=localOff_mult,
-								nbin=localNbin,
+								#nbin=localNbin,
 								transform=self.logTransformCheck.isChecked())
 		except:
 			self.raiseError("A problem occurred. There may be a problem with the input values.")
