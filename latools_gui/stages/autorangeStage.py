@@ -43,7 +43,6 @@ class AutorangeStage():
 
 		# We capture the default parameters for this stage's function call
 		self.defaultParams = self.stageControls.getDefaultParameters(inspect.signature(la.analyse.autorange))
-		print(self.defaultParams)
 
 		# We import the stage information from a json file
 		read_file = open("information/autorangeStageInfo.json", "r")
@@ -109,16 +108,16 @@ class AutorangeStage():
 		self.off_multEdit2.setToolTip(self.stageInfo["off_mult_description"])
 		self.off_multLabel.setToolTip(self.stageInfo["off_mult_description"])
 
-		self.nbinLabel = QLabel(self.stageInfo["nbin_label"])
-		self.nbinEdit = QLineEdit(self.defaultParams.get('nbin', "10"))
-		self.optionsGrid.addWidget(self.nbinLabel, 2, 2)
-		self.optionsGrid.addWidget(self.nbinEdit, 2, 3, 1, 2)
-		self.nbinEdit.setToolTip(self.stageInfo["nbin_description"])
-		self.nbinLabel.setToolTip(self.stageInfo["nbin_description"])
+		# self.nbinLabel = QLabel(self.stageInfo["nbin_label"])
+		# self.nbinEdit = QLineEdit(self.defaultParams.get('nbin', "10"))
+		# self.optionsGrid.addWidget(self.nbinLabel, 2, 2)
+		# self.optionsGrid.addWidget(self.nbinEdit, 2, 3, 1, 2)
+		# self.nbinEdit.setToolTip(self.stageInfo["nbin_description"])
+		# self.nbinLabel.setToolTip(self.stageInfo["nbin_description"])
 
 		self.logTransformCheck = QCheckBox(self.stageInfo["log_transform_label"])
 		self.logTransformCheck.setChecked(self.defaultParams['transform'] == 'True')
-		self.optionsGrid.addWidget(self.logTransformCheck, 3, 2, 1, 2)
+		self.optionsGrid.addWidget(self.logTransformCheck, 2, 2, 1, 2)
 		self.logTransformCheck.setToolTip(self.stageInfo["log_transform_description"])
 
 		# We create a reset to default button
@@ -181,13 +180,13 @@ class AutorangeStage():
 				self.raiseError("The 'off_mult' values must be floating point numbers")
 				return
 
-		localNbin = None
-		if self.nbinEdit.text() != "":
-			try:
-				localNbin = int(self.nbinEdit.text())
-			except:
-				self.raiseError("The 'nbin' value must be an integer")
-				return
+		# localNbin = None
+		# if self.nbinEdit.text() != "":
+		# 	try:
+		# 		localNbin = int(self.nbinEdit.text())
+		# 	except:
+		# 		self.raiseError("The 'nbin' value must be an integer")
+		# 		return
 
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		try:
@@ -247,7 +246,7 @@ class AutorangeStage():
 			self.on_multEdit2.setText(str(params.get("on_mult", [1.0, 1.5])[1]))
 			self.off_multEdit1.setText(str(params.get("off_mult", [1.5, 1.0])[0]))
 			self.off_multEdit2.setText(str(params.get("off_mult", [1.5, 1.0])[1]))
-			self.nbinEdit.setText(str(params.get("nbin", 10)))
+			# self.nbinEdit.setText(str(params.get("nbin", 10)))
 			self.logTransformCheck.setChecked(params.get("transform", False))
 
 	@logged
@@ -264,7 +263,7 @@ class AutorangeStage():
 			"gwin": self.defaultParams["gwin"],
 			"swin": self.defaultParams["swin"],
 			"win": self.defaultParams["win"],
-			"nbin": self.defaultParams["nbin"],
+			# "nbin": self.defaultParams.get("nbin", "10"),
 			"transform": self.defaultParams['transform'] == 'True'
 		}
 

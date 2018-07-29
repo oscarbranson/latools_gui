@@ -35,6 +35,8 @@ class RunningProject():
 	def saveProject(self):
 		""" Save overwrites the current save file with the latest file strings """
 
+		#print("saving")
+
 		# If the project hasn't been saved before it will not have a save file location
 		if not self.hasSaved:
 

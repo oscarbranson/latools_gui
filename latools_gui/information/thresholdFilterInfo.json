@@ -1,0 +1,5 @@
+{
+	"filter_name": "Threshold",
+	"filter_description": "Applies a threshold filter to the data. <br>Generates two filters above and below the threshold value for a given analyte.",
+	"type_label": "Threshold type"
+}

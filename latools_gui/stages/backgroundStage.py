@@ -82,6 +82,7 @@ class BackgroundStage():
 		self.methodLayout1.addWidget(self.weight_fwhmOption, 0, 1)
 		self.weight_fwhmOption.setToolTip(self.stageInfo["weight_fwhm_description"])
 		self.weight_fwhmLabel.setToolTip(self.stageInfo["weight_fwhm_description"])
+		self.weight_fwhmOption.setPlaceholderText("auto")
 
 		self.n_minLabel = QLabel(self.stageInfo["n_min_label"])
 		self.n_minOption = QLineEdit(self.defaultWeightParams['n_min'])
@@ -134,6 +135,7 @@ class BackgroundStage():
 		self.optionsGrid.addWidget(self.cstepOption, 2, 1, 1, 1)
 		self.cstepOption.setToolTip(self.stageInfo["cstep_description"])
 		self.cstepLabel.setToolTip(self.stageInfo["cstep_description"])
+		self.cstepOption.setPlaceholderText("auto")
 
 		self.bkg_filterOption = QCheckBox(self.stageInfo["bkg_filter_label"])
 		self.optionsGrid.addWidget(self.bkg_filterOption, 3, 0)

@@ -12,7 +12,7 @@ from templates import graphPane
 from templates import progressPane
 from templates import stageTabs
 
-# Import the stage information files
+# Import the stage files
 from stages import importStage
 from stages import despikingStage
 from stages import autorangeStage
@@ -229,11 +229,11 @@ class MainWindow(QMainWindow):
 		if self.mainStack.currentIndex() != 0 and not self.quitting:
 			self.quitting = True
 
-			#A popup message is created to ask to save the project
+			# A popup message is created to ask to save the project
 			reply = QMessageBox.question(self, 'Message',
 										"Would you like to save before quitting?", QMessageBox.Yes |
 										QMessageBox.No | QMessageBox.Cancel, QMessageBox.Cancel)
-			reply = QMessageBox.No
+
 			if reply == QMessageBox.Yes:
 				# If yes is selected the project is saved, then closed
 				self.project.saveProject()
