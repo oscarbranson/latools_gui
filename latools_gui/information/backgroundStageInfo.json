@@ -1,5 +1,5 @@
 {
-	"stage_description": "This stage will separate signal (laser-on) and background (laser-off) data, using your internal standard. <p>To see the regions of your data identified as signal and background, change any parameters you need to and then click APPLY. Red regions are signal; grey regions are background.",
+	"stage_description": "This stage will separate signal (laser-on) and background (laser-off) data, using your internal standard. <p>To see the regions of your data identified as signal and background, change any parameters you need to and then click APPLY. Grey regions are signal; red regions are background.",
 
 	"bkg_method_label": "Background Correction Method",
 	"bkg_method_1_label": "Weighted Mean",
