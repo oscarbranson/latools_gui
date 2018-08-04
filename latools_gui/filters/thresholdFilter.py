@@ -26,6 +26,12 @@ class ThresholdFilter:
 		# Determines is this filter will have "above" and "below" rows
 		self.twoRows = True
 
+		self.filtNameAbove = ""
+		self.filtNameBelow = ""
+
+		# Determines if the filter has been created yet
+		self.created = False
+
 		# We create each checkbox that will appear in the filter controls and summary tabs
 		for i in range(len(self.filterTab.project.eg.analytes)):
 
@@ -47,12 +53,46 @@ class ThresholdFilter:
 
 		# A combobox for the type
 		self.typeCombo = QComboBox()
-		self.typeCombo.addItem("1")
-		self.typeCombo.addItem("2")
-		self.typeCombo.addItem("3")
-		self.typeCombo.addItem("4")
+
+		self.thresholdTypes = ["Threshold",
+							   "Threshold percentile",
+							   "Threshold Gradient",
+							   "Threshold Gradient Percentile"]
+
+		for t in self.thresholdTypes:
+			self.typeCombo.addItem(t)
 
 		self.optionsLayout.addWidget(self.typeCombo, 0, 1)
+
+		self.typeLabel.setToolTip(self.filterTab.filterInfo["type_description"])
+		self.typeCombo.setToolTip(self.filterTab.filterInfo["type_description"])
+
+		# An option for the threshold value
+		self.threshValueLabel = QLabel(self.filterTab.filterInfo["threshold_value_label"])
+		self.optionsLayout.addWidget(self.threshValueLabel, 1, 0)
+
+		self.threshValueEdit = QLineEdit()
+		self.optionsLayout.addWidget(self.threshValueEdit, 1, 1)
+		self.threshValueEdit.setMaximumWidth(100)
+
+		self.threshValueLabel.setToolTip(self.filterTab.filterInfo["threshold_value_description"])
+		self.threshValueEdit.setToolTip(self.filterTab.filterInfo["threshold_value_description"])
+
+		# An option for what analyte to base the filter on
+		self.analyteLabel = QLabel(self.filterTab.filterInfo["analyte_label"])
+		self.optionsLayout.addWidget(self.analyteLabel, 2, 0)
+
+		self.analyteCombo = QComboBox()
+		self.optionsLayout.addWidget(self.analyteCombo, 2, 1)
+
+		self.analyteCombo.addItem(" ")
+		for i in range(len(self.filterTab.project.eg.analytes)):
+			self.analyteCombo.addItem(str(self.filterTab.project.eg.analytes[i]))
+
+		self.analyteLabel.setToolTip(self.filterTab.filterInfo["analyte_description"])
+		self.analyteCombo.setToolTip(self.filterTab.filterInfo["analyte_description"])
+
+		self.optionsLayout.setColumnStretch(2, 1)
 
 		# We create the control buttons
 		self.crossPlotButton = QPushButton("Cross-plot")
@@ -94,6 +134,8 @@ class ThresholdFilter:
 			self.analyteCheckBoxes["summaryBelow"][i].setCheckState(
 				self.analyteCheckBoxes["controlsBelow"][i].checkState())
 
+		self.updateAnalyteToggles()
+
 	def summaryChecksRegister(self):
 		""" Sets the checkboxes in the Controls tab to be the same as those in the Summary tab """
 
@@ -104,8 +146,36 @@ class ThresholdFilter:
 			self.analyteCheckBoxes["controlsBelow"][i].setCheckState(
 				self.analyteCheckBoxes["summaryBelow"][i].checkState())
 
+		self.updateAnalyteToggles()
+
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
+
+
+		# Check the input options
+		localThreshold = 0.0
+		try:
+			localThreshold = float(self.threshValueEdit.text())
+		except:
+			self.raiseError("The 'Threshold' value must be a floating point number")
+			return
+
+		if self.analyteCombo.currentText() == " ":
+			self.raiseError("You must select an analyte")
+			return
+
+		# We create the filter
+		# TO DO: ADD OTHER THRESHOLD TYPES
+		self.filterTab.project.eg.filter_threshold(analyte = self.analyteCombo.currentText(),
+												   threshold = localThreshold)
+
+		self.filtNameAbove = list(self.filterTab.project.eg.data['Sample-1'].filt.components.keys())[-1]
+		self.filtNameBelow = list(self.filterTab.project.eg.data['Sample-1'].filt.components.keys())[-2]
+
+		# print("Above: " + self.filtNameAbove + " Below: " + self.filtNameBelow)
+
+		# We toggle the analytes on and off based on the check boxes
+		self.updateAnalyteToggles()
 
 		# We create a row in the analytes table in the Summary tab for the "above" version of this filter
 		self.filterTab.summaryTab.table.addWidget(
@@ -128,6 +198,36 @@ class ThresholdFilter:
 		# We deactivate the create button
 		self.createButton.setEnabled(False)
 
+		# The actual filter creation
+		self.created = True
+
+	def raiseError(self, message):
+		""" Creates an error box with the given message """
+		errorBox = QMessageBox.critical(self.filterTab, "Error", message, QMessageBox.Ok)
+
+	def updateAnalyteToggles(self):
+		""" Updates each analyte in the filter to conform to the state of that analyte's checkbox """
+
+		#print("updating filter analytes")
+
+		for i in range(len(self.filterTab.project.eg.analytes)):
+			# We update for the "Above" filter
+			# If the checkbox is not unchecked...
+			if self.analyteCheckBoxes["summaryAbove"][i].checkState() != 0:
+				self.filterTab.project.eg.filter_on(self.filtNameAbove,
+														 self.filterTab.project.eg.analytes[i])
+			else:
+				self.filterTab.project.eg.filter_off(self.filtNameAbove,
+														 self.filterTab.project.eg.analytes[i])
+
+			# Update for the "Below" filter
+			if self.analyteCheckBoxes["summaryBelow"][i].checkState() != 0:
+				self.filterTab.project.eg.filter_on(self.filtNameBelow,
+														 self.filterTab.project.eg.analytes[i])
+			else:
+				self.filterTab.project.eg.filter_off(self.filtNameBelow,
+														 self.filterTab.project.eg.analytes[i])
+
 	def crossPlotClick(self):
 		""" Activates when the Cross-plot button is pressed """
 		pass
@@ -135,4 +235,3 @@ class ThresholdFilter:
 	def plotClick(self):
 		""" Activates when the Plot button is pressed """
 		pass
-
