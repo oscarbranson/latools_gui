@@ -1,10 +1,16 @@
 {
 	"filter_name": "Threshold",
-	"filter_description": "Applies a threshold filter to the data. <br>Generates two filters above and below the threshold value for a given analyte.",
-	"type_label": "Threshold type",
-	"type_description": "",
+	"filter_description": "Applies a threshold filter to the data. <br>Generates two filters above and below the threshold value for a given analyte. <br><br>Threshold types:<br> - Threshold<br> - Threshold Percentile<br> - Gradient Threshold<br> - Gradient Threshold Percentile",
+	"type_label": "Type",
+	"type_description": "<qt/>The type of threshold filter to use",
 	"threshold_value_label": "Threshold",
-	"threshold_value_description": "",
+	"threshold_value_description": "<qt/>The threshold value",
 	"analyte_label": "Analyte",
-	"analyte_description": ""
+	"analyte_description": "<qt/>The analyte that the filter applies to.",
+	"percentile_label": "Percentile",
+	"percentile_description": "<qt/>The percentile value.",
+	"win_label": "Window",
+	"win_description": "<qt/>The window over which to calculate the moving gradient.",
+	"level_label": "Level",
+	"level_description": "<qt/>Whether to calculate percentiles from the entire dataset (‘population’) or for each individual sample (‘individual’)."
 }
