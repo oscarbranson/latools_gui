@@ -8,6 +8,7 @@ import json
 import ast
 
 from project.ErrLogger import logged
+import logging
 
 class BackgroundStage():
 	"""
@@ -15,7 +16,7 @@ class BackgroundStage():
 	step of the data-processing. It updates the graph pane based on the modifications that are made to the
 	project.
 	"""
-	@logged
+	#@logged
 	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, backgroundWidget, project):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
@@ -190,8 +191,11 @@ class BackgroundStage():
 		self.stageControls.addApplyButton(self.subtractButton)
 		self.subtractButton.setEnabled(False)
 
+		self.logger = logging.getLogger(__name__)
+		self.logger.info('Background initialised')
 
-	@logged
+
+	#@logged
 	def pressedCalcButton(self):
 		""" Applies a background calculation on the project data when a button is pressed, making sure there are
 		no illegal inputs.
@@ -206,6 +210,7 @@ class BackgroundStage():
 				try:
 					myweight = float(self.weight_fwhmOption.text())
 				except:
+					self.logger.exception()
 					self.raiseError("The 'weight_fwhm' value must be a floating point number")
 					return
 
@@ -214,6 +219,7 @@ class BackgroundStage():
 				try:
 					myn_min = int(self.n_minOption.text())
 				except:
+					self.logger.exception()
 					self.raiseError("The 'n_min' value must be an integer")
 					return
 
@@ -222,6 +228,7 @@ class BackgroundStage():
 				try:
 					myn_max = int(self.n_maxOption.text())
 				except:
+					self.logger.exception()
 					self.raiseError("The 'n_max' value must be an integer")
 					return
 
@@ -230,6 +237,7 @@ class BackgroundStage():
 				try:
 					mycstep = float(self.cstepOption.text())
 				except:
+					self.logger.exception()
 					self.raiseError("The 'cstep' value must be a floating point number")
 					return
 
@@ -238,6 +246,7 @@ class BackgroundStage():
 				try:
 					myf_win = int(self.f_winOption.text())
 				except:
+					self.logger.exception()
 					self.raiseError("The 'f_win' value must be an integer")
 					return
 
@@ -246,6 +255,7 @@ class BackgroundStage():
 				try:
 					myf_n_lim = int(self.f_n_limOption.text())
 				except:
+					self.logger.exception()
 					self.raiseError("The 'f_n_lim' value must be an integer")
 					return
 
@@ -260,6 +270,7 @@ class BackgroundStage():
 												f_win=myf_win,
 												f_n_lim=myf_n_lim)
 			except:
+				self.logger.exception()
 				self.raiseError("A problem occurred. There may be a problem with the input values.")
 				return
 		else:
@@ -323,6 +334,7 @@ class BackgroundStage():
 											f_win=myf_win,
 											f_n_lim=myf_n_lim)
 			except:
+				self.logger.exception()
 				self.raiseError("A problem occurred. There may be a problem with the input values.")
 				return
 
@@ -335,20 +347,20 @@ class BackgroundStage():
 		# Automatically saves the project if it already has a save location
 		self.project.reSave()
 
-	@logged
+	#@logged
 	def pressedPopupButton(self):
 		""" Creates a popup for the background calculation when a button is pressed. """
 
 		self.graphPaneObj.showAuxGraph(bkg=True)
 
-	@logged
+	#@logged
 	def pressedSubtractButton(self):
 		""" Subtracts an existing background calculation from the project data when a button is pressed. """
 		self.project.eg.bkg_subtract(analytes=None, errtype='stderr', focus_stage='despiked')
 		self.graphPaneObj.updateGraph()
 		self.progressPaneObj.completedStage(3)
 
-	@logged
+	#@logged
 	def methodUpdate(self):
 		""" Updates the current method. """
 
@@ -361,7 +373,7 @@ class BackgroundStage():
 			self.optionsGrid.addWidget(self.methodWidget2, 1, 0, 1, 2)
 			self.currentlyMethod1 = False
 
-	@logged
+	#@logged
 	def bkgUpdate(self):
 		""" Hides the last two input fields unless the bkg_filter button is ticked """
 		if self.bkg_filterOption.isChecked():
@@ -371,17 +383,17 @@ class BackgroundStage():
 			self.f_winOption.setEnabled(False)
 			self.f_n_limOption.setEnabled(False)
 
-	@logged
+	#@logged
 	def raiseError(self, message):
 		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.backgroundWidget, "Error", message, QMessageBox.Ok)
 
-	@logged
+	#@logged
 	def resetButtons(self):
 		self.popupButton.setEnabled(False)
 		self.subtractButton.setEnabled(False)
 
-	@logged
+	#@logged
 	def loadValues(self):
 		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
@@ -423,13 +435,13 @@ class BackgroundStage():
 		self.pressedCalcButton()
 		self.pressedSubtractButton()
 
-	@logged
+	#@logged
 	def enterPressed(self):
 		""" When enter is pressed on this stage """
 		if self.subtractButton.isEnabled():
 			self.pressedSubtractButton()
 
-	@logged
+	#@logged
 	def defaultButtonPress(self):
 
 		self.methodOption.setCurrentText(self.stageInfo["bkg_method_1_label"])

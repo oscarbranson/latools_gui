@@ -23,9 +23,12 @@ from stages import filteringStage
 
 from project import runningProject
 from project.ErrLogger import *
+import logging
+import logging.config
 
 # List the stages
 STAGES = ["Import","De-Spiking","Autorange","Background","Ratio","Calibration","Filtering"]
+logging.config.fileConfig('logging.conf')
 
 class MainWindow(QMainWindow):
 	"""
@@ -42,7 +45,7 @@ class MainWindow(QMainWindow):
 		self.move(100, 0)
 		self.setWindowTitle("LAtools")
 
-		initlog() #initialise logging
+
 		
 		# We move on to build the UI
 		self.initUI()
@@ -221,7 +224,7 @@ class MainWindow(QMainWindow):
 		""" Runs the export command on the current running project """
 		if self.project.eg is not None:
 			self.project.eg.minimal_export()
-	@logged
+	#@logged
 	def closeEvent(self, event):
 		""" Attempting to close the window is handled here """
 

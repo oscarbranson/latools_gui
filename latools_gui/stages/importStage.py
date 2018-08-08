@@ -11,6 +11,7 @@ import os
 import time
 
 from project.ErrLogger import logged
+import logging
 
 class ImportStage():
 	"""
@@ -18,7 +19,7 @@ class ImportStage():
 	step of the data-processing. It updates the graph pane based on the modifications that are made to the
 	project.
 	"""
-	@logged
+	#@logged
 	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, importStageWidget, project):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
@@ -38,6 +39,8 @@ class ImportStage():
 			A reference to the project object which contains all of the information unique to this project,
 			including the latools analyse object that the stages will update.
 		"""
+		self.logger = logging.getLogger(__name__)
+		self.logger.info('Initialised import stage!')
 
 		self.graphPaneObj = graphPaneObj
 		self.progressPaneObj = progressPaneObj
@@ -113,11 +116,12 @@ class ImportStage():
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
 
-	@logged
+	#@logged
 	def pressedApplyButton(self):
 		""" Imports data into the project when the apply button is pressed. """
 
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
+		self.logger.info('Button clicked')
 		try:
 			self.project.eg = la.analyse(data_folder=self.fileLocationLine.text(),
 										 config=self.configOption.currentText(),
@@ -139,24 +143,25 @@ class ImportStage():
 			# Automatically saves the project if it already has a save location
 			self.project.reSave()
 		except:
+			self.logger.exception()
 			print("An error occured")
 
 			errorBox = QMessageBox.critical(self.importStageWidget,
 											"""self.stageInfo["general_error_label"]""",
 											"""self.stageInfo["general_error_description"]""",
 										QMessageBox.Ok)
-	@logged
+	#@logged
 	def findDataButtonClicked(self):
 		""" Opens a file dialog to find a file directory for data import when a button is pressed. """
 
 		self.fileLocation = QFileDialog.getExistingDirectory(self.importStageWidget, 'Open file', '/home')
 		self.fileLocationLine.setText(self.fileLocation)
 	
-	@logged
+	#@logged
 	def setImportListener(self, importListener):
 		self.importListener = importListener
 
-	@logged
+	#@logged
 	def loadValues(self):
 		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
@@ -178,13 +183,13 @@ class ImportStage():
 			self.file_extensionOption.setText(params.get("extension", ""))
 			self.srm_identifierOption.setText(params.get("srm_identifier", ""))
 
-	@logged
+	#@logged
 	def enterPressed(self):
 		""" When enter is pressed on this stage """
 		if self.applyButton.isEnabled():
 			self.pressedApplyButton()
 
-	@logged
+	#@logged
 	def relistConfig(self):
 		""" When a new configuration is added the config dropdown box needs to be updated """
 
@@ -196,7 +201,7 @@ class ImportStage():
 		for key in dict(la.config.read_latoolscfg()[1]):
 			self.configOption.addItem(key)
 
-	@logged
+	#@logged
 	def defaultButtonPress(self):
 
 		params = {

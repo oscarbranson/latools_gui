@@ -8,7 +8,7 @@ class RunningProject():
 	An object that defines and records all the details from the currently running project, and handles
 	the saving and loading.
 	"""
-	@logged
+	#@logged
 	def __init__(self, mainWidget):
 		""" Initialises a blank project state
 		"""
@@ -31,7 +31,7 @@ class RunningProject():
 		self.stageParams = {}
 		self.lastStage = 0
 
-	@logged
+	#@logged
 	def saveProject(self):
 		""" Save overwrites the current save file with the latest file strings """
 
@@ -76,7 +76,7 @@ class RunningProject():
 			self.folder = location
 			self.hasSaved = True
 
-	@logged
+	#@logged
 	def loadFile(self, name, location, progress=None):
 		""" Loads a save file, stores the file info, populates the stage parameters and runs
 		the stage function calls """

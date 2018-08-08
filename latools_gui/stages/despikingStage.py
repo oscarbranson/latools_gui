@@ -8,6 +8,7 @@ import json
 import ast
 
 from project.ErrLogger import logged
+import logging
 
 class DespikingStage():
 	"""
@@ -15,7 +16,7 @@ class DespikingStage():
 	step of the data-processing. It updates the graph pane based on the modifications that are made to the
 	project.
 	"""
-	@logged
+	#@logged
 	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, despikingWidget, project):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
@@ -145,16 +146,21 @@ class DespikingStage():
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
-	@logged
+
+		self.logger=logging.getLogger(__name__)
+		self.logger.info('Initialised despiking stage')
+	#@logged
 	def pressedApplyButton(self):
 		""" Applies a despiking filter to the project data when a button is pressed. """
 
 		# We process each text entry field by converting blank to the value None, and checking for errors
 		localExponent = None
+		self.logger.info('Pressed button')
 		if (self.pane1Exponent.text() != ""):
 			try:
 				localExponent = float(self.pane1Exponent.text())
 			except:
+				self.logger.exception()
 				self.raiseError("The exponent value must be a floating point number")
 				return
 
@@ -163,6 +169,7 @@ class DespikingStage():
 			try:
 				localWin = float(self.pane2win.text())
 			except:
+				self.logger.exception()
 				self.raiseError("The 'win' value must be a floating point number")
 				return
 
@@ -171,6 +178,7 @@ class DespikingStage():
 			try:
 				localNlim = float(self.pane2nlim.text())
 			except:
+				self.logger.exception()
 				self.raiseError("The 'nlim' value must be a floating point number")
 				return
 
@@ -179,6 +187,7 @@ class DespikingStage():
 			try:
 				localMaxiter = int(self.pane2Maxiter.text())
 			except:
+				self.logger.exception()
 				self.raiseError("The 'maxiter' value must be an integer")
 				return
 
@@ -192,6 +201,7 @@ class DespikingStage():
 								exponentplot=False,
 								maxiter=localMaxiter)
 		except:
+			self.logger.exception()
 			self.raiseError("A problem occurred. There may be a problem with the input values.")
 			return
 
@@ -206,12 +216,12 @@ class DespikingStage():
 		# Automatically saves the project if it already has a save location
 		self.project.reSave()
 
-	@logged
+	#@logged
 	def raiseError(self, message):
 		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.despikingWidget, "Error", message, QMessageBox.Ok)
 
-	@logged
+	#@logged
 	def loadValues(self):
 		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
@@ -236,13 +246,13 @@ class DespikingStage():
 			# exponentplot value?
 			self.pane2Maxiter.setText(str(params.get("maxiter", 4)))
 
-	@logged
+	#@logged
 	def enterPressed(self):
 		""" When enter is pressed on this stage """
 		if self.applyButton.isEnabled():
 			self.pressedApplyButton()
 
-	@logged
+	#@logged
 	def defaultButtonPress(self):
 
 		params = {

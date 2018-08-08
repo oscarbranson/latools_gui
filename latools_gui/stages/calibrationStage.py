@@ -11,6 +11,7 @@ import ast
 
 
 from project.ErrLogger import logged
+import logging
 
 class CalibrationStage():
 	"""
@@ -18,7 +19,7 @@ class CalibrationStage():
 	step of the data-processing. It updates the graph pane based on the modifications that are made to the
 	project.
 	"""
-	@logged
+	#@logged
 	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, calibrationWidget, project):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
@@ -126,7 +127,11 @@ class CalibrationStage():
 		self.stageControls.addApplyButton(self.applyButton)
 		# self.applyButton.setEnabled(False)
 
-	@logged
+		self.logger = logging.getLogger(__name__)
+		self.logger.info('initialised calibration')
+
+
+	#@logged
 	def pressedApplyButton(self):
 		""" Calibrates the project data when a button is pressed. """
 
@@ -152,6 +157,7 @@ class CalibrationStage():
 								zero_intercept=self.zero_interceptOption.isChecked(),
 								n_min=myn_min)
 		except:
+			self.logger.exception()
 			self.raiseError("A problem occurred. There may be a problem with the input values.")
 			return
 
@@ -170,7 +176,7 @@ class CalibrationStage():
 			self.pressedPopupButton()
 		self.autoApplyButton = False
 
-	@logged
+	#@logged
 	def pressedReloadButton(self):
 		""" Performs a reload when the button is pressed. """
 
@@ -180,7 +186,7 @@ class CalibrationStage():
 		print(self.srmfile)
 
 
-	@logged
+	#@logged
 	def updateStageInfo(self):
 		""" Updates the stage after data is imported at runtime """
 		self.srmfile = self.project.eg.srmfile
@@ -193,12 +199,12 @@ class CalibrationStage():
 			self.optionsRight.addWidget(self.srmList[i][0])
 		self.optionsRight.addStretch(1)
 
-	@logged
+	#@logged
 	def raiseError(self, message):
 		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.calibrationWidget, "Error", message, QMessageBox.Ok)
 
-	@logged
+	#@logged
 	def loadValues(self):
 		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
@@ -235,21 +241,21 @@ class CalibrationStage():
 			self.n_minOption.setText(str(params.get("n_min", 10)))
 
 
-	@logged
+	#@logged
 	def enterPressed(self):
 		""" When enter is pressed on this stage """
 		if self.applyButton.isEnabled():
 			self.pressedApplyButton()
 
-	@logged
+	#@logged
 	def pressedPopupButton(self):
 		self.graphPaneObj.showAuxGraph(cali=True)
 
-	@logged
+	#@logged
 	def pressedCalculateButton(self):
 		self.applyButton.setEnabled(True)
 
-	@logged
+	#@logged
 	def defaultButtonPress(self):
 
 		params = {
@@ -263,6 +269,6 @@ class CalibrationStage():
 
 		self.fillValues(params)
 
-	@logged
+	#@logged
 	def ChooseCalibrationButtonPress(self):
 		pass

@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 import templates.filterControls as filterControls
 
 from project.ErrLogger import logged
+import logging
 
 class FilteringStage():
 	"""
@@ -11,7 +12,7 @@ class FilteringStage():
 	step of the data-processing. It updates the graph pane based on the modifications that are made to the
 	project.
 	"""
-	@logged
+	#@logged
 	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, filteringWidget, project):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
@@ -47,15 +48,18 @@ class FilteringStage():
 		#self.applyButton.clicked.connect(self.pressedApplyButton)
 		#self.stageControls.addApplyButton(self.applyButton)
 
-	@logged
+		self.logger = logging.getLogger(__name__)
+		self.logger.info('filtering initialised')
+
+	#@logged
 	def pressedApplyButton(self):
 		#Add apply button functionality
 		pass
-	@logged
+	#@logged
 	def loadValues(self):
 		x = 1
 
-	@logged
+	#@logged
 	def enterPressed(self):
 		pass
 

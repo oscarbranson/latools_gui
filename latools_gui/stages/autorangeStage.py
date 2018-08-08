@@ -9,6 +9,7 @@ import ast
 
 
 from project.ErrLogger import logged
+import logging
 
 class AutorangeStage():
 	"""
@@ -16,7 +17,7 @@ class AutorangeStage():
 	step of the data-processing. It updates the graph pane based on the modifications that are made to the
 	project.
 	"""
-	@logged
+	#@logged
 	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, autorangeWidget, project):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
@@ -132,7 +133,9 @@ class AutorangeStage():
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
 
-	@logged
+		self.logger = logging.getLogger(__name__)
+
+	#@logged
 	def pressedApplyButton(self):
 		"""
 		The functionality for the Apply button.
@@ -199,6 +202,7 @@ class AutorangeStage():
 								#nbin=localNbin,
 								transform=self.logTransformCheck.isChecked())
 		except:
+			self.logger.exception()
 			self.raiseError("A problem occurred. There may be a problem with the input values.")
 			return
 
@@ -210,18 +214,18 @@ class AutorangeStage():
 		# Automatically saves the project if it already has a save location
 		self.project.reSave()
 
-	@logged
+	#@logged
 	def updateStageInfo(self):
 		""" The analyte dropdown can only be built once data is imported at runtime """
 		for analyte in self.project.eg.analytes:
 			self.analyteBox.addItem(str(analyte))
 
-	@logged
+	#@logged
 	def raiseError(self, message):
 		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.autorangeWidget, "Error", message, QMessageBox.Ok)
 
-	@logged
+	#@logged
 	def loadValues(self):
 		""" Loads the values saved in the project, and fills in the stage parameters with them """
 
@@ -249,13 +253,13 @@ class AutorangeStage():
 			# self.nbinEdit.setText(str(params.get("nbin", 10)))
 			self.logTransformCheck.setChecked(params.get("transform", False))
 
-	@logged
+	#@logged
 	def enterPressed(self):
 		""" When enter is pressed on this stage """
 		if self.applyButton.isEnabled():
 			self.pressedApplyButton()
 
-	@logged
+	#@logged
 	def defaultButtonPress(self):
 
 		params = {
