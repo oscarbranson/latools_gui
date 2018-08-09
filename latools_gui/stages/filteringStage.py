@@ -36,7 +36,7 @@ class FilteringStage():
 		self.filteringWidget = filteringWidget
 		self.project = project
 
-		self.stageControls = filterControls.FilterControls(stageLayout, project)
+		self.stageControls = filterControls.FilterControls(stageLayout, project, graphPaneObj)
 
 		# The space for the stage options is provided by the Controls Pane.
 

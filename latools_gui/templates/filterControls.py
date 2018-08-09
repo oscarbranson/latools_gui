@@ -13,7 +13,7 @@ class FilterControls:
 	"""
 	The Filtering Stage has its own customised controls pane
 	"""
-	def __init__(self, stageLayout, project):
+	def __init__(self, stageLayout, project, graphPaneObj):
 		"""
 		Initialising builds the pane and prepares it for options to be added by the stage object.
 
@@ -32,6 +32,7 @@ class FilterControls:
 		self.filterInfo = None
 
 		self.project = project
+		self.graphPaneObj = graphPaneObj
 		self.tabsArea = QTabWidget()
 		stageLayout.addWidget(self.tabsArea)
 
@@ -90,7 +91,8 @@ class FilterControls:
 						   self.plusFilterCombo.currentText(),
 						   self.summaryTab,
 						   self.filterInfo,
-						   self.project)
+						   self.project,
+						   self.graphPaneObj)
 		# self.summaryTab.addFilter(self.plusNameField.text())
 		self.tabsList.append(newTab)
 
@@ -200,7 +202,7 @@ class SummaryWidget(QWidget):
 class FilterTab:
 	""" Creates the controls tab for a filter """
 
-	def __init__(self, name, filterName, summaryTab, filterInfo, project):
+	def __init__(self, name, filterName, summaryTab, filterInfo, project, graphPaneObj):
 
 		# The name given by the user
 		self.name = name
@@ -219,6 +221,9 @@ class FilterTab:
 
 		# The RunningProject instance, used for listing the analytes
 		self.project = project
+
+		# A reference to the graph pane to create the data visualisations
+		self.graphPaneObj = graphPaneObj
 
 		# Builds the layout for the tab
 		self.filter = QWidget()

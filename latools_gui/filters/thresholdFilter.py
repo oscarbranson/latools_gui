@@ -272,7 +272,7 @@ class ThresholdFilter:
 		# To determine the name that LAtools has given the filter, we first take a sample:
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
 		print(self.filterTab.project.eg.data[egSubset].filt.components.keys())
-		
+
 		# Then check the last filter names that have been added to that sample:
 		self.filtNameAbove = list(self.filterTab.project.eg.data[egSubset].filt.components.keys())[-1]
 		self.filtNameBelow = list(self.filterTab.project.eg.data[egSubset].filt.components.keys())[-2]
