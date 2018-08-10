@@ -87,7 +87,10 @@ class GraphPane():
 		self.graph.hideInternalStandard()
 
 	def updateBkg(self):
-		self.bkgGraph.populateGraph()
+		if self.bkgGraph.populated:
+			self.bkgGraph.updateData()
+		else:
+			self.bkgGraph.populateGraph()
 
 	def showAuxGraph(self, bkg=False, cali=False):
 		if bkg:
@@ -469,7 +472,9 @@ class MainGraph(GraphWindow):
 		newWin.show()
 		
 class BkgGraph(GraphWindow):
-
+	"""
+		Openable window from the Background Subtraction stage. Graphs background subtraction data between all samples
+	"""
 	def __init__(self, project, err='stderr'):
 		super().__init__(project)
 		self.bkgScatters = {}
@@ -478,91 +483,114 @@ class BkgGraph(GraphWindow):
 		self.bkgSamplelines = {}
 		self.highlightRegions = {}
 		self.err = err
-
-		self.populated = False
 		
 		self.setWindowTitle("LAtools bkg Plot")
 
+		# Initialise samples menu
 		self.initialiseSamples()
 
+		# Create graph
 		graph = pg.PlotWidget()
 		graph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
 
-		self.graphs.append(graph)
+		self.graph = graph
 
 		self.layout.addWidget(graph, 1)
 
+		# Initialise Legend
 		self.initialiseLegend()
 
 	def initialiseGraph(self):
+		"""
+			Clears the elements in the graph, populates the samples list and legend with items
+		"""
 		self.populated = False
 		for graph in self.graphs:
 			graph.clear()
 		self.populateSamples()
 		self.populateLegend()
 
+	def getDatapoints(self, dat, analyte):
+		sy = dat.bkg['raw'].loc[:, analyte]
+
+		x = dat.bkg['calc']['uTime']
+		y = dat.bkg['calc'][analyte]['mean']
+		yl = dat.bkg['calc'][analyte]['mean'] - dat.bkg['calc'][analyte][self.err]
+		yu = dat.bkg['calc'][analyte]['mean'] + dat.bkg['calc'][analyte][self.err]
+
+		if self.yLogCheckBox.isChecked():
+			sy = np.log10(sy)
+			#x = np.log10(x)
+			#y = np.log10(y)
+			yl = np.log10(yl)
+			yu = np.log10(yu)
+
+		return [sy, x, y, yl, yu]
+
 	def populateGraph(self):
+		"""
+			Processes subtraction data and populates the graph with the processed data
+		"""
 		dat = self.project.eg
-		for graph in self.graphs:
-			for analyte in self.project.eg.analytes:
-				sy = dat.bkg['raw'].loc[:, analyte]
+		for analyte in self.project.eg.analytes:
+			datapoints = self.getDatapoints(dat, analyte)
 
-				x = dat.bkg['calc']['uTime']
-				y = dat.bkg['calc'][analyte]['mean']
-				yl = dat.bkg['calc'][analyte]['mean'] - dat.bkg['calc'][analyte][self.err]
-				yu = dat.bkg['calc'][analyte]['mean'] + dat.bkg['calc'][analyte][self.err]
+			# Add items to graph
 
-				if self.yLogCheckBox.isChecked():
-					sy = np.log10(sy)
-					#x = np.log10(x)
-					#y = np.log10(y)
-					yl = np.log10(yl)
-					yu = np.log10(yu)
+			scatter = pg.ScatterPlotItem(dat.bkg['raw'].uTime, datapoints[0], pen=None, brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 127)), size=3)
+			self.bkgScatters[analyte] = scatter
 
-				if not self.populated:
+			line = pg.PlotDataItem(datapoints[1], datapoints[2], pen=pg.mkPen(dat.cmaps[analyte], width=2), label=analyte, name=analyte, connect='finite')
+			self.bkgLines[analyte] = line
 
-					scatter = pg.ScatterPlotItem(dat.bkg['raw'].uTime, sy, pen=None, brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 127)), size=3)
-					self.bkgScatters[analyte] = scatter
+			fill = pg.FillBetweenItem(pg.PlotDataItem(datapoints[1], datapoints[3], pen=pg.mkPen(0,0,0,0)), pg.PlotDataItem(datapoints[1], datapoints[4], pen=pg.mkPen(0,0,0,0)), brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 204)))
+			self.bkgFills[analyte] = fill
 
-					line = pg.PlotDataItem(x, y, pen=pg.mkPen(dat.cmaps[analyte], width=2), label=analyte, name=analyte, connect='finite')
-					self.bkgLines[analyte] = line
+			self.graphLines[analyte] = (scatter, line, fill)
 
-					fill = pg.FillBetweenItem(pg.PlotDataItem(x, yl, pen=pg.mkPen(0,0,0,0)), pg.PlotDataItem(x, yu, pen=pg.mkPen(0,0,0,0)), brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 204)))
-					self.bkgFills[analyte] = fill
+			self.graph.addItem(scatter)
+			self.graph.addItem(line)
+			self.graph.addItem(fill)
+				
 
-					self.graphLines[analyte] = (scatter, line, fill)
+		# Add/update highlighted sample regions to graph
+		for s, d in dat.data.items():
+			self.addRegion(s, self.graph, (d.uTime[0], d.uTime[-1]), pg.mkBrush((0,0,0,25)))
+			sampleLine = pg.InfiniteLine(pos=d.uTime[0], pen=pg.mkPen(color=(0,0,0,51), style=Qt.DashLine, width=2), label=s, labelOpts={'position': .999, 'anchors': ((0., 0.), (0., 0.))})
+			self.bkgSamplelines[d] = sampleLine
+			self.graph.addItem(sampleLine)
 
-					for graph in self.graphs:
-						graph.addItem(scatter)
-						graph.addItem(line)
-						graph.addItem(fill)
-
-				else:
-					self.bkgScatters[analyte].setData(dat.bkg['raw'].uTime, sy)
-					self.bkgLines[analyte].setData(x, y)
-					self.bkgFills[analyte].setCurves(pg.PlotDataItem(x, yl, pen=pg.mkPen(0,0,0,0)), pg.PlotDataItem(x, yu, pen=pg.mkPen(0,0,0,0)))
-
-			for graph in self.graphs:
-				for s, d in dat.data.items():
-					if not self.populated:
-						self.addRegion(s, graph, (d.uTime[0], d.uTime[-1]), pg.mkBrush((0,0,0,25)))
-						sampleLine = pg.InfiniteLine(pos=d.uTime[0], pen=pg.mkPen(color=(0,0,0,51), style=Qt.DashLine, width=2), label=s, labelOpts={'position': .999, 'anchors': ((0., 0.), (0., 0.))})
-						self.bkgSamplelines[d] = sampleLine
-						graph.addItem(sampleLine)
-					else:
-						self.highlightRegions[s].setRegion((d.uTime[0], d.uTime[-1]))
-						self.bkgSamplelines[d].setValue(d.uTime[0])
-
-		self.populated = True
+		self.populated = True				
 		self.sampleList.setCurrentItem(self.sampleList.item(0))
-	
+
+	def updateData(self):
+		"""
+			Updates the data of the graph
+		"""
+		dat = self.project.eg
+		for analyte in self.project.eg.analytes:
+			datapoints = self.getDatapoints(dat, analyte)
+
+			# Update graph data
+			self.bkgScatters[analyte].setData(dat.bkg['raw'].uTime, datapoints[0])
+			self.bkgLines[analyte].setData(datapoints[1], datapoints[2])
+			self.bkgFills[analyte].setCurves(pg.PlotDataItem(datapoints[1], datapoints[3], pen=pg.mkPen(0,0,0,0)), pg.PlotDataItem(datapoints[1], datapoints[4], pen=pg.mkPen(0,0,0,0)))
+		
+		# Update highlight region data
+		for s, d in dat.data.items():
+			self.highlightRegions[s].setRegion((d.uTime[0], d.uTime[-1]))
+			self.bkgSamplelines[d].setValue(d.uTime[0])
+
 	def showGraph(self):
+		"""
+			Display graph window
+		"""
 		self.show()
 
 	# populate sample list
 	def populateSamples(self):
 		"""
-		Updates the list of available samples from the dataset viewable on the graph
+			Updates the list of available samples from the dataset viewable on the graph
 		"""
 
 		samples = self.project.eg.samples
@@ -574,7 +602,9 @@ class BkgGraph(GraphWindow):
 			self.sampleList.addItem(sample)
 
 	def swapSample(self):
-		# sets current sample to selected sample
+		"""
+			sets current sample to selected sample
+		"""
 		selectedSamples = self.sampleList.selectedItems()
 		if len(selectedSamples) > 0:
 			selectedSample = selectedSamples[0]
@@ -589,7 +619,12 @@ class BkgGraph(GraphWindow):
 	# action when legend check-boxes are changed
 	def legendStateChange(self, analyte):
 		"""
-		Actions to perform when legend check box changes state
+			Actions to perform when legend check box changes state
+
+			Parameters
+			----------
+			analyte : String
+				Analyte attributed to the tickbox clicked
 		"""
 
 		for item in self.graphLines[analyte]:
@@ -602,13 +637,28 @@ class BkgGraph(GraphWindow):
 	# change between log/linear y scale
 	def updateLogScale(self):
 		"""
-		When log(y) checkbox is modified, update y-axis scale
+			When log(y) checkbox is modified, update y-axis scale
 		"""
 		for graph in self.graphs:
 			graph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
 		self.populateGraph()
 
 	def addRegion(self, name, targetGraph, lims, brush):
+		"""
+			Based of given parameters creates a region item and adds it to target graph
+
+			Parameters
+			----------
+			name : String
+				Name given to created region
+			targetGraph : pg.PlotItem
+				Graph that the region will be added to
+			lims : [???]
+				Pair of data points that are the limits of the region
+			brush : pg.mkBrush
+				Brush that defines the look of the region
+		
+		"""
 		region = pg.LinearRegionItem(values=lims, brush=brush, movable=False)
 		region.lines[0].setPen(pg.mkPen((0,0,0,0)))
 		region.lines[1].setPen(pg.mkPen((0,0,0,0)))
@@ -617,11 +667,25 @@ class BkgGraph(GraphWindow):
 		targetGraph.addItem(region)
 
 class CaliGraph(GraphWindow):
-
+	"""
+		Openable window from the Calibration stage. Graphs all analytes calibrated to the internal standard
+	"""
 	def __init__(self, project, loglog=False):
 		super().__init__(project)
 		self.loglog = loglog
 
+		self.cells = {}
+		self.errPlots = {}
+		self.errorbars = {}
+		self.caliScatters = {}
+		self.analyteTexts = {}
+		self.histPlots = {}
+		self.histograms = {}
+		self.eqTexts = {}
+
+		self.populated = False
+
+		# Create scollable area that holds all the elements of the window
 		scroll = QScrollArea()
 		scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 		scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -631,6 +695,7 @@ class CaliGraph(GraphWindow):
 
 		self.setWindowTitle("LAtools calibration Plot")
 
+		# Initialise Grid that contains all the analyte graphs
 		graph = QWidget()
 		graphLayout = QGridLayout()
 		graph.setLayout(graphLayout)
@@ -642,24 +707,13 @@ class CaliGraph(GraphWindow):
 		self.graphLayout = graphLayout
 
 		self.layout.addWidget(scroll, 1)
-	
-	def clearGraph(self):
-		self.errPlots = {}
-		self.errorbars = {}
-		self.caliScatters = {}
-		self.analyteTexts = {}
-		self.histPlots = {}
-		self.histograms = {}
-		self.eqTexts = {}
-
-		for graph in self.graphs:
-			graph.deleteLater()
-
-		self.scroll.update()
 
 	def populateGraph(self):
-		self.clearGraph()
-
+		"""
+			Populations the window's grid layout with graphs of each analyte (excluding the internal standard)
+		"""
+		#for cell in self.graphs:
+		#	cell.deleteLater()
 		dat = self.project.eg
 		analytes = [a for a in dat.analytes if dat.internal_standard not in a]
 
@@ -670,58 +724,23 @@ class CaliGraph(GraphWindow):
 			analyte = analytes[i]
 			if i % 3 == 0:
 				row += 1
-
-			cell = pg.GraphicsLayoutWidget()
-			cell.ci.setSpacing(0)
-			cell.ci.layout.setColumnStretchFactor(1,2)
-			cell.addLabel('mol/mol ' + dat.internal_standard, 0, 0, angle=-90, rowspan=2)
-			cell.addLabel('counts/counts ' + dat.internal_standard, 1, 1, colspan=2)
-
-			self.graphs.append(cell)
-
-			errPlot = cell.addPlot(0, 1)
-			errPlot.hideButtons()
-
-			self.errPlots[analyte] = errPlot
-
-			# xAxis = plot.getAxis('bottom')
-			# print(dat.srmtabs.loc[analyte, 'meas_mean'].values)
-			# xs = dat.srmtabs.loc[analyte, 'meas_mean'].values
-			# sxs = ['{:.2f}'.format(x) for x in dat.srmtabs.loc[analyte, 'meas_mean'].values]
-			# ticks = zip(xs, sxs)
-			# xAxis.setTicks([list(ticks)[::2], list(ticks)[1::2]])
-
-			errViewbox = errPlot.getViewBox()
-			errViewbox.setMouseEnabled(False, False)
-			# plot calibration data
-			errorbar = pg.ErrorBarItem(x=dat.srmtabs.loc[analyte, 'meas_mean'].values,
-			y=dat.srmtabs.loc[analyte, 'srm_mean'].values,
-			width=dat.srmtabs.loc[analyte, 'meas_err'].values,
-			height=dat.srmtabs.loc[analyte, 'srm_err'].values,
-			pen=pg.mkPen(self.hex_2_rgba(dat.cmaps[analyte], 153), width=2),
-			beam=0)
 			
-			self.errorbars[analyte] = errorbar
-			errPlot.addItem(errorbar)
-
-			scatter = pg.ScatterPlotItem(x=dat.srmtabs.loc[analyte, 'meas_mean'].values,
-			y=dat.srmtabs.loc[analyte, 'srm_mean'].values,
-			pen=None, brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 153)), size=8)
 			
-			self.caliScatters[analyte] = scatter
-			errPlot.addItem(scatter)
+			meas_mean = dat.srmtabs.loc[analyte, 'meas_mean'].values
+			srm_mean = dat.srmtabs.loc[analyte, 'srm_mean'].values
+			meas_err = dat.srmtabs.loc[analyte, 'meas_err'].values
+			srm_err = dat.srmtabs.loc[analyte, 'srm_err'].values
 			
 			# work out axis scaling
-			xmax = np.nanmax(helpers.stat_fns.nominal_values(dat.srmtabs.loc[analyte, 'meas_mean'].values) +
-			helpers.stat_fns.nominal_values(dat.srmtabs.loc[analyte, 'meas_err'].values))
-			ymax = np.nanmax(helpers.stat_fns.nominal_values(dat.srmtabs.loc[analyte, 'srm_mean'].values) +
-			helpers.stat_fns.nominal_values(dat.srmtabs.loc[analyte, 'srm_err'].values))
+			xmax = np.nanmax(helpers.stat_fns.nominal_values(meas_mean) +
+			helpers.stat_fns.nominal_values(meas_err))
+			ymax = np.nanmax(helpers.stat_fns.nominal_values(srm_mean) +
+			helpers.stat_fns.nominal_values(srm_err))
 			xlim = [0, 1.05 * xmax]
 			ylim = [0, 1.05 * ymax]
-			errViewbox.setRange(xRange=xlim, yRange=ylim, disableAutoRange=True)
 
 			# calculate line and R2
-			x = np.array(xlim)
+			linex = np.array(xlim)
 
 			coefs = dat.calib_params[analyte]
 			m = coefs.m.values.mean()
@@ -734,7 +753,7 @@ class CaliGraph(GraphWindow):
 				ym = dat.srmtabs.loc[analyte, 'meas_mean'] * m_nom + c_nom
 				R2 = helpers.stat_fns.R2calc(dat.srmtabs.loc[analyte, 'srm_mean'], ym, force_zero=False)
 				# generate line and label
-				line = x * m_nom + c_nom
+				line = linex * m_nom + c_nom
 				label = 'y = {:.2e} x'.format(m)
 				if c > 0:
 					label += '<br />+ {:.2e}'.format(c)
@@ -745,14 +764,8 @@ class CaliGraph(GraphWindow):
 				ym = dat.srmtabs.loc[analyte, 'meas_mean'] * m_nom
 				R2 = helpers.stat_fns.R2calc(dat.srmtabs.loc[analyte, 'srm_mean'], ym, force_zero=True)
 				# generate line and label
-				line = x * m_nom
+				line = linex * m_nom
 				label = 'y = {:.2e} x'.format(m)
-
-			# plot line of best fit
-			graphLine = pg.PlotDataItem(x, line, pen=pg.mkPen(color=self.hex_2_rgba(dat.cmaps[analyte], 127), style=Qt.DashLine, width=2))
-
-			self.graphLines[analyte] = graphLine
-			errPlot.addItem(graphLine)
 
 			# add R2 to label
 			if round(R2, 3) == 1:
@@ -760,16 +773,6 @@ class CaliGraph(GraphWindow):
 			else:
 				label = 'R<sup>2</sup>: {:.3f}<br />'.format(R2) + label
 
-			analyteText = pg.TextItem(anchor=(0,0), color='k')
-			el = re.match('.*?([A-z]{1,3}).*?', analyte).groups()[0]
-			m = re.match('.*?([0-9]{1,3}).*?', analyte).groups()[0]
-			analyteText.setHtml('<div style="text-align: center"><span style="font-size:10pt;"><sup>%(m)s</sup>%(el)s</span></div>'%{"el":el, "m":m})
-
-			self.analyteTexts[analyte] = analyteText
-			errPlot.addItem(analyteText)
-
-			#errPlot.setLabel('bottom', 'counts/counts ' + dat.internal_standard)
-			#errPlot.setLabel('left', 'mol/mol ' + dat.internal_standard)
 			# write calibration equation on graph happens after data distribution
 
 			# plot data distribution historgram alongside calibration plot
@@ -784,7 +787,7 @@ class CaliGraph(GraphWindow):
 					ylim[0] = 10**np.floor(np.log10(np.nanmin(mmeas)))
 				else:
 					ylim[0] = 0
-					errViewbox.setRange(yRange=ylim)
+					
 
 			m95 = np.percentile(meas[~np.isnan(meas)], 95) * 1.05
 			if m95 > ylim[1]:
@@ -801,52 +804,149 @@ class CaliGraph(GraphWindow):
 			
 			hy,hx = np.histogram(meas, bins=bins)
 
-			histPlot = cell.addPlot(0, 2)
-			histPlot.hideButtons()
-			histViewbox = histPlot.getViewBox()
-			histViewbox.setMouseEnabled(False, False)
-			self.histPlots[analyte] = histPlot
+			if not self.populated:
+				#Each graph is a Graphics Layout Widget; so that the error plot, histogram, and all labels are easily arranged
+				cell = pg.GraphicsLayoutWidget()
+				cell.ci.setSpacing(0)
+				cell.ci.layout.setColumnStretchFactor(1,2)
+				cell.addLabel('mol/mol ' + dat.internal_standard, 0, 0, angle=-90, rowspan=2)
+				cell.addLabel('counts/counts ' + dat.internal_standard, 1, 1, colspan=2)
 
-			hist = pg.PlotDataItem(hx, hy, stepMode=True, fillLevel=0, brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 127)), pen=pg.mkPen(color=self.hex_2_rgba(dat.cmaps[analyte], 127), width=0.5))
+				self.cells[(row, i)] = cell
+				self.graphLayout.addWidget(self.cells[(row, i)], row, i%3)
+
+				errPlot = cell.addPlot(0, 1)
+				errPlot.hideButtons()
+
+				self.errPlots[(row, i)] = errPlot
+
+				errViewbox = errPlot.getViewBox()
+				errViewbox.setMouseEnabled(False, False)
+
+				# plot calibration data
+				errorbar = pg.ErrorBarItem(x=meas_mean,
+				y=srm_mean,
+				width=meas_err,
+				height=srm_err,
+				pen=pg.mkPen(self.hex_2_rgba(dat.cmaps[analyte], 153), width=2),
+				beam=0)
 			
-			self.histograms[analyte] = hist
-			histPlot.addItem(hist)
+				self.errorbars[(row, i)] = errorbar
+				errPlot.addItem(errorbar)
 
-			hist.rotate(90)
+				scatter = pg.ScatterPlotItem(x=meas_mean,
+				y=srm_mean,
+				pen=None, brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 153)), size=8)
+				
+				self.caliScatters[(row, i)] = scatter
+				errPlot.addItem(scatter)
 
-			if self.loglog:
-				hist.setLogMode(xMode=False, yMode=True)
-			histViewbox.setRange(yRange=ylim) # ylim of histogram axis
-			errViewbox.setRange(yRange=ylim) # ylim of calibration axis
-			histViewbox.invertX(True)
-			#histLeft = histPlot.getAxis('left')
-			#histLeft.setTicks([])
-			histBottom = histPlot.getAxis('bottom')
-			histBottom.setStyle()
-			histBottom.setTicks([])
-			histPlot.hideAxis('left')
-			#histPlot.hideAxis('bottom')
-			
-			histRange = histViewbox.viewRange()
+				errViewbox.setRange(xRange=xlim, yRange=ylim, disableAutoRange=True)
 
-			# write calibration equation on graph
-			cmax = np.nanmean(dat.srmtabs.loc[analyte, 'srm_mean'].values)
-			if cmax / ylim[1] > 0.5:
-				eqText = pg.TextItem(anchor=(1,1), color='k')
-				eqText.setHtml('<div style="text-align: right"><span style="font-size:8pt">%(label)s</span></div>'%{"label":label})
-				eqText.setPos(x[-1],line[0])
+				# plot line of best fit
+				graphLine = pg.PlotDataItem(linex,
+				line,
+				pen=pg.mkPen(color=self.hex_2_rgba(dat.cmaps[analyte], 127), style=Qt.DashLine, width=2))
+
+				self.graphLines[(row, i)] = graphLine
+				errPlot.addItem(graphLine)
+
+				analyteText = pg.TextItem(anchor=(0,0), color='k')
+				self.analyteTexts[(row, i)] = analyteText
+				errPlot.addItem(analyteText)
+
+				# hist
+
+				histPlot = cell.addPlot(0, 2)
+				histPlot.hideButtons()
+				histViewbox = histPlot.getViewBox()
+				histRange = histViewbox.viewRange()
+				histViewbox.setMouseEnabled(False, False)
+				self.histPlots[(row, i)] = histPlot
+
+				hist = pg.PlotDataItem(hx, hy, stepMode=True, fillLevel=0, brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 127)), pen=pg.mkPen(color=self.hex_2_rgba(dat.cmaps[analyte], 127), width=0.5))
+				
+				self.histograms[(row, i)] = hist
+				histPlot.addItem(hist)
+
+				hist.rotate(90)
+
+				# write calibration equation on graph
+				eqText = pg.TextItem(color='k')
+				
+				self.eqTexts[(row, i)] = eqText
+				errPlot.addItem(eqText)
+
 			else:
-				eqText = pg.TextItem(anchor=(0,-1), color='k')
-				eqText.setHtml('<div style="text-align: left"><span style="font-size:8pt">%(label)s</span></div>'%{"label":label})
-				eqText.setPos(0,histRange[1][1])
+				self.errorbars[(row, i)].setData(x=meas_mean,
+				y=srm_mean,
+				width=meas_err,
+				height=srm_err,
+				pen=pg.mkPen(self.hex_2_rgba(dat.cmaps[analyte], 153)))
 
-			self.eqTexts[analyte] = eqText
-			errPlot.addItem(eqText)
+				self.caliScatters[(row, i)].setData(x=meas_mean,
+				y=srm_mean,
+				brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 153)))
 
-			analyteText.setPos(0,histRange[1][1])
+				self.graphLines[(row, i)].setData(linex,
+				line,
+				pen=pg.mkPen(color=self.hex_2_rgba(dat.cmaps[analyte], 127), style=Qt.DashLine, width=2))
 
-			self.graphLayout.addWidget(cell, row, i%3)
+				self.histograms[(row, i)].setData(x=hx,
+				y=hy,
+				brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 127)),
+				pen=pg.mkPen(color=self.hex_2_rgba(dat.cmaps[analyte], 127), width=0.5))
+
+			
+			
+			histPlot = self.histPlots[(row, i)]	
+			histViewbox = histPlot.getViewBox()
+			
+
+			errViewbox = self.errPlots[(row, i)].getViewBox()
+
+			
+			if not self.populated:
+				if np.nanmin(meas) < ylim[0]:
+					if not self.loglog:
+						errViewbox.setRange(yRange=ylim)
+
+				if self.loglog:
+					self.histograms[(row, i)].setLogMode(xMode=False, yMode=True)
+				histViewbox.setRange(yRange=ylim) # ylim of histogram axis
+				errViewbox.setRange(yRange=ylim) # ylim of calibration axis
+				histViewbox.invertX(True)
+				histBottom = histPlot.getAxis('bottom')
+				histBottom.setStyle()
+				histBottom.setTicks([])
+				histPlot.hideAxis('left')
+
+				histRange = histViewbox.viewRange()
+							
+				cmax = np.nanmean(srm_mean)
+
+				eqText = self.eqTexts[(row, i)]
+				if cmax / ylim[1] > 0.5:
+					eqText.setAnchor(anchor=(1,1))
+					eqText.setHtml('<div style="text-align: right"><span style="font-size:8em">%(label)s</span></div>'%{"label":label})
+					eqText.setPos(linex[-1],line[0])
+				else:
+					eqText.setAnchor(anchor=(0,-1))
+					eqText.setHtml('<div style="text-align: left"><span style="font-size:8em">%(label)s</span></div>'%{"label":label})
+					eqText.setPos(0,histRange[1][1])
+
+				el = re.match('.*?([A-z]{1,3}).*?', analyte).groups()[0]
+				m = re.match('.*?([0-9]{1,3}).*?', analyte).groups()[0]
+
+				self.analyteTexts[(row, i)].setPos(0,histRange[1][1])
+				self.analyteTexts[(row, i)].setHtml('<div style="text-align: center"><span style="font-size:10em;"><sup>%(m)s</sup>%(el)s</span></div>'%{"el":el, "m":m})
+
+		
+		self.populated = True
 		self.scroll.setWidget(self.graph)
 
 	def showGraph(self):
-		self.show()
+		"""
+			Display graph window
+		"""
+		self.showMaximized()
