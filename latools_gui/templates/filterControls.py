@@ -7,6 +7,7 @@ import json
 import latools as la
 
 from filters.thresholdFilter import ThresholdFilter
+from filters.clusteringFilter import ClusteringFilter
 
 
 class FilterControls:
@@ -26,7 +27,8 @@ class FilterControls:
 		"""
 
 		# A list of all of the available filter types
-		self.filterList = ["Threshold"]
+		self.filterList = ["Threshold",
+						   "Clustering"]
 
 		# This will hold the contents of the selected filter's json information file
 		self.filterInfo = None
@@ -143,6 +145,16 @@ class FilterControls:
 			read_file.close()
 
 			self.updateDescription(self.filterInfo["filter_name"], self.filterInfo["filter_description"])
+
+		elif self.plusFilterCombo.currentText() == "Clustering":
+
+			# Here we get the filter description from the json file
+			read_file = open("information/clusteringFilterInfo.json", "r")
+			self.filterInfo = json.load(read_file)
+			read_file.close()
+
+			self.updateDescription(self.filterInfo["filter_name"], self.filterInfo["filter_description"])
+
 		else:
 			# Otherwise the blank was selected, so we clear the info box
 			self.updateDescription("", "")
@@ -159,16 +171,21 @@ class SummaryTab:
 	def __init__(self, project):
 
 		# We use a special widget purely to help with resizing the scrollable area to the window width
-		self.summary = SummaryWidget()
+		self.summary = QWidget()
+
+		self.summaryMainLayout = QHBoxLayout(self.summary)
+		self.scrollWidget = SummaryWidget()
+
+		self.summaryMainLayout.addWidget(self.scrollWidget)
 
 		# We create the scroll area that will display the table of analytes and filters
-		self.scroll = QScrollArea(self.summary)
+		self.scroll = QScrollArea(self.scrollWidget)
 		self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 		self.scroll.setFixedHeight(220)
 		self.scroll.setFixedWidth(self.summary.frameSize().width())
 		self.scroll.setWidgetResizable(True)
 
-		self.summary.scrollArea = self.scroll
+		self.scrollWidget.scrollArea = self.scroll
 
 		# We make an area inside the scroll to fill with the table
 		self.innerWidget = QWidget()
@@ -184,12 +201,113 @@ class SummaryTab:
 
 		self.scroll.setWidget(self.innerWidget)
 
+		# We make a layout to house buttons to the right of the summary
+		self.buttonLayoutWidget = QWidget()
+		self.buttonLayout = QVBoxLayout(self.buttonLayoutWidget)
+		self.buttonLayoutWidget.setMaximumWidth(120)
+
+		# We make an apply button
+		self.applyButton = QPushButton("Apply")
+		self.applyButton.clicked.connect(self.applyButtonPress)
+		self.buttonLayout.addStretch(1)
+		self.buttonLayout.addWidget(self.applyButton)
+
+		# The buttons layout is added to the main layout
+		self.summaryMainLayout.addWidget(self.buttonLayoutWidget)
+
+		# These variables are used to run the "All" checkboxes
+
+		# A list of the "All" checkboxes
+		self.selectAllBoxes = []
+
+		# A list of ints that register the current state of the checkboxes
+		self.selectAllChecks = []
+
+		# A list of references to the list of checkboxes for each row
+		self.rowRegister = []
+
+		# A bool to allow the All checkboxes to register that a state has changed.
+		# This is necessary to prevent the state-change triggering when it is changed programmatically
+		self.updateChecked = True
+
 	def addElements(self, analytes):
 		""" When the analytes are available at run time, they are populated in the table """
 		for i in range(len(analytes)):
 			self.table.addWidget(QLabel("<span style=\"color:#779999\"><strong>" +
 										str(analytes[i]) +
 										"< / strong > < / span > "), 0, i + 1)
+		self.table.addWidget(QLabel("<span style=\"color:#888888\"><strong>ALL</strong></span>"),
+							 0, self.table.columnCount())
+
+	def addSelectAll(self, row):
+		""" Adds a "select all" checkbox to the end of the row of analyte checkboxes """
+		checkBox = QCheckBox()
+		checkBox.stateChanged.connect(self.selectAllClicked)
+		self.selectAllBoxes.append(checkBox)
+		self.selectAllChecks.append(0)
+		self.table.addWidget(checkBox, row, self.table.columnCount() - 1)
+
+	def selectAllClicked(self):
+		""" The function called when one of the "select all" checkboxes is clicked """
+
+		# If we didn't change the checkbox in the program
+		if self.updateChecked:
+
+			# We check the current state of the checkboxes against our register to see which one was clicked
+			for i in range(len(self.selectAllChecks)):
+
+				# if the box has changed
+				if self.selectAllBoxes[i].checkState() != self.selectAllChecks[i]:
+
+					# We have found the box that was clicked, now we update our register
+					# If the box was previously off set it to on, otherwise set to off
+					if self.selectAllChecks[i] == 0:
+						self.selectAllChecks[i] = 2
+						self.selectAllBoxes[i].setCheckState(2)
+					else:
+						self.selectAllChecks[i] = 0
+						self.selectAllBoxes[i].setCheckState(0)
+
+					# If the new state is ticked
+					if self.selectAllChecks[i] == 2:
+						# Set all the row's boxes to on
+						for j in range(len(self.rowRegister[i][0])):
+							self.rowRegister[i][0][j].setCheckState(2)
+							self.rowRegister[i][1][j].setCheckState(2)
+
+						# Set the select all check to on
+						self.selectAllBoxes[i].setCheckState(2)
+					else:
+						# Set all the row's boxes to off
+						for j in range(len(self.rowRegister[i][0])):
+							self.rowRegister[i][0][j].setCheckState(0)
+							self.rowRegister[i][1][j].setCheckState(0)
+
+						# Set the select all check to off
+						self.selectAllBoxes[i].setCheckState(0)
+
+	def registerRow(self, summaryRow, controlsRow):
+		""" registers the lists of checkboxes for each row, so that we can turn them all on or off here """
+		self.rowRegister.append([summaryRow, controlsRow])
+		return len(self.rowRegister) - 1
+
+	def allPartial(self, row):
+		"""
+		When the user clicks 'select all' then unchecks a box, this function sets the 'all' checkbox to off
+		"""
+		# If the given row's 'all' checkbox is currently on
+		if self.selectAllChecks[row] == 2:
+			# We prevent the program from registering that we're changing the checkbox state
+			self.updateChecked = False
+			# Then we change the state to off
+			self.selectAllBoxes[row].setCheckState(0)
+			self.selectAllChecks[row] = 0
+			self.updateChecked = True
+
+	def applyButtonPress(self):
+		""" Called when the 'Apply' button in the summary tab is pressed """
+		pass
+
 
 class SummaryWidget(QWidget):
 	""" A simple helper class to allow the scrollable area in the summary filter tab to resize with the window """
@@ -283,6 +401,8 @@ class FilterTab:
 		# Here the specific filter type is determined and created
 		if self.filterName == "Threshold":
 			self.filterType = ThresholdFilter(self)
+		if self.filterName == "Clustering":
+			self.filterType = ClusteringFilter(self)
 
 	def addButton(self, buttonWidget):
 		""" Adds a given button to the right-most Options section """

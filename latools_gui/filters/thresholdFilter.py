@@ -26,6 +26,10 @@ class ThresholdFilter:
 		# Determines is this filter will have "above" and "below" rows
 		self.twoRows = True
 
+		# Registers which rows this filter occupies in Summary
+		self.aboveRow = 0
+		self.belowRow = 0
+
 		self.filtNameAbove = ""
 		self.filtNameBelow = ""
 
@@ -173,9 +177,16 @@ class ThresholdFilter:
 				self.analyteCheckBoxes["summaryBelow"][i].setCheckState(
 					self.analyteCheckBoxes["controlsBelow"][i].checkState())
 
+				# We make sure that if the "Select All" checkbox for that row is on,
+				# any deselect will set it to partial
+				if self.created:
+					if self.analyteCheckBoxes["summaryAbove"][i].checkState() == 0:
+						self.filterTab.summaryTab.allPartial(self.aboveRow)
+					if self.analyteCheckBoxes["summaryBelow"][i].checkState() == 0:
+						self.filterTab.summaryTab.allPartial(self.belowRow)
+
 			self.updateAnalyteToggles()
 			self.updating = False
-
 
 	def summaryChecksRegister(self):
 		""" Sets the checkboxes in the Controls tab to be the same as those in the Summary tab """
@@ -187,6 +198,14 @@ class ThresholdFilter:
 
 				self.analyteCheckBoxes["controlsBelow"][i].setCheckState(
 					self.analyteCheckBoxes["summaryBelow"][i].checkState())
+
+				# We make sure that if the "Select All" checkbox for that row is on,
+				# any deselect will set it to partial
+				if self.created:
+					if self.analyteCheckBoxes["summaryAbove"][i].checkState() == 0:
+						self.filterTab.summaryTab.allPartial(self.aboveRow)
+					if self.analyteCheckBoxes["summaryBelow"][i].checkState() == 0:
+						self.filterTab.summaryTab.allPartial(self.belowRow)
 
 			self.updateAnalyteToggles()
 			self.updating = False
@@ -280,23 +299,41 @@ class ThresholdFilter:
 		# We toggle the analytes on and off based on the check boxes
 		self.updateAnalyteToggles()
 
+		row = self.filterTab.summaryTab.table.rowCount()
+
 		# We create a row in the analytes table in the Summary tab for the "above" version of this filter
 		self.filterTab.summaryTab.table.addWidget(
-			QLabel(self.filterTab.name + " (above)"), self.filterTab.summaryTab.table.rowCount(), 0)
+			QLabel(self.filterTab.name + " (above)"), row, 0)
 
 		# We populate the row with checkboxes
-		for i in range(self.filterTab.summaryTab.table.columnCount() - 1):
+		for i in range(self.filterTab.summaryTab.table.columnCount() - 2):
 			self.filterTab.summaryTab.table.addWidget(
-				self.analyteCheckBoxes["summaryAbove"][i], self.filterTab.summaryTab.table.rowCount() - 1, i + 1)
+				self.analyteCheckBoxes["summaryAbove"][i], row, i + 1)
+
+		# We add a "select all" checkbox
+		self.filterTab.summaryTab.addSelectAll(row)
+
+		# We register our checkbox list for that row
+		self.aboveRow = self.filterTab.summaryTab.registerRow(self.analyteCheckBoxes["summaryAbove"],
+															  self.analyteCheckBoxes["controlsAbove"])
+
+		row += 1
 
 		# We create a row in the analytes table in the Summary tab for the "below" version of this filter
 		self.filterTab.summaryTab.table.addWidget(
-			QLabel(self.filterTab.name + " (below)"), self.filterTab.summaryTab.table.rowCount(), 0)
+			QLabel(self.filterTab.name + " (below)"), row, 0)
 
 		# We populate the row with checkboxes
-		for i in range(self.filterTab.summaryTab.table.columnCount() - 1):
+		for i in range(self.filterTab.summaryTab.table.columnCount() - 2):
 			self.filterTab.summaryTab.table.addWidget(
-				self.analyteCheckBoxes["summaryBelow"][i], self.filterTab.table.rowCount() - 1, i + 1)
+				self.analyteCheckBoxes["summaryBelow"][i], row, i + 1)
+
+		# We add a "select all" checkbox
+		self.filterTab.summaryTab.addSelectAll(row)
+
+		# We register our checkbox list for that row
+		self.belowRow = self.filterTab.summaryTab.registerRow(self.analyteCheckBoxes["summaryBelow"],
+															  self.analyteCheckBoxes["controlsBelow"])
 
 		# We deactivate the create button
 		self.createButton.setEnabled(False)
