@@ -10,6 +10,8 @@ from filters.thresholdFilter import ThresholdFilter
 from filters.clusteringFilter import ClusteringFilter
 from filters.correlationFilter import CorrelationFilter
 from filters.defragmentFilter import DefragmentFilter
+from filters.excludeFilter import ExcludeFilter
+from filters.trimFilter import TrimFilter
 
 
 class FilterControls:
@@ -32,7 +34,9 @@ class FilterControls:
 		self.filterList = ["Threshold",
 						   "Clustering",
 						   "Correlation",
-						   "Defragment"]
+						   "Defragment",
+						   "Exclude",
+						   "Trim"]
 
 		# This will hold the contents of the selected filter's json information file
 		self.filterInfo = None
@@ -172,6 +176,24 @@ class FilterControls:
 
 			# Here we get the filter description from the json file
 			read_file = open("information/defragmentFilterInfo.json", "r")
+			self.filterInfo = json.load(read_file)
+			read_file.close()
+
+			self.updateDescription(self.filterInfo["filter_name"], self.filterInfo["filter_description"])
+
+		elif self.plusFilterCombo.currentText() == "Exclude":
+
+			# Here we get the filter description from the json file
+			read_file = open("information/excludeFilterInfo.json", "r")
+			self.filterInfo = json.load(read_file)
+			read_file.close()
+
+			self.updateDescription(self.filterInfo["filter_name"], self.filterInfo["filter_description"])
+
+		elif self.plusFilterCombo.currentText() == "Trim":
+
+			# Here we get the filter description from the json file
+			read_file = open("information/trimFilterInfo.json", "r")
 			self.filterInfo = json.load(read_file)
 			read_file.close()
 
@@ -429,6 +451,10 @@ class FilterTab:
 			self.filterType = CorrelationFilter(self)
 		if self.filterName == "Defragment":
 			self.filterType = DefragmentFilter(self)
+		if self.filterName == "Exclude":
+			self.filterType = ExcludeFilter(self)
+		if self.filterName == "Trim":
+			self.filterType = TrimFilter(self)
 
 	def addButton(self, buttonWidget):
 		""" Adds a given button to the right-most Options section """
