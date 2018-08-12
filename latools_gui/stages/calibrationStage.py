@@ -151,6 +151,12 @@ class CalibrationStage():
 
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		try:
+                        #Logging
+                        
+			logger.info('Executing stage Import with stage variables: [drift_correct]:{}\n[srms_used]:{}\n[zero_intercept]:{}\n[n_min]:{}\n'.format( self.drift_correctOption.isChecked(),
+                                                                                                                                                                 srmParam,
+                                                                                                                                                                 self.zero_interceptOption.isChecked(),
+                                                                                                                                                                 myn_min))
 			self.project.eg.calibrate(analytes=None,
 								drift_correct=self.drift_correctOption.isChecked(),
 								srms_used=srmParam,

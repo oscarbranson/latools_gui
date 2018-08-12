@@ -120,9 +120,24 @@ class ImportStage():
 	def pressedApplyButton(self):
 		""" Imports data into the project when the apply button is pressed. """
 
+		
+
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		self.logger.info('Button clicked')
+
+			#Logging
+			#logger.info('Executing stage Import with stage variables: [DataFolder]:%s\n[Config]:%s\n[Extension]:%s\n[srm_Identifier]:%s\n',
+			#	    self.fileLocation.text(),
+			#	    self.configOption.currentText(),
+			#	    self.file_extensionOption.text(),
+			#	    self.srm_identifierOption.text())
+		self.logger.info('Executing stage Import with stage variables: [Loaction]:{}\n[Config]:{}\n[Extension]:{}\n[srm_Identifier]:{}\n'.format( self.fileLocationLine.text(),
+																			       self.configOption.currentText(),
+																			       self.file_extensionOption.text(),
+																			       self.srm_identifierOption.text()))
 		try:
+			self.logger.info('Attempting to locate data')
+			
 			self.project.eg = la.analyse(data_folder=self.fileLocationLine.text(),
 										 config=self.configOption.currentText(),
 										 extension=self.file_extensionOption.text(),
@@ -143,7 +158,7 @@ class ImportStage():
 			# Automatically saves the project if it already has a save location
 			self.project.reSave()
 		except:
-			self.logger.exception()
+			self.logger.exception("Error with Importing Data")
 			print("An error occured")
 
 			errorBox = QMessageBox.critical(self.importStageWidget,

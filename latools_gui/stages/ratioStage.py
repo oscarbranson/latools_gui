@@ -79,7 +79,7 @@ class RatioStage():
 	#@logged
 	def pressedApplyButton(self):
 		""" Ratios the project data with a given standard when a button is pressed. """
-
+                            
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		self.project.eg.ratio(internal_standard=self.internal_standardOption.currentText())
 

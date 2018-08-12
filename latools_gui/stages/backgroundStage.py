@@ -201,6 +201,7 @@ class BackgroundStage():
 		no illegal inputs.
 
 		"""
+			    
 		# There are two different calculation methods for this stage
 		if (self.currentlyMethod1):
 
@@ -261,14 +262,23 @@ class BackgroundStage():
 
 			# The actual call to the analyse object for this stage is run, using the stage values as parameters
 			try:
+				# logging 
+				logger.info('Executing stage Import with stage variables: [weight_fwhm]:{}\n[n_min]:{}\n[n_max]:{}\n[cstep]:{}\n[bkg_filter]:{}\n[f_win]:{}\n[f_n_lim]:{}\n'.format( myweight,
+																								     myn_min,
+																								     myn_max,
+																								     mycstep,
+																								     self.bkg_filterOption.isChecked(),
+																								     myf_win,
+																								     myf_n_lim))
+				
 				self.project.eg.bkg_calc_weightedmean(analytes=None,
-												weight_fwhm=myweight,
-												n_min=myn_min,
-												n_max=myn_max,
-												cstep=mycstep,
-												bkg_filter=self.bkg_filterOption.isChecked(),
-												f_win=myf_win,
-												f_n_lim=myf_n_lim)
+								      weight_fwhm=myweight,
+								      n_min=myn_min,
+								      n_max=myn_max,
+								      cstep=mycstep,
+								      bkg_filter=self.bkg_filterOption.isChecked(),
+								      f_win=myf_win,
+								      f_n_lim=myf_n_lim)
 			except:
 				self.logger.exception()
 				self.raiseError("A problem occurred. There may be a problem with the input values.")

@@ -133,6 +133,7 @@ class AutorangeStage():
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
 
+                # Initializing the logger
 		self.logger = logging.getLogger(__name__)
 
 	#@logged
@@ -193,6 +194,14 @@ class AutorangeStage():
 
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		try:
+
+			# Logging the values
+			logger.info('Executing stage Import with stage variables: [Analyte]:{}\n[gwin]:{}\n[swin]:{}\n[win]:{}\n[on_mult]:{}\n[off_mult]:{}\n'.format( self.analyteBox.currentText(),
+																			       localGwin,
+																			       localSwin,
+																			       localWin,
+																			       localOn_mult,
+																			       localOff_mult))
 			self.project.eg.autorange(analyte=self.analyteBox.currentText(),
 								gwin=localGwin,
 								swin=localSwin,

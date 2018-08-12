@@ -53,7 +53,7 @@ class FilteringStage():
 
 	#@logged
 	def pressedApplyButton(self):
-		#Add apply button functionality
+		#Add apply button functionality 
 		pass
 	#@logged
 	def loadValues(self):
