@@ -1,0 +1,8 @@
+{
+	"filter_name": "Exclude Downhole",
+	"filter_description": "Exclude all points down-hole (after) the first excluded data.",
+	"threshold_label": "Threshold",
+	"threshold_description": "<qt/>The minimum number of contiguous excluded data points that must exist before downhole exclusion occurs.",
+	"filt_label": "To filtered",
+	"filt_description": "<qt/>Whether or not to apply existing filters to the data before calculating this filter."
+}
