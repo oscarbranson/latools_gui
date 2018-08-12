@@ -8,6 +8,8 @@ import latools as la
 
 from filters.thresholdFilter import ThresholdFilter
 from filters.clusteringFilter import ClusteringFilter
+from filters.correlationFilter import CorrelationFilter
+from filters.defragmentFilter import DefragmentFilter
 
 
 class FilterControls:
@@ -28,7 +30,9 @@ class FilterControls:
 
 		# A list of all of the available filter types
 		self.filterList = ["Threshold",
-						   "Clustering"]
+						   "Clustering",
+						   "Correlation",
+						   "Defragment"]
 
 		# This will hold the contents of the selected filter's json information file
 		self.filterInfo = None
@@ -77,7 +81,7 @@ class FilterControls:
 		self.plusDescription.setReadOnly(True)
 		self.plusDescription.setFixedHeight(180)
 
-		self.plusTab.layout.addWidget(self.plusDescription, 0, 3, 4, 6)
+		self.plusTab.layout.addWidget(self.plusDescription, 0, 3, 4, 8)
 
 		# The Add button for the New Filter
 		self.plusAddButton = QPushButton("Add filter")
@@ -150,6 +154,24 @@ class FilterControls:
 
 			# Here we get the filter description from the json file
 			read_file = open("information/clusteringFilterInfo.json", "r")
+			self.filterInfo = json.load(read_file)
+			read_file.close()
+
+			self.updateDescription(self.filterInfo["filter_name"], self.filterInfo["filter_description"])
+
+		elif self.plusFilterCombo.currentText() == "Correlation":
+
+			# Here we get the filter description from the json file
+			read_file = open("information/correlationFilterInfo.json", "r")
+			self.filterInfo = json.load(read_file)
+			read_file.close()
+
+			self.updateDescription(self.filterInfo["filter_name"], self.filterInfo["filter_description"])
+
+		elif self.plusFilterCombo.currentText() == "Defragment":
+
+			# Here we get the filter description from the json file
+			read_file = open("information/defragmentFilterInfo.json", "r")
 			self.filterInfo = json.load(read_file)
 			read_file.close()
 
@@ -403,6 +425,10 @@ class FilterTab:
 			self.filterType = ThresholdFilter(self)
 		if self.filterName == "Clustering":
 			self.filterType = ClusteringFilter(self)
+		if self.filterName == "Correlation":
+			self.filterType = CorrelationFilter(self)
+		if self.filterName == "Defragment":
+			self.filterType = DefragmentFilter(self)
 
 	def addButton(self, buttonWidget):
 		""" Adds a given button to the right-most Options section """

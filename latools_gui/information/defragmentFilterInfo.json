@@ -1,0 +1,10 @@
+{
+	"filter_name": "Defragment",
+	"filter_description": "Remove ‘fragments’ from the calculated filter",
+	"threshold_label": "Threshold",
+	"threshold_description": "<qt/>Contiguous data regions that contain this number or fewer points are considered ‘fragments’.",
+	"mode_label": "Mode",
+	"mode_description": "<qt/>Specifies wither to ‘include’ or ‘exclude’ the identified fragments.",
+	"filt_label": "To filtered",
+	"filt_description": "<qt/>Whether or not to apply existing filters to the data before calculating this filter."
+}

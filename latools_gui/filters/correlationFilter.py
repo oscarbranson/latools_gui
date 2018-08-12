@@ -1,11 +1,11 @@
-""" A filter for clustering elements """
+""" A filter for correlated elements """
 
 from PyQt5.QtWidgets import *
 
 
-class ClusteringFilter:
+class CorrelationFilter:
 	"""
-	Clustering Filter info
+	Correlation Filter info
 	"""
 	def __init__(self, filterTab):
 
@@ -46,59 +46,64 @@ class ClusteringFilter:
 			self.analyteCheckBoxes["controls"][i].stateChanged.connect(self.controlChecksRegister)
 			self.analyteCheckBoxes["summary"][i].stateChanged.connect(self.summaryChecksRegister)
 
-		# An option for what analyte to base the filter on
-		self.analyteLabel = QLabel(self.filterTab.filterInfo["analyte_label"])
-		self.optionsLayout.addWidget(self.analyteLabel, 0, 0)
-		self.analyteCombo = QComboBox()
-		self.optionsLayout.addWidget(self.analyteCombo, 0, 1)
-		self.analyteCombo.addItem(" ")
+		# An option to select the first analyte
+		self.y_analyteLabel = QLabel(self.filterTab.filterInfo["y_analyte_label"])
+		self.optionsLayout.addWidget(self.y_analyteLabel, 0, 0)
+		self.y_analyteCombo = QComboBox()
+		self.optionsLayout.addWidget(self.y_analyteCombo, 0, 1)
+		self.y_analyteCombo.addItem(" ")
 		for i in range(len(self.filterTab.project.eg.analytes)):
-			self.analyteCombo.addItem(str(self.filterTab.project.eg.analytes[i]))
-		self.analyteLabel.setToolTip(self.filterTab.filterInfo["analyte_description"])
-		self.analyteCombo.setToolTip(self.filterTab.filterInfo["analyte_description"])
+			self.y_analyteCombo.addItem(str(self.filterTab.project.eg.analytes[i]))
+		self.y_analyteLabel.setToolTip(self.filterTab.filterInfo["analyte_description"])
+		self.y_analyteCombo.setToolTip(self.filterTab.filterInfo["analyte_description"])
+
+		# An option to select the second analyte
+		self.x_analyteLabel = QLabel(self.filterTab.filterInfo["x_analyte_label"])
+		self.optionsLayout.addWidget(self.x_analyteLabel, 1, 0)
+		self.x_analyteCombo = QComboBox()
+		self.optionsLayout.addWidget(self.x_analyteCombo, 1, 1)
+		self.x_analyteCombo.addItem(" ")
+		for i in range(len(self.filterTab.project.eg.analytes)):
+			self.x_analyteCombo.addItem(str(self.filterTab.project.eg.analytes[i]))
+		self.x_analyteLabel.setToolTip(self.filterTab.filterInfo["analyte_description"])
+		self.x_analyteCombo.setToolTip(self.filterTab.filterInfo["analyte_description"])
+
+		# The window option
+		self.windowLabel = QLabel(self.filterTab.filterInfo["window_label"])
+		self.windowEdit = QLineEdit()
+		self.windowEdit.setPlaceholderText("None (int)")
+		self.windowEdit.setMaximumWidth(100)
+		self.windowLabel.setToolTip(self.filterTab.filterInfo["window_description"])
+		self.windowEdit.setToolTip(self.filterTab.filterInfo["window_description"])
+		self.optionsLayout.addWidget(self.windowLabel, 2, 0)
+		self.optionsLayout.addWidget(self.windowEdit, 2, 1)
+
+		# The r_threshold option
+		self.r_thresholdLabel = QLabel(self.filterTab.filterInfo["r_threshold_label"])
+		self.r_thresholdEdit = QLineEdit("0.9")
+		self.r_thresholdEdit.setPlaceholderText("float")
+		self.r_thresholdEdit.setMaximumWidth(100)
+		self.r_thresholdLabel.setToolTip(self.filterTab.filterInfo["r_threshold_description"])
+		self.r_thresholdEdit.setToolTip(self.filterTab.filterInfo["r_threshold_description"])
+		self.optionsLayout.addWidget(self.r_thresholdLabel, 0, 2)
+		self.optionsLayout.addWidget(self.r_thresholdEdit, 0, 3)
+
+		# The p_threshold option
+		self.p_thresholdLabel = QLabel(self.filterTab.filterInfo["p_threshold_label"])
+		self.p_thresholdEdit = QLineEdit("0.05")
+		self.p_thresholdEdit.setPlaceholderText("float")
+		self.p_thresholdEdit.setMaximumWidth(100)
+		self.p_thresholdLabel.setToolTip(self.filterTab.filterInfo["p_threshold_description"])
+		self.p_thresholdEdit.setToolTip(self.filterTab.filterInfo["p_threshold_description"])
+		self.optionsLayout.addWidget(self.p_thresholdLabel, 1, 2)
+		self.optionsLayout.addWidget(self.p_thresholdEdit, 1, 3)
 
 		# The filt check box
 		self.filtCheckBox = QCheckBox(self.filterTab.filterInfo["filt_label"])
 		self.filtCheckBox.setToolTip(self.filterTab.filterInfo["filt_description"])
-		self.optionsLayout.addWidget(self.filtCheckBox, 0, 2)
-		self.filtCheckBox.setMinimumWidth(120)
-
-		# The method of clustering algorithm used
-		self.methodLabel = QLabel(self.filterTab.filterInfo["method_label"])
-		self.methodCombo = QComboBox()
-		self.methodLabel.setToolTip(self.filterTab.filterInfo["method_description"])
-		self.methodCombo.setToolTip(self.filterTab.filterInfo["method_description"])
-		self.methods = ["meanshift", "kmeans", "DBSCAN"]
-		for s in self.methods:
-			self.methodCombo.addItem(s)
-		self.optionsLayout.addWidget(self.methodLabel, 1, 0)
-		self.optionsLayout.addWidget(self.methodCombo, 1, 1)
-
-		# The normalise check box
-		self.normaliseCheckBox = QCheckBox(self.filterTab.filterInfo["normalise_label"])
-		self.normaliseCheckBox.setToolTip(self.filterTab.filterInfo["normalise_description"])
-		self.optionsLayout.addWidget(self.normaliseCheckBox, 1, 2)
-
-		# The time check box
-		self.timeCheckBox = QCheckBox(self.filterTab.filterInfo["time_label"])
-		self.timeCheckBox.setToolTip(self.filterTab.filterInfo["time_description"])
-		self.optionsLayout.addWidget(self.timeCheckBox, 0, 3)
-
-		# The sort check box
-		self.sortCheckBox = QCheckBox(self.filterTab.filterInfo["sort_label"])
-		self.sortCheckBox.setToolTip(self.filterTab.filterInfo["sort_description"])
-		self.optionsLayout.addWidget(self.sortCheckBox, 1, 3)
-
-		# The minimum data points option
-		self.minLabel = QLabel(self.filterTab.filterInfo["min_label"])
-		self.minEdit = QLineEdit()
-		self.minEdit.setPlaceholderText("int")
-		self.minEdit.setMaximumWidth(100)
-		self.minLabel.setToolTip(self.filterTab.filterInfo["min_description"])
-		self.minEdit.setToolTip(self.filterTab.filterInfo["min_description"])
-		self.optionsLayout.addWidget(self.minLabel, 2, 0)
-		self.optionsLayout.addWidget(self.minEdit, 2, 1)
-
+		self.optionsLayout.addWidget(self.filtCheckBox, 2, 2, 1, 2)
+		#self.filtCheckBox.setMinimumWidth(120)
+		self.filtCheckBox.setChecked(True)
 
 		# We add a stretch that will fill any extra space on the right-most column
 		self.optionsLayout.setColumnStretch(4, 1)
@@ -163,23 +168,42 @@ class ClusteringFilter:
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
 
-		if self.analyteCombo.currentText() == " ":
-			self.raiseError("You must select an analyte to apply the filter to")
+		if self.y_analyteCombo.currentText() == " ":
+			self.raiseError("You must select a Y analyte to apply the filter to.")
+			return
+
+		if self.x_analyteCombo.currentText() == " ":
+			self.raiseError("You must select a X analyte to apply the filter to.")
+			return
+
+		window = None
+		if self.windowEdit.text() != "":
+			try:
+				window = int(self.windowEdit.text())
+			except:
+				self.raiseError("The " + self.filterTab.filterInfo["window_label"] + " value must be an integer.")
+				return
+
+		try:
+			r_threshold = float(self.r_thresholdEdit.text())
+		except:
+			self.raiseError("The " + self.filterTab.filterInfo["r_threshold_label"] +
+							" value must be a floating point number.")
 			return
 
 		try:
-			min = int(self.minEdit.text())
+			p_threshold = float(self.p_thresholdEdit.text())
 		except:
-			self.raiseError("The " + self.filterTab.filterInfo["min_label"] + " value must be an integer")
+			self.raiseError("The " + self.filterTab.filterInfo["p_threshold_label"] +
+							" value must be a floating point number.")
 			return
 
-		self.filterTab.project.eg.filter_clustering(analytes = self.analyteCombo.currentText(),
-													filt = self.filtCheckBox.isChecked(),
-													normalise = self.normaliseCheckBox.isChecked(),
-													method = self.methodCombo.currentText(),
-													include_time = self.timeCheckBox.isChecked(),
-													sort = self.sortCheckBox.isChecked(),
-													min_data = min)
+		self.filterTab.project.eg.filter_correlation(x_analyte = self.x_analyteCombo.currentText(),
+													 y_analyte = self.y_analyteCombo.currentText(),
+													 window = window,
+													 r_threshold = r_threshold,
+													 p_threshold = p_threshold,
+													 filt = self.filtCheckBox.isChecked())
 
 		# To determine the name that LAtools has given the filter, we first take a sample:
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
@@ -207,7 +231,7 @@ class ClusteringFilter:
 
 		# We register our checkbox list for that row
 		self.summaryRow = self.filterTab.summaryTab.registerRow(self.analyteCheckBoxes["summary"],
-															  self.analyteCheckBoxes["controls"])
+																self.analyteCheckBoxes["controls"])
 
 		# We deactivate the create button
 		self.createButton.setEnabled(False)
@@ -225,11 +249,12 @@ class ClusteringFilter:
 		if self.created:
 
 			for i in range(len(self.filterTab.project.eg.analytes)):
-				# We update for the "Above" filter
 				# If the checkbox is not unchecked...
 				if self.analyteCheckBoxes["summary"][i].checkState() != 0:
+					# We switch the filter on for that analyte
 					self.filterTab.project.eg.filter_on(self.filtName, self.filterTab.project.eg.analytes[i])
 				else:
+					# We switch the filter off for that analyte
 					self.filterTab.project.eg.filter_off(self.filtName, self.filterTab.project.eg.analytes[i])
 
 	def crossPlotClick(self):
