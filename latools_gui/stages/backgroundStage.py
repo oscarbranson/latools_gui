@@ -263,7 +263,7 @@ class BackgroundStage():
 			# The actual call to the analyse object for this stage is run, using the stage values as parameters
 			try:
 				# logging 
-				logger.info('Executing stage Import with stage variables: [weight_fwhm]:{}\n[n_min]:{}\n[n_max]:{}\n[cstep]:{}\n[bkg_filter]:{}\n[f_win]:{}\n[f_n_lim]:{}\n'.format( myweight,
+				self.logger.info('Executing stage Import with stage variables: [weight_fwhm]:{}\n[n_min]:{}\n[n_max]:{}\n[cstep]:{}\n[bkg_filter]:{}\n[f_win]:{}\n[f_n_lim]:{}\n'.format( myweight,
 																								     myn_min,
 																								     myn_max,
 																								     mycstep,
@@ -280,7 +280,7 @@ class BackgroundStage():
 								      f_win=myf_win,
 								      f_n_lim=myf_n_lim)
 			except:
-				self.logger.exception()
+				self.logger.exception("Exception in background stage:")
 				self.raiseError("A problem occurred. There may be a problem with the input values.")
 				return
 		else:

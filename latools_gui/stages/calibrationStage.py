@@ -153,7 +153,7 @@ class CalibrationStage():
 		try:
                         #Logging
                         
-			logger.info('Executing stage Import with stage variables: [drift_correct]:{}\n[srms_used]:{}\n[zero_intercept]:{}\n[n_min]:{}\n'.format( self.drift_correctOption.isChecked(),
+			self.logger.info('Executing stage Import with stage variables: [drift_correct]:{}\n[srms_used]:{}\n[zero_intercept]:{}\n[n_min]:{}\n'.format( self.drift_correctOption.isChecked(),
                                                                                                                                                                  srmParam,
                                                                                                                                                                  self.zero_interceptOption.isChecked(),
                                                                                                                                                                  myn_min))
@@ -163,7 +163,7 @@ class CalibrationStage():
 								zero_intercept=self.zero_interceptOption.isChecked(),
 								n_min=myn_min)
 		except:
-			self.logger.exception()
+			self.logger.exception("Exception occured in calibration stage:")
 			self.raiseError("A problem occurred. There may be a problem with the input values.")
 			return
 

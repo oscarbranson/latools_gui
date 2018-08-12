@@ -196,7 +196,7 @@ class AutorangeStage():
 		try:
 
 			# Logging the values
-			logger.info('Executing stage Import with stage variables: [Analyte]:{}\n[gwin]:{}\n[swin]:{}\n[win]:{}\n[on_mult]:{}\n[off_mult]:{}\n'.format( self.analyteBox.currentText(),
+			self.logger.info('Executing stage Import with stage variables: [Analyte]:{}\n[gwin]:{}\n[swin]:{}\n[win]:{}\n[on_mult]:{}\n[off_mult]:{}\n'.format( self.analyteBox.currentText(),
 																			       localGwin,
 																			       localSwin,
 																			       localWin,
@@ -211,7 +211,7 @@ class AutorangeStage():
 								#nbin=localNbin,
 								transform=self.logTransformCheck.isChecked())
 		except:
-			self.logger.exception()
+			self.logger.exception("Exception in autorange stage:")
 			self.raiseError("A problem occurred. There may be a problem with the input values.")
 			return
 

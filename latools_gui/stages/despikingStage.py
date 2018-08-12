@@ -194,12 +194,20 @@ class DespikingStage():
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		try:
 			
-			logger.info('Executing stage Import with stage variables: [expdecay_despiker]:{}\n[exponent]:{}\n[noise_despiker]:{}\n[win]:{}\n[nlim]:{}\n[exponentplot]:{}\n[maxiter]:{}\n'.format( self.pane1expdecayOption.isChecked(),
+			self.logger.info('Executing despiking stags with stage variables: [expdecay_despiker]:{}\n[exponent]:{}\n[noise_despiker]:{}\n[win]:{}\n[nlim]:{}\n[maxiter]:{}\n'.format( self.pane1expdecayOption.isChecked(),
 																									      localExponent,
 																									      self.pane2NoiseOption.isChecked(),
 																									      localWin,
 																									      localNlim,
 																									      localMaxiter))
+
+                        #self.logger.info('Executing despiking stags with stage variables: [expdecay_despiker]:%s\n[exponent]:%s\n[noise_despiker]:%s\n[win]:%s\n[nlim]:%s\n[exponentplot]:%s\n[maxiter]:%s\n' % (self.pane1expdecayOption.isChecked(),
+                         #                                                                                                                                                                                        localExponent,
+                                                                                                                                                                                                                 #self.pane2NoiseOption.isChecked(),
+                                                                                                                                                                                                                 #localWin,
+                                                                                                                                                                                                                 #localNlim,
+                                                                                                                                                                                                                 #localMaxiter))
+
 			self.project.eg.despike(expdecay_despiker=self.pane1expdecayOption.isChecked(),
 								exponent=localExponent,
 								noise_despiker=self.pane2NoiseOption.isChecked(),
@@ -208,7 +216,7 @@ class DespikingStage():
 								exponentplot=False,
 								maxiter=localMaxiter)
 		except:
-			self.logger.exception()
+			self.logger.exception("Problem occured in despiking stage:")
 			self.raiseError("A problem occurred. There may be a problem with the input values.")
 			return
 
