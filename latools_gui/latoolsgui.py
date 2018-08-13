@@ -28,7 +28,41 @@ import logging.config
 
 # List the stages
 STAGES = ["Import","De-Spiking","Autorange","Background","Ratio","Calibration","Filtering"]
-logging.config.fileConfig('logging.conf')
+#logging.config.fileConfig('logging.conf')
+logger = logging.getLogger(__name__)
+logging.config.dictConfig({
+        'version': 1,
+        'formatters': {
+                'stdFormatter': {
+                        'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+                        },
+                },
+        'handlers': {
+                'loghandler': {
+                        'level': 'DEBUG',
+                        'class': 'logging.handlers.TimedRotatingFileHandler',
+                        'formatter': 'stdFormatter',
+                        'filename': 'logs/log.log',
+                        'when': 'midnight',
+                        'backupCount': 2
+                        },
+                'errhandler': {
+                        'level': 'ERROR',
+                        'class': 'logging.FileHandler',
+                        'formatter': 'stdFormatter',
+                        'filename': 'logs/error.log'
+                        },
+                },
+        'loggers': {
+                '': {
+                        'handlers': ['loghandler', 'errhandler'],
+                        'level': 'DEBUG',
+                        'propagate': True
+                        },
+                },
+        
+        })
+
 
 class MainWindow(QMainWindow):
 	"""
