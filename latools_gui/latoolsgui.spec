@@ -8,7 +8,9 @@ extra_datas = [('graphics', 'graphics'),
 		('project/recentProjects.txt', 'project'),
 		('data', 'data'),
 		('latools', 'latools'),
-		('logs', 'logs')]
+		('logs', 'logs'),
+		('logging.conf', ''),
+		('information', 'information')]
 
 hiddenimports = ['pandas._libs.tslibs.timedeltas',
 		'scipy._lib.messagestream',

@@ -6,6 +6,8 @@ import inspect
 import templates.controlsPane as controlsPane
 import json
 import ast
+import sys
+import os
 
 from project.ErrLogger import logged
 import logging
@@ -46,9 +48,17 @@ class DespikingStage():
 		self.defaultParams = self.stageControls.getDefaultParameters(inspect.signature(la.analyse.despike))
 
 		# We import the stage information from a json file
-		read_file = open("information/despikeStageInfo.json", "r")
-		self.stageInfo = json.load(read_file)
-		read_file.close()
+		if getattr(sys, 'frozen', False):
+			# If the program is running as a bundle, then get the relative directory
+			infoFile = os.path.join(os.path.dirname(sys.executable), 'information/despikeStageInfo.json')
+			infoFile = infoFile.replace('\\', '/')
+		else:
+			# Otherwise the program is running in a normal python environment
+			infoFile = "information/despikeStageInfo.json"
+
+		with open(infoFile, "r") as read_file:
+			self.stageInfo = json.load(read_file)
+			read_file.close()
 
 		# We set the title and description for the stage
 

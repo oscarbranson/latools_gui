@@ -3,7 +3,8 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon, QKeyEvent
 from PyQt5.QtCore import Qt
-import sys 
+import sys
+import os
 import latools as la
 
 # Import the templates
@@ -29,6 +30,21 @@ import logging.config
 # List the stages
 STAGES = ["Import","De-Spiking","Autorange","Background","Ratio","Calibration","Filtering"]
 #logging.config.fileConfig('logging.conf')
+
+# Set the appropriate file paths to write logs to
+if getattr(sys, 'frozen', False):
+	# If the program is running as a bundle, then get the relative directory
+	logFile = os.path.join(os.path.dirname(sys.executable), 'logs/log.log')
+	logFile = logFile.replace('\\', '/')
+
+	errorFile = os.path.join(os.path.dirname(sys.executable), 'logs/error.log')
+	errorFile = errorFile.replace('\\', '/')
+else:
+	# Otherwise the program is running in a normal python environment
+	logFile = "logs/log.log"
+	errorFile = "logs/error.log"
+
+# Define logger configuration
 logger = logging.getLogger(__name__)
 logging.config.dictConfig({
         'version': 1,
@@ -42,7 +58,7 @@ logging.config.dictConfig({
                         'level': 'DEBUG',
                         'class': 'logging.handlers.TimedRotatingFileHandler',
                         'formatter': 'stdFormatter',
-                        'filename': 'logs/log.log',
+                        'filename': logFile,
                         'when': 'midnight',
                         'backupCount': 2
                         },
@@ -50,7 +66,7 @@ logging.config.dictConfig({
                         'level': 'ERROR',
                         'class': 'logging.FileHandler',
                         'formatter': 'stdFormatter',
-                        'filename': 'logs/error.log'
+                        'filename': errorFile
                         },
                 },
         'loggers': {

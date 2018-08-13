@@ -2,6 +2,8 @@
 
 from PyQt5.QtWidgets import *
 import json
+import sys
+import os
 import ast
 
 import templates.controlsPane as controlsPane
@@ -43,9 +45,17 @@ class RatioStage():
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
 		# We import the stage information from a json file
-		read_file = open("information/ratioStageInfo.json", "r")
-		self.stageInfo = json.load(read_file)
-		read_file.close()
+		if getattr(sys, 'frozen', False):
+			# If the program is running as a bundle, then get the relative directory
+			infoFile = os.path.join(os.path.dirname(sys.executable), 'information/ratioStageInfo.json')
+			infoFile = infoFile.replace('\\', '/')
+		else:
+			# Otherwise the program is running in a normal python environment
+			infoFile = "information/ratioStageInfo.json"
+
+		with open(infoFile, "r") as read_file:
+			self.stageInfo = json.load(read_file)
+			read_file.close()
 
 		# We set the title and description for the stage
 

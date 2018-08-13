@@ -359,7 +359,15 @@ class RecentProjects:
 		""" Adding a new project to the recent projects list """
 
 		# Open the file
-		recentFile = open("project/recentProjects.txt", "w")
+		if getattr(sys, 'frozen', False):
+			# If the program is running as a bundle, then get the relative directory
+			filename = os.path.join(os.path.dirname(sys.executable), 'project/recentProjects.txt')
+			filename = filename.replace('\\', '/')
+		else:
+			# Otherwise the program is running in a normal python environment
+			filename = "project/recentProjects.txt"
+
+		recentFile = open(filename, "w")
 
 		# Write the new file at the top
 		recentFile.write(name + "*" + location + "\n")
@@ -374,7 +382,15 @@ class RecentProjects:
 	def reorderDropdown(self, index):
 		""" Moves a particular past project to the top of the list """
 
-		recentFile = open("project/recentProjects.txt", "w")
+		if getattr(sys, 'frozen', False):
+			# If the program is running as a bundle, then get the relative directory
+			filename = os.path.join(os.path.dirname(sys.executable), 'project/recentProjects.txt')
+			filename = filename.replace('\\', '/')
+		else:
+			# Otherwise the program is running in a normal python environment
+			filename = "project/recentProjects.txt"
+
+		recentFile = open(filename, "w")
 
 		# The indexed project is written to the top of the list
 		recentFile.write(self.fileContent[index] + "\n")

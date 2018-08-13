@@ -7,6 +7,7 @@ import templates.controlsPane as controlsPane
 import json
 import ast
 import os
+import sys
 
 import time
 
@@ -54,8 +55,20 @@ class ImportStage():
 		# We capture the default parameters for this stage's function call
 		self.defaultParams = self.stageControls.getDefaultParameters(inspect.signature(la.analyse))
 
-		# We import the stage information from a json file
-		with open("information/importStageInfo.json", "r") as read_file:
+		# We import the stage information from a json file and set the default data folder
+		if getattr(sys, 'frozen', False):
+			# If the program is running as a bundle, then get the relative directory
+			infoFile = os.path.join(os.path.dirname(sys.executable), 'information/importStageInfo.json')
+			infoFile = infoFile.replace('\\', '/')
+
+			self.defaultDataFolder = os.path.join(os.path.dirname(sys.executable), "./data/")
+			self.defaultDataFolder = self.defaultDataFolder.replace('\\', '/')
+		else:
+			# Otherwise the program is running in a normal python environment
+			infoFile = "information/importStageInfo.json"
+			self.defaultDataFolder = "./data/"
+
+		with open(infoFile, "r") as read_file:
 			self.stageInfo = json.load(read_file)
 			read_file.close()
 
@@ -74,7 +87,7 @@ class ImportStage():
 		self.optionsGrid.addWidget(self.findDataButton,0,0)
 		self.findDataButton.setToolTip(self.stageInfo["find_data_description"])
 
-		self.fileLocationLine = QLineEdit("./data/")
+		self.fileLocationLine = QLineEdit(self.defaultDataFolder)
 		self.optionsGrid.addWidget(self.fileLocationLine, 0, 1)
 		self.fileLocationLine.setReadOnly(True)
 		self.fileLocationLine.setToolTip(self.stageInfo["find_data_description"])
@@ -220,7 +233,7 @@ class ImportStage():
 	def defaultButtonPress(self):
 
 		params = {
-			"data_folder": "./data/",
+			"data_folder": self.defaultDataFolder,
 			"config": self.defaultParams["config"],
 			"extension": self.defaultParams["extension"],
 			"srm_identifier": self.defaultParams["srm_identifier"]
