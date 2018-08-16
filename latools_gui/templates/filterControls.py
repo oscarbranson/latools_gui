@@ -68,6 +68,9 @@ class FilterControls:
 		self.plusTab.layout.addWidget(self.plusNameField, 0, 1, 1, 2)
 		self.plusNameField.textChanged.connect(self.plusNameEdit)
 
+		# We limit the maximum name length
+		self.plusNameField.setMaxLength(30)
+
 		# The filter type option for the New Filter
 		self.plusFilterLabel = QLabel("Filter")
 		self.plusTab.layout.addWidget(self.plusFilterLabel, 1, 0)
@@ -422,6 +425,15 @@ class FilterTab:
 		# We add a stretch to push down the buttons
 		self.controlButtonsLayout.addStretch(1)
 
+		# We create the control buttons
+		self.crossPlotButton = QPushButton("Cross-plot")
+		self.crossPlotButton.clicked.connect(self.crossPlotClick)
+		self.controlButtonsLayout.addWidget(self.crossPlotButton)
+
+		self.plotButton = QPushButton("Plot")
+		self.plotButton.clicked.connect(self.plotClick)
+		self.controlButtonsLayout.addWidget(self.plotButton)
+
 		# The area for the table of analytes.
 		# TO DO: make this area properly scrollable
 		self.innerWidget = QWidget()
@@ -460,3 +472,10 @@ class FilterTab:
 		""" Adds a given button to the right-most Options section """
 		self.controlButtonsLayout.addWidget(buttonWidget)
 
+	def crossPlotClick(self):
+		""" Activates when the Cross-plot button is pressed """
+		pass
+
+	def plotClick(self):
+		""" Activates when the Plot button is pressed """
+		pass

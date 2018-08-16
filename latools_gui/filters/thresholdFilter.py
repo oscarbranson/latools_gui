@@ -136,15 +136,7 @@ class ThresholdFilter:
 		# We add a stretch that will fill any extra space on the right-most column
 		self.optionsLayout.setColumnStretch(4, 1)
 
-		# We create the control buttons
-		self.crossPlotButton = QPushButton("Cross-plot")
-		self.crossPlotButton.clicked.connect(self.crossPlotClick)
-		self.filterTab.addButton(self.crossPlotButton)
-
-		self.plotButton = QPushButton("Plot")
-		self.plotButton.clicked.connect(self.plotClick)
-		self.filterTab.addButton(self.plotButton)
-
+		# We make the create filter button
 		self.createButton = QPushButton("Create filter")
 		self.createButton.clicked.connect(self.createClick)
 		self.filterTab.addButton(self.createButton)
@@ -398,11 +390,3 @@ class ThresholdFilter:
 			self.percentEdit.setEnabled(True)
 			self.winEdit.setEnabled(True)
 			self.levelCombo.setEnabled(True)
-
-	def crossPlotClick(self):
-		""" Activates when the Cross-plot button is pressed """
-		pass
-
-	def plotClick(self):
-		""" Activates when the Plot button is pressed """
-		pass
