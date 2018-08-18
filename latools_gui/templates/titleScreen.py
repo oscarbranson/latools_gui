@@ -9,6 +9,7 @@ from PyQt5.QtCore import QUrl
 import os
 import sys
 from templates import progressUpdater
+import json
 
 class TitleScreen():
 	"""
@@ -35,7 +36,18 @@ class TitleScreen():
 		self.importListener = None
 		self.nameOK = False
 
-		# self.locationOK = False
+		# We import the user guide location information from a json file
+		if getattr(sys, 'frozen', False):
+			# If the program is running as a bundle, then get the relative directory
+			infoFile = os.path.join(os.path.dirname(sys.executable), 'information/guiInfo.json')
+			infoFile = infoFile.replace('\\', '/')
+		else:
+			# Otherwise the program is running in a normal python environment
+			infoFile = "information/guiInfo.json"
+
+		with open(infoFile, "r") as read_file:
+			self.userGuideDomain = json.load(read_file)
+			read_file.close()
 
 		# The layout is created from the mainWidget
 		self.mainLayout = QVBoxLayout(self.mainWidget)
@@ -295,7 +307,7 @@ class TitleScreen():
 
 	def helpButtonClick(self):
 		""" Link to online user guide """
-		url = QUrl("https://bearisdriving.com/LAtoolsGUIUserGuide/index.html")
+		url = QUrl(self.userGuideDomain["user_manual_domain"] + "LAtoolsGUIUserGuide/index.html")
 		QDesktopServices.openUrl(url)
 
 	def enterPressed(self):
