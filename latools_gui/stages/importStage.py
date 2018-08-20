@@ -170,13 +170,20 @@ class ImportStage():
 
 			# Automatically saves the project if it already has a save location
 			self.project.reSave()
+		except IndexError:
+                        self.logger.exception("Invalid data folder")
+                        errorBox = QMessageBox.critical(self.importStageWidget,
+											"Error",
+											"Please select a folder containing valid .csv data files.",
+										QMessageBox.Ok)
+                        
 		except:
-			self.logger.exception("Error with Importing Data")
+			self.logger.exception("Unhandled error during data import")
 			print("An error occured")
 
 			errorBox = QMessageBox.critical(self.importStageWidget,
-											"""self.stageInfo["general_error_label"]""",
-											"""self.stageInfo["general_error_description"]""",
+											"Error",
+											"An unhandled error has occured. Please see error log for details.",
 										QMessageBox.Ok)
 	#@logged
 	def findDataButtonClicked(self):
