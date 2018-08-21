@@ -459,7 +459,7 @@ class FilterTab:
 
 	def crossPlotClick(self):
 		""" Activates when the Cross-plot button is pressed """
-		pass
+		self.graphPaneObj.showAuxGraph(cross=True)
 
 	def plotClick(self):
 		""" Activates when the Plot button is pressed """
