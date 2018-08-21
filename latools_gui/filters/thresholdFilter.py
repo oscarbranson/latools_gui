@@ -401,7 +401,7 @@ class ThresholdFilter:
 
 	def crossPlotClick(self):
 		""" Activates when the Cross-plot button is pressed """
-		pass
+		self.filterTab.graphPaneObj.showAuxGraph(cross=True)
 
 	def plotClick(self):
 		""" Activates when the Plot button is pressed """
