@@ -1,11 +1,12 @@
 """ This is the main module that builds all aspects of the latools program and runs the GUI."""
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QIcon, QKeyEvent
-from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon, QKeyEvent, QDesktopServices
+from PyQt5.QtCore import Qt, QUrl
 import sys
 import os
 import latools as la
+
 
 # Import the templates
 from templates import titleScreen
@@ -27,7 +28,9 @@ from project.ErrLogger import *
 import logging
 import logging.config
 
-# List the stages
+print("LAtools is currently loading. Please wait. This may take several minutes.")
+
+# List of stages
 STAGES = ["Import","De-Spiking","Autorange","Background","Ratio","Calibration","Filtering"]
 #logging.config.fileConfig('logging.conf')
 
@@ -242,6 +245,11 @@ class MainWindow(QMainWindow):
 		saveFile.setStatusTip('Save your project')
 		saveFile.triggered.connect(self.saveButton)
 
+		exportFile = QAction(QIcon('export.png'), 'Export', self)
+		exportFile.setShortcut('Ctrl+E')
+		exportFile.setStatusTip('Export your data')
+		exportFile.triggered.connect(self.exportButton)
+
 		# loadFile = QAction(QIcon('open.png'), 'Load', self)
 		# #loadFile.setShortcut('Ctrl+L')
 		# loadFile.setStatusTip('Load File')
@@ -256,7 +264,7 @@ class MainWindow(QMainWindow):
 		fileMenu = menubar.addMenu('&File')
 		fileMenu.addAction(saveFile)
 		# fileMenu.addAction(loadFile)
-		# fileMenu.addAction(exportFile)
+		fileMenu.addAction(exportFile)
 		# fileMenu.addAction(exitAct)
 
 		makeConfig = QAction(QIcon('open.png'), 'Make', self)
@@ -273,7 +281,12 @@ class MainWindow(QMainWindow):
 	def exportButton(self):
 		""" Runs the export command on the current running project """
 		if self.project.eg is not None:
-			self.project.eg.minimal_export()
+			self.project.eg.trace_plots()
+			infoBox = QMessageBox.information(self.mainWidget, "Export",
+											   "Your data plots have been saved as pdfs in the reports folder " +
+											   "created on import",
+											   QMessageBox.Ok)
+
 	#@logged
 	def closeEvent(self, event):
 		""" Attempting to close the window is handled here """
@@ -321,6 +334,9 @@ class ConfigWindow(QWidget):
 		self.nameOK = False
 		self.importStage = importStage
 
+		# The location of the config guide
+		self.guideLocation = "https://latools.readthedocs.io/en/latest/users/configuration/index.html"
+
 		# We use a grid layout
 		self.configGrid = QGridLayout(self)
 
@@ -356,6 +372,11 @@ class ConfigWindow(QWidget):
 		self.applyButton.setEnabled(False)
 		self.configGrid.addWidget(self.applyButton, 4, 3)
 		self.applyButton.clicked.connect(self.applyClicked)
+
+		# The guide button that links to info about creating a configuration
+		self.guideButton = QPushButton("Configuration Guide")
+		self.guideButton.clicked.connect(self.guideButtonClick)
+		self.configGrid.addWidget(self.guideButton, 0, 3)
 
 		# A text box that displays the current configurations
 		self.configPrint = QTextEdit()
@@ -413,6 +434,11 @@ class ConfigWindow(QWidget):
 		self.nameOK = self.configName.text() != ""
 		# Can be extended to disallow certain characters in the name field
 		self.applyButton.setEnabled(self.nameOK and self.configData.text() != "" and self.configSrm.text() != "")
+
+	def guideButtonClick(self):
+		""" Link to online user guide """
+		url = QUrl(self.guideLocation)
+		QDesktopServices.openUrl(url)
 
 class ImportListener():
 	""" Handles the passing of information between modules during runtime """

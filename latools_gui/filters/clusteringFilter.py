@@ -99,19 +99,10 @@ class ClusteringFilter:
 		self.optionsLayout.addWidget(self.minLabel, 2, 0)
 		self.optionsLayout.addWidget(self.minEdit, 2, 1)
 
-
 		# We add a stretch that will fill any extra space on the right-most column
 		self.optionsLayout.setColumnStretch(4, 1)
 
 		# We create the control buttons
-		self.crossPlotButton = QPushButton("Cross-plot")
-		self.crossPlotButton.clicked.connect(self.crossPlotClick)
-		self.filterTab.addButton(self.crossPlotButton)
-
-		self.plotButton = QPushButton("Plot")
-		self.plotButton.clicked.connect(self.plotClick)
-		self.filterTab.addButton(self.plotButton)
-
 		self.createButton = QPushButton("Create filter")
 		self.createButton.clicked.connect(self.createClick)
 		self.filterTab.addButton(self.createButton)
@@ -231,11 +222,3 @@ class ClusteringFilter:
 					self.filterTab.project.eg.filter_on(self.filtName, self.filterTab.project.eg.analytes[i])
 				else:
 					self.filterTab.project.eg.filter_off(self.filtName, self.filterTab.project.eg.analytes[i])
-
-	def crossPlotClick(self):
-		""" Activates when the Cross-plot button is pressed """
-		pass
-
-	def plotClick(self):
-		""" Activates when the Plot button is pressed """
-		pass

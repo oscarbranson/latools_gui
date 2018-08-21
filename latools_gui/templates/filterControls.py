@@ -4,6 +4,8 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, QSize, QObject, QMetaObject
 import json
+import sys
+import os
 import latools as la
 
 from filters.thresholdFilter import ThresholdFilter
@@ -67,6 +69,9 @@ class FilterControls:
 		self.plusNameField = QLineEdit()
 		self.plusTab.layout.addWidget(self.plusNameField, 0, 1, 1, 2)
 		self.plusNameField.textChanged.connect(self.plusNameEdit)
+
+		# We limit the maximum name length
+		self.plusNameField.setMaxLength(30)
 
 		# The filter type option for the New Filter
 		self.plusFilterLabel = QLabel("Filter")
@@ -144,64 +149,47 @@ class FilterControls:
 	def plusFilterChange(self):
 		""" Activates when an option is selected in the Add Filter tab's combobox """
 
+		currentFilt = ""
+
 		# We check what was selected
 		if self.plusFilterCombo.currentText() == "Threshold":
-
-			# Here we get the filter description from the json file
-			read_file = open("information/thresholdFilterInfo.json", "r")
-			self.filterInfo = json.load(read_file)
-			read_file.close()
-
-			self.updateDescription(self.filterInfo["filter_name"], self.filterInfo["filter_description"])
+			currentFilt = "information/thresholdFilterInfo.json"
 
 		elif self.plusFilterCombo.currentText() == "Clustering":
-
-			# Here we get the filter description from the json file
-			read_file = open("information/clusteringFilterInfo.json", "r")
-			self.filterInfo = json.load(read_file)
-			read_file.close()
-
-			self.updateDescription(self.filterInfo["filter_name"], self.filterInfo["filter_description"])
+			currentFilt = "information/clusteringFilterInfo.json"
 
 		elif self.plusFilterCombo.currentText() == "Correlation":
-
-			# Here we get the filter description from the json file
-			read_file = open("information/correlationFilterInfo.json", "r")
-			self.filterInfo = json.load(read_file)
-			read_file.close()
-
-			self.updateDescription(self.filterInfo["filter_name"], self.filterInfo["filter_description"])
+			currentFilt = "information/correlationFilterInfo.json"
 
 		elif self.plusFilterCombo.currentText() == "Defragment":
-
-			# Here we get the filter description from the json file
-			read_file = open("information/defragmentFilterInfo.json", "r")
-			self.filterInfo = json.load(read_file)
-			read_file.close()
-
-			self.updateDescription(self.filterInfo["filter_name"], self.filterInfo["filter_description"])
+			currentFilt = "information/defragmentFilterInfo.json"
 
 		elif self.plusFilterCombo.currentText() == "Exclude":
-
-			# Here we get the filter description from the json file
-			read_file = open("information/excludeFilterInfo.json", "r")
-			self.filterInfo = json.load(read_file)
-			read_file.close()
-
-			self.updateDescription(self.filterInfo["filter_name"], self.filterInfo["filter_description"])
+			currentFilt = "information/excludeFilterInfo.json"
 
 		elif self.plusFilterCombo.currentText() == "Trim":
-
-			# Here we get the filter description from the json file
-			read_file = open("information/trimFilterInfo.json", "r")
-			self.filterInfo = json.load(read_file)
-			read_file.close()
-
-			self.updateDescription(self.filterInfo["filter_name"], self.filterInfo["filter_description"])
+			currentFilt = "information/trimFilterInfo.json"
 
 		else:
 			# Otherwise the blank was selected, so we clear the info box
 			self.updateDescription("", "")
+
+		if currentFilt != "":
+			# We import the filter information from a json file
+			if getattr(sys, 'frozen', False):
+				# If the program is running as a bundle, then get the relative directory
+				infoFile = os.path.join(os.path.dirname(sys.executable), currentFilt)
+				infoFile = infoFile.replace('\\', '/')
+			else:
+				# Otherwise the program is running in a normal python environment
+				infoFile = currentFilt
+
+			with open(infoFile, "r") as read_file:
+				self.filterInfo = json.load(read_file)
+				read_file.close()
+
+			# We update the filter description box with the info for the selected filter
+			self.updateDescription(self.filterInfo["filter_name"], self.filterInfo["filter_description"])
 
 		# Only activates the Create button when the name and filter type options are legit
 		if self.plusNameField.text() != "" and self.plusFilterCombo.currentText() != "":
@@ -422,6 +410,15 @@ class FilterTab:
 		# We add a stretch to push down the buttons
 		self.controlButtonsLayout.addStretch(1)
 
+		# We create the control buttons
+		self.crossPlotButton = QPushButton("Cross-plot")
+		self.crossPlotButton.clicked.connect(self.crossPlotClick)
+		self.controlButtonsLayout.addWidget(self.crossPlotButton)
+
+		self.plotButton = QPushButton("Plot")
+		self.plotButton.clicked.connect(self.plotClick)
+		self.controlButtonsLayout.addWidget(self.plotButton)
+
 		# The area for the table of analytes.
 		# TO DO: make this area properly scrollable
 		self.innerWidget = QWidget()
@@ -460,3 +457,10 @@ class FilterTab:
 		""" Adds a given button to the right-most Options section """
 		self.controlButtonsLayout.addWidget(buttonWidget)
 
+	def crossPlotClick(self):
+		""" Activates when the Cross-plot button is pressed """
+		pass
+
+	def plotClick(self):
+		""" Activates when the Plot button is pressed """
+		pass
