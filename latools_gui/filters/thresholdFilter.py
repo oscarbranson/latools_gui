@@ -390,14 +390,3 @@ class ThresholdFilter:
 			self.percentEdit.setEnabled(True)
 			self.winEdit.setEnabled(True)
 			self.levelCombo.setEnabled(True)
-<<<<<<< HEAD
-
-	def crossPlotClick(self):
-		""" Activates when the Cross-plot button is pressed """
-		self.filterTab.graphPaneObj.showAuxGraph(cross=True)
-
-	def plotClick(self):
-		""" Activates when the Plot button is pressed """
-		pass
-=======
->>>>>>> 68a7524405ca6d34164da739831013f562c83f15
