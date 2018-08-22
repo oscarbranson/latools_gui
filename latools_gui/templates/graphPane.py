@@ -1149,6 +1149,7 @@ class Crossplot(GraphWindow):
 				a2 = udict[a][1]
 				a2 = a2.replace("$^{", "<sup>")
 				a2 = a2.replace("}$", "</sup>")
+				a2 = a2.replace("$\mu$", "&mu;")
 				print(a2)
 				item = pg.TextItem(anchor=(0.5,0.5), html='<div style="text-align: center"><span style="color: #000;font-size:8em;">%(txt)s</span></div>'%{"txt": a + '<br />' + a2})
 				view = pg.GraphicsView()
