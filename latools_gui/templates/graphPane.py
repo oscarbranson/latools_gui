@@ -6,9 +6,11 @@ from PyQt5.QtCore import Qt
 
 import latools.helpers as helpers
 import re
+import itertools
 import pyqtgraph as pg
 import numpy as np
 import uncertainties.unumpy as un
+import matplotlib.pyplot as plt
 from functools import partial
 
 class GraphPane():
@@ -46,6 +48,7 @@ class GraphPane():
 		self.graph = MainGraph(project)
 		self.bkgGraph = BkgGraph(project)
 		self.caliGraph = CaliGraph(project)
+		self.crossPlot = Crossplot(project)
 
 		#  We add the graph to the pane and set minimum dimensions
 		self.graphLayout.addWidget(self.graph)
@@ -83,6 +86,7 @@ class GraphPane():
 		if importing:
 			self.graph.initialiseGraph()
 			self.bkgGraph.initialiseGraph()
+			self.crossPlot.initialiseGraph()
 		self.graph.updateFocus(showRanges)
 		self.graph.hideInternalStandard()
 
@@ -92,12 +96,16 @@ class GraphPane():
 		else:
 			self.bkgGraph.populateGraph()
 
-	def showAuxGraph(self, bkg=False, cali=False):
+	def showAuxGraph(self, bkg=False, cali=False, cross=False):
 		if bkg:
 			self.bkgGraph.showGraph()
-		elif cali:
+		if cali:
 			self.caliGraph.populateGraph()
 			self.caliGraph.showGraph()
+		if cross:
+			self.crossPlot.startup()
+			self.crossPlot.showGraph()
+
 
 class GraphWindow(QWidget):
 	def __init__(self, project):
@@ -113,7 +121,8 @@ class GraphWindow(QWidget):
 		"""
 		super().__init__()
 		self.project = project
-		self.graphs = []
+		self.graphs = {}
+		self.graphWins = []
 		self.graphLines = {}
 		self.highlightedAnalytes = []
 		self.currentInternalStandard = None
@@ -152,6 +161,8 @@ class GraphWindow(QWidget):
 		samplesLayout.setAlignment(Qt.AlignTop)
 		samples.setLayout(samplesLayout)
 
+		self.samplesLayout = samplesLayout
+
 		# Add List widget
 		sampleList = QListWidget()
 		sampleList.setMaximumWidth(100)
@@ -171,6 +182,9 @@ class GraphWindow(QWidget):
 		samplesLayout.addWidget(yLogCheckBox)
 
 		self.yLogCheckBox = yLogCheckBox
+
+	def updateLogScale(self):
+		pass
 
 	def initialiseLegend(self):
 		# Add setting to the layout
@@ -289,7 +303,7 @@ class MainGraph(GraphWindow):
 		pg.setConfigOption('foreground', 'k')
 		graph = pg.PlotWidget()
 
-		self.graphs.append(graph)
+		self.graphWins.append(graph)
 
 		self.layout.addWidget(graph, 1)
 		###
@@ -304,7 +318,7 @@ class MainGraph(GraphWindow):
 		dat = self.project.eg.data[self.sampleName]
 
 		for key, line in self.graphLines.items():
-			for graph in self.graphs:
+			for graph in self.graphWins:
 				graph.removeItem(line)
 
 		for analyte in dat.analytes:
@@ -315,7 +329,7 @@ class MainGraph(GraphWindow):
 			line.curve.sigClicked.connect(partial(self.onClickLine, analyte))
 			self.graphLines[analyte] = line
 
-			for graph in self.graphs:
+			for graph in self.graphWins:
 				graph.addItem(line)
 	
 	# draw labels
@@ -333,7 +347,7 @@ class MainGraph(GraphWindow):
 		if self.focusStage in ['ratios', 'calibrated']:
 			ylabel.format(self.project.eg.internal_standard)
 
-		for graph in self.graphs:
+		for graph in self.graphWins:
 			graph.setLabel('left', ylabel)
 			graph.setLabel('bottom', 'Time', units='s')
 		
@@ -373,7 +387,7 @@ class MainGraph(GraphWindow):
 		"""
 		When log(y) checkbox is modified, update y-axis scale
 		"""
-		for graph in self.graphs:
+		for graph in self.graphWins:
 			graph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
 		self.updateLines()
 
@@ -400,12 +414,12 @@ class MainGraph(GraphWindow):
 			self.graphLines[analyte].curve.setData(x=x, y=y)
 
 		# this plots the ranges after 'autorange' calculation
-		for graph in self.graphs:
+		for graph in self.graphWins:
 			for gRange in self.ranges:
 				graph.removeItem(gRange)
 				
 		if self.showRanges:
-			for graph in self.graphs:
+			for graph in self.graphWins:
 				for lims in dat.bkgrng:
 					self.addRegion(graph, lims, pg.mkBrush((255,0,0,25)))
 				for lims in dat.sigrng:
@@ -465,7 +479,7 @@ class MainGraph(GraphWindow):
 		"""
 		newWin = pg.PlotWidget(title=self.sampleName)
 		newWin.setWindowTitle("LAtools Graph")
-		self.graphs.append(newWin)
+		self.graphWins.append(newWin)
 		self.initialiseGraph()
 
 		# self.updateGraphs(ranges=self.ranges)
@@ -505,7 +519,7 @@ class BkgGraph(GraphWindow):
 			Clears the elements in the graph, populates the samples list and legend with items
 		"""
 		self.populated = False
-		for graph in self.graphs:
+		for graph in self.graphWins:
 			graph.clear()
 		self.populateSamples()
 		self.populateLegend()
@@ -630,7 +644,7 @@ class BkgGraph(GraphWindow):
 		for item in self.graphLines[analyte]:
 			item.setVisible(self.legendEntries[analyte].isChecked())
 
-		for graph in self.graphs:
+		for graph in self.graphWins:
 			box = graph.getViewBox()
 			box.update()
 
@@ -639,7 +653,7 @@ class BkgGraph(GraphWindow):
 		"""
 			When log(y) checkbox is modified, update y-axis scale
 		"""
-		for graph in self.graphs:
+		for graph in self.graphWins:
 			graph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
 		self.populateGraph()
 
@@ -712,8 +726,7 @@ class CaliGraph(GraphWindow):
 		"""
 			Populations the window's grid layout with graphs of each analyte (excluding the internal standard)
 		"""
-		#for cell in self.graphs:
-		#	cell.deleteLater()
+
 		dat = self.project.eg
 		analytes = [a for a in dat.analytes if dat.internal_standard not in a]
 
@@ -944,6 +957,347 @@ class CaliGraph(GraphWindow):
 		
 		self.populated = True
 		self.scroll.setWidget(self.graph)
+
+	def showGraph(self):
+		"""
+			Display graph window
+		"""
+		self.showMaximized()
+
+class Crossplot(GraphWindow):
+	def __init__(self, project):
+		super().__init__(project)
+		self.lognorm = True
+		self.bins = 25
+		self.samples = None
+		self.subset = None
+		self.colourful = True
+
+		self.cells = {}
+		self.labels = {}
+
+		# Initialise samples menu
+		self.initialiseSamples()
+		self.yLogCheckBox.hide()
+
+		filtCheckBox = QCheckBox()
+		filtCheckBox.setMaximumWidth(100)
+		filtCheckBox.setText('filt')
+		filtCheckBox.setChecked(False)
+		filtCheckBox.stateChanged.connect(self.updateFilt)
+		self.filtCheckBox = filtCheckBox
+		self.samplesLayout.addWidget(filtCheckBox)
+
+		scatterCheckBox = QCheckBox()
+		scatterCheckBox.setMaximumWidth(100)
+		scatterCheckBox.setText('scatter')
+		scatterCheckBox.setChecked(False)
+		scatterCheckBox.stateChanged.connect(self.updateScatter)
+		self.scatterCheckBox = scatterCheckBox
+		self.samplesLayout.addWidget(scatterCheckBox)
+
+		self.setWindowTitle("LAtools Crossplot")
+
+		# Create scollable area that holds all the elements of the window
+		scrollMain = QScrollArea()
+		scrollMain.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+		scrollMain.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+		scrollMain.setWidgetResizable(True)
+
+		self.scrollMain = scrollMain
+
+		self.layout.addWidget(scrollMain, 1)
+
+		# Initialise Legend
+		self.initialiseLegend()
+
+	def initialiseGraph(self):
+		self.populateSamples()
+
+	def startup(self):
+		self.createCrossplot(False, 'hist2d')
+		self.scrollMain.setWidget(self.graphs['allFalsehist2d']['grid'])
+		self.sampleList.setCurrentItem(self.sampleList.item(0))
+	
+	def createCrossplot(self, filt, mode):
+		if not 'all'+str(filt)+mode in self.graphs:
+			dat = self.project.eg
+			analytes = dat.analytes
+			cmap = dat.cmaps
+
+			if dat.focus_stage in ['ratio', 'calibrated']:
+				analytes = [a for a in analytes if dat.internal_standard not in a]
+
+			# set up colour scales
+			if self.colourful:
+				cmlist = ['Blues', 'BuGn', 'BuPu', 'GnBu',
+							'Greens', 'Greys', 'Oranges', 'OrRd',
+							'PuBu', 'PuBuGn', 'PuRd', 'Purples',
+							'RdPu', 'Reds', 'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd']
+			else:
+				cmlist = ['Greys']
+
+			#AnalyteObject
+
+			grid = self.initialiseGrid('all'+str(filt)+mode)
+
+			# sort analytes
+			try:
+				analytes = sorted(analytes, key=lambda x: float(re.findall('[0-9.-]+', x)[0]))
+			except IndexError:
+				analytes = sorted(analytes)
+
+			dat.get_focus(filt=filt, samples=self.samples, subset=self.subset)
+
+			numvars = len(analytes)
+			"""
+			fig, axes = plt.subplots(nrows=numvars, ncols=numvars,
+									figsize=(12, 12))
+			fig.subplots_adjust(hspace=0.05, wspace=0.05)
+
+			for ax in axes.flat:
+				ax.xaxis.set_visible(False)
+				ax.yaxis.set_visible(False)
+
+				if ax.is_first_col():
+					ax.yaxis.set_ticks_position('left')
+				if ax.is_last_col():
+					ax.yaxis.set_ticks_position('right')
+				if ax.is_first_row():
+					ax.xaxis.set_ticks_position('top')
+				if ax.is_last_row():
+					ax.xaxis.set_ticks_position('bottom')
+			"""
+
+			if cmap is None and self.mode == 'scatter':
+				cmap = {k: 'k' for k in dat.analytes()}
+
+			while len(cmlist) < len(analytes):
+				cmlist *= 2
+
+			# isolate nominal_values for all analytes
+			focus = {k: helpers.stat_fns.nominal_values(dat.focus[k]) for k in analytes}
+			# determine units for all analytes
+			udict = {a: helpers.helpers.unitpicker(np.nanmean(focus[a]),
+								focus_stage=dat.focus_stage,
+								denominator=dat.internal_standard) for a in analytes}
+
+			axes = np.zeros((numvars, numvars))
+			
+			for i, j in zip(*np.triu_indices_from(axes, k=1)):
+				# get analytes
+				ai = analytes[i]
+				aj = analytes[j]
+
+				# remove nan, apply multipliers
+				pi = focus[ai] * udict[ai][0]
+				pj = focus[aj] * udict[aj][0]
+
+				# determine normalisation shceme
+				if self.lognorm:
+					norm = True
+				else:
+					norm = False
+
+				# draw plots
+				if mode == 'hist2d':
+					# remove nan
+					pi = pi[~np.isnan(pi)]
+					pj = pj[~np.isnan(pj)]
+					
+					h = np.histogram2d(pj, pi, self.bins, normed = norm)
+					item = pg.ImageItem(image=h[0], autoLevels=True)
+					view1 = pg.GraphicsView()
+					box = pg.ViewBox()
+					box.setMouseEnabled(False, False)
+					box.addItem(item)
+					box.setAspectLocked(False)
+					box.setRange(xRange=[0, h[0].shape[0]], yRange=[0, h[0].shape[1]])
+					view1.setCentralItem(box)
+
+					self.cells[('all'+mode, (i, j))] = box
+					
+
+					h = np.histogram2d(pi, pj, self.bins, normed = norm)
+					item = pg.ImageItem(image=h[0])
+					view2 = pg.GraphicsView()
+					box = pg.ViewBox()
+					box.setMouseEnabled(False, False)
+					box.addItem(item)
+					box.setAspectLocked(False)
+					box.setRange(xRange=[0, h[0].shape[0]], yRange=[0, h[0].shape[1]])
+					view2.setCentralItem(box)
+
+					self.cells[('all'+mode, (j, i))] = box
+
+					grid['gridLayout'].addWidget(view1, i, j)
+					grid['gridLayout'].addWidget(view2, j, i)
+
+				elif mode == 'scatter':
+					axes[i, j].scatter(pj, pi, s=10,
+									c=cmap[ai], lw=0.5, edgecolor='k',
+									alpha=0.4)
+					axes[j, i].scatter(pi, pj, s=10,
+									c=cmap[aj], lw=0.5, edgecolor='k',
+									alpha=0.4)
+				else:
+					raise ValueError("invalid mode. Must be 'hist2d' or 'scatter'.")
+
+
+			# diagonal labels
+			for a, n in zip(analytes, np.arange(len(analytes))):
+				a2 = udict[a][1]
+				a2 = a2.replace("$^{", "<sup>")
+				a2 = a2.replace("}$", "</sup>")
+				a2 = a2.replace("$\mu$", "&mu;")
+				print(a2)
+				item = pg.TextItem(anchor=(0.5,0.5), html='<div style="text-align: center"><span style="color: #000;font-size:8em;">%(txt)s</span></div>'%{"txt": a + '<br />' + a2})
+				view = pg.GraphicsView()
+				box = pg.ViewBox()
+				box.autoRange()
+				box.setMouseEnabled(False, False)
+				box.addItem(item)
+				item.setPos(0.5, 0.5)
+				view.setCentralItem(box)
+
+				self.labels[('all'+mode, n)] = item
+				self.cells[('all'+mode, (n, n))] = box
+				grid['gridLayout'].addWidget(view, n, n)
+
+			"""
+			# switch on alternating axes
+			for i, j in zip(range(numvars), itertools.cycle((-1, 0))):
+				axes[j, i].xaxis.set_visible(True)
+				for label in axes[j, i].get_xticklabels():
+					label.set_rotation(90)
+				axes[i, j].yaxis.set_visible(True)
+			"""
+
+
+	def createCrossplotDat(self, filt, mode):
+		#DatObject
+		for sample in dat.samples:
+			sampleObj = dat.data[sample]
+
+			numvars = len(analytes)
+			fig, axes = plt.subplots(nrows=numvars, ncols=numvars,
+									figsize=(12, 12))
+			fig.subplots_adjust(hspace=0.05, wspace=0.05)
+
+			for ax in axes.flat:
+				ax.xaxis.set_visible(False)
+				ax.yaxis.set_visible(False)
+
+				if ax.is_first_col():
+					ax.yaxis.set_ticks_position('left')
+				if ax.is_last_col():
+					ax.yaxis.set_ticks_position('right')
+				if ax.is_first_row():
+					ax.xaxis.set_ticks_position('top')
+				if ax.is_last_row():
+					ax.xaxis.set_ticks_position('bottom')
+
+			while len(cmlist) < len(analytes):
+				cmlist *= 2
+
+			udict = {}
+			for i, j in zip(*np.triu_indices_from(axes, k=1)):
+				for x, y in [(i, j), (j, i)]:
+					# set unit multipliers
+					mx, ux = unitpicker(np.nanmean(sampleObj.focus[analytes[x]]),
+										denominator=dat.internal_standard,
+										focus_stage=dat.focus_stage)
+					my, uy = unitpicker(np.nanmean(sampleObj.focus[analytes[y]]),
+										denominator=dat.internal_standard,
+										focus_stage=dat.focus_stage)
+					udict[analytes[x]] = (x, ux)
+
+					# get filter
+					ind = (self.filt.grab_filt(filt, analytes[x]) &
+						self.filt.grab_filt(filt, analytes[y]) &
+						~np.isnan(sampleObj.focus[analytes[x]]) &
+						~np.isnan(sampleObj.focus[analytes[y]]))
+
+					# make plot
+					pi = sampleObj.focus[analytes[x]][ind] * mx
+					pj = sampleObj.focus[analytes[y]][ind] * my
+
+					# determine normalisation shceme
+					if lognorm:
+						norm = mpl.colors.LogNorm()
+					else:
+						norm = None
+
+					# draw plots
+					axes[i, j].hist2d(pj, pi, self.bins,
+									norm=norm,
+									cmap=plt.get_cmap(cmlist[i]))
+					axes[j, i].hist2d(pi, pj, self.bins,
+									norm=norm,
+									cmap=plt.get_cmap(cmlist[j]))
+
+					axes[x, y].set_ylim([pi.min(), pi.max()])
+					axes[x, y].set_xlim([pj.min(), pj.max()])
+			# diagonal labels
+			for a, (i, u) in udict.items():
+				axes[i, i].annotate(a + '\n' + u, (0.5, 0.5),
+									xycoords='axes fraction',
+									ha='center', va='center')
+			# switch on alternating axes
+			for i, j in zip(range(numvars), itertools.cycle((-1, 0))):
+				axes[j, i].xaxis.set_visible(True)
+				for label in axes[j, i].get_xticklabels():
+					label.set_rotation(90)
+				axes[i, j].yaxis.set_visible(True)
+
+			axes[0, 0].set_title(self.sample, weight='bold', x=0.05, ha='left')
+
+		
+
+	def initialiseGrid(self, key):
+		# Initialise Grid that contains all the analyte graphs
+		grid = QWidget()
+		gridLayout = QGridLayout()
+		gridLayout.setSpacing(0)
+		grid.setLayout(gridLayout)
+		minSize = grid.minimumSize()
+		minSize.scale(1000, 1000, Qt.KeepAspectRatio)
+		grid.setMinimumSize(minSize)
+
+		grid = { 'grid': grid, 'gridLayout': gridLayout}
+
+		self.graphs[key] = grid
+
+		return grid
+	
+	# populate sample list
+	def populateSamples(self):
+		"""
+			Updates the list of available samples from the dataset viewable on the graph
+		"""
+
+		samples = self.project.eg.samples
+		self.sampleName = samples[0]
+
+		self.sampleList.clear()
+		self.sampleList.addItem("ALL")
+		for sample in samples:
+			self.sampleList.addItem(sample)
+
+	def swapSample(self):
+		"""
+			sets current sample to selected sample
+		"""
+		selectedSamples = self.sampleList.selectedItems()
+		if len(selectedSamples) > 0:
+			selectedSample = selectedSamples[0]
+			self.sampleName = selectedSample.text()
+
+	def updateFilt(self):
+		pass
+
+	def updateScatter(self):
+		pass
 
 	def showGraph(self):
 		"""
