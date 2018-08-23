@@ -171,13 +171,14 @@ class ImportStage():
 			# Automatically saves the project if it already has a save location
 			self.project.reSave()
 
-                except IOError:
-                        self.logger.exception("Error with Importing Data")
-                        
+		except IOError: ## IO error seems obvious as we are importing data.
+			self.logger.exception("Error with Importing Data")
+			
 			errorBox = QMessageBox.critical(self.importStageWidget,
 											"""self.stageInfo["Import Error!"]""",
 											"""self.stageInfo["Unable to correctly access your data!"]""",
 										QMessageBox.Ok)
+		
 		except:
 			self.logger.exception("Error with Importing Data")
 			print("An error occured")
