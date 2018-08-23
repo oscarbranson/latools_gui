@@ -221,7 +221,7 @@ class BackgroundStage():
 				try:
 					myweight = float(self.weight_fwhmOption.text())
 				except:
-					self.logger.exception()
+					self.logger.exception("Invalid value")
 					self.raiseError("The 'weight_fwhm' value must be a floating point number")
 					return
 
@@ -230,7 +230,7 @@ class BackgroundStage():
 				try:
 					myn_min = int(self.n_minOption.text())
 				except:
-					self.logger.exception()
+					self.logger.exception("Invalid value")
 					self.raiseError("The 'n_min' value must be an integer")
 					return
 
@@ -239,7 +239,7 @@ class BackgroundStage():
 				try:
 					myn_max = int(self.n_maxOption.text())
 				except:
-					self.logger.exception()
+					self.logger.exception("Invalid value")
 					self.raiseError("The 'n_max' value must be an integer")
 					return
 
@@ -248,7 +248,7 @@ class BackgroundStage():
 				try:
 					mycstep = float(self.cstepOption.text())
 				except:
-					self.logger.exception()
+					self.logger.exception("Invalid value")
 					self.raiseError("The 'cstep' value must be a floating point number")
 					return
 
@@ -257,7 +257,7 @@ class BackgroundStage():
 				try:
 					myf_win = int(self.f_winOption.text())
 				except:
-					self.logger.exception()
+					self.logger.exception("Invalid value")
 					self.raiseError("The 'f_win' value must be an integer")
 					return
 
@@ -266,7 +266,7 @@ class BackgroundStage():
 				try:
 					myf_n_lim = int(self.f_n_limOption.text())
 				except:
-					self.logger.exception()
+					self.logger.exception("Invalid value")
 					self.raiseError("The 'f_n_lim' value must be an integer")
 					return
 
