@@ -1,6 +1,7 @@
 """ A stage of the program that defines and executes one step of the data-processing """
 
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
@@ -157,6 +158,14 @@ class DespikingStage():
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
 
+		self.pane1Exponent.setValidator(QDoubleValidator())
+
+		self.pane2win.setValidator(QDoubleValidator())
+
+		self.pane2nlim.setValidator(QDoubleValidator())
+
+		self.pane2Maxiter.setValidator(QIntValidator())
+		
 		self.logger=logging.getLogger(__name__)
 		self.logger.info('Initialised despiking stage')
 	#@logged
@@ -201,6 +210,7 @@ class DespikingStage():
 				self.raiseError("The 'maxiter' value must be an integer")
 				return
 
+                
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		try:
 			
@@ -211,13 +221,7 @@ class DespikingStage():
 																									      localNlim,
 																									      localMaxiter))
 
-                        #self.logger.info('Executing despiking stags with stage variables: [expdecay_despiker]:%s\n[exponent]:%s\n[noise_despiker]:%s\n[win]:%s\n[nlim]:%s\n[exponentplot]:%s\n[maxiter]:%s\n' % (self.pane1expdecayOption.isChecked(),
-                         #                                                                                                                                                                                        localExponent,
-                                                                                                                                                                                                                 #self.pane2NoiseOption.isChecked(),
-                                                                                                                                                                                                                 #localWin,
-                                                                                                                                                                                                                 #localNlim,
-                                                                                                                                                                                                                 #localMaxiter))
-
+                                                                                                                                                                                                             
 			self.project.eg.despike(expdecay_despiker=self.pane1expdecayOption.isChecked(),
 								exponent=localExponent,
 								noise_despiker=self.pane2NoiseOption.isChecked(),

@@ -1,7 +1,7 @@
 """ A stage of the program that defines and executes one step of the data-processing """
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QDesktopServices
+from PyQt5.QtGui import QDesktopServices, QIntValidator
 from PyQt5.QtCore import QUrl, Qt
 import latools as la
 import inspect
@@ -12,7 +12,7 @@ import sys
 import ast
 
 
-from project.ErrLogger import logged
+#from project.ErrLogger import logged
 import logging
 
 class CalibrationStage():
@@ -137,9 +137,12 @@ class CalibrationStage():
 		self.stageControls.addApplyButton(self.applyButton)
 		# self.applyButton.setEnabled(False)
 
+		#Logger
 		self.logger = logging.getLogger(__name__)
 		self.logger.info('initialised calibration')
 
+		#Validation
+		self.n_minOption.setValidator(QIntValidator())
 
 	#@logged
 	def pressedApplyButton(self):
@@ -161,12 +164,12 @@ class CalibrationStage():
 
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		try:
-                        #Logging
-                        
+			#Logging
+			
 			self.logger.info('Executing stage Import with stage variables: [drift_correct]:{}\n[srms_used]:{}\n[zero_intercept]:{}\n[n_min]:{}\n'.format( self.drift_correctOption.isChecked(),
-                                                                                                                                                                 srmParam,
-                                                                                                                                                                 self.zero_interceptOption.isChecked(),
-                                                                                                                                                                 myn_min))
+																				 srmParam,
+																				 self.zero_interceptOption.isChecked(),
+																				 myn_min))
 			self.project.eg.calibrate(analytes=None,
 								drift_correct=self.drift_correctOption.isChecked(),
 								srms_used=srmParam,
