@@ -165,10 +165,9 @@ class ImportStage():
 			# Automatically saves the project if it already has a save location
 			self.project.reSave()
 
-			errorBox = QMessageBox.critical(self.importStageWidget,
-											"Error",
-											"The operation completed successfully.",
-										QMessageBox.Ok)
+		except IOError: ## IO error seems obvious as we are importing data.
+			self.logger.exception("Error with Importing Data")
+			
 		except IndexError:
                         self.logger.exception("Invalid data folder")
                         errorBox = QMessageBox.critical(self.importStageWidget,

@@ -179,7 +179,7 @@ class DespikingStage():
 			try:
 				localExponent = float(self.pane1Exponent.text())
 			except:
-				self.logger.exception()
+				self.logger.exception("value fail")
 				self.raiseError("The exponent value must be a floating point number")
 				return
 
@@ -188,7 +188,7 @@ class DespikingStage():
 			try:
 				localWin = float(self.pane2win.text())
 			except:
-				self.logger.exception()
+				self.logger.exception("value fail")
 				self.raiseError("The 'win' value must be a floating point number")
 				return
 
@@ -197,7 +197,7 @@ class DespikingStage():
 			try:
 				localNlim = float(self.pane2nlim.text())
 			except:
-				self.logger.exception()
+				self.logger.exception("value fail")
 				self.raiseError("The 'nlim' value must be a floating point number")
 				return
 
@@ -206,7 +206,7 @@ class DespikingStage():
 			try:
 				localMaxiter = int(self.pane2Maxiter.text())
 			except:
-				self.logger.exception()
+				self.logger.exception("value fail")
 				self.raiseError("The 'maxiter' value must be an integer")
 				return
 
