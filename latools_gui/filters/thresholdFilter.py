@@ -64,8 +64,8 @@ class ThresholdFilter:
 
 		self.thresholdTypes = ["Threshold",
 							   "Threshold Percentile",
-							   "Gradient Threshold",
-							   "Gradient Threshold Percentile"]
+							   "Gradient Threshold"]
+							   #"Gradient Threshold Percentile"]
 
 		for t in self.thresholdTypes:
 			self.typeCombo.addItem(t)

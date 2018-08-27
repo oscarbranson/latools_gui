@@ -1,12 +1,13 @@
 """ This is the main module that builds all aspects of the latools program and runs the GUI."""
 
+print("LAtools is currently loading. Please wait. This may take several minutes.")
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon, QKeyEvent, QDesktopServices
 from PyQt5.QtCore import Qt, QUrl
 import sys
 import os
 import latools as la
-
 
 # Import the templates
 from templates import titleScreen
@@ -28,7 +29,6 @@ from project.ErrLogger import *
 import logging
 import logging.config
 
-print("LAtools is currently loading. Please wait. This may take several minutes.")
 
 # List of stages
 STAGES = ["Import","De-Spiking","Autorange","Background","Ratio","Calibration","Filtering"]

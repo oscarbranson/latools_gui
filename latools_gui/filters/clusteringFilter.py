@@ -68,7 +68,7 @@ class ClusteringFilter:
 		self.methodCombo = QComboBox()
 		self.methodLabel.setToolTip(self.filterTab.filterInfo["method_description"])
 		self.methodCombo.setToolTip(self.filterTab.filterInfo["method_description"])
-		self.methods = ["meanshift", "kmeans", "DBSCAN"]
+		self.methods = ["meanshift", "kmeans"]
 		for s in self.methods:
 			self.methodCombo.addItem(s)
 		self.optionsLayout.addWidget(self.methodLabel, 1, 0)
@@ -171,6 +171,7 @@ class ClusteringFilter:
 													include_time = self.timeCheckBox.isChecked(),
 													sort = self.sortCheckBox.isChecked(),
 													min_data = min)
+													#n_clusters = 2)
 
 		# To determine the name that LAtools has given the filter, we first take a sample:
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
