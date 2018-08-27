@@ -138,12 +138,6 @@ class ImportStage():
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		self.logger.info('Button clicked')
 
-			#Logging
-			#logger.info('Executing stage Import with stage variables: [DataFolder]:%s\n[Config]:%s\n[Extension]:%s\n[srm_Identifier]:%s\n',
-			#	    self.fileLocation.text(),
-			#	    self.configOption.currentText(),
-			#	    self.file_extensionOption.text(),
-			#	    self.srm_identifierOption.text())
 		self.logger.info('Executing stage Import with stage variables: [Loaction]:{}\n[Config]:{}\n[Extension]:{}\n[srm_Identifier]:{}\n'.format( self.fileLocationLine.text(),
 																			       self.configOption.currentText(),
 																			       self.file_extensionOption.text(),
@@ -170,13 +164,24 @@ class ImportStage():
 
 			# Automatically saves the project if it already has a save location
 			self.project.reSave()
-		except:
+
+		except IOError: ## IO error seems obvious as we are importing data.
 			self.logger.exception("Error with Importing Data")
+			
+		except IndexError:
+                        self.logger.exception("Invalid data folder")
+                        errorBox = QMessageBox.critical(self.importStageWidget,
+											"Error",
+											"Please select a folder containing valid .csv data files.",
+										QMessageBox.Ok)
+                        
+		except:
+			self.logger.exception("Unhandled error during data import")
 			print("An error occured")
 
 			errorBox = QMessageBox.critical(self.importStageWidget,
-											"""self.stageInfo["general_error_label"]""",
-											"""self.stageInfo["general_error_description"]""",
+											"Error",
+											"An unhandled error has occured. Please see error log for details.",
 										QMessageBox.Ok)
 	#@logged
 	def findDataButtonClicked(self):

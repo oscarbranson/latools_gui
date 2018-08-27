@@ -83,6 +83,7 @@ class RatioStage():
 		self.stageControls.addApplyButton(self.applyButton)
 		self.applyButton.setEnabled(False)
 
+                #log
 		self.logger = logging.getLogger(__name__)
 		self.logger.info('ratio initialised')
 
