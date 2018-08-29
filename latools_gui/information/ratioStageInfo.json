@@ -1,5 +1,5 @@
 {
-	"stage_description": "Your data now needs to be converted to ratios using your internal standard. Select your internal standard, and then click APPLY.",
+	"stage_description": "In this stage, the ablation data will be normalised to an internal standard i.e. turned into ratios. This avoids cumbersome assumptions regarding bulk sample composition required to attain absolute analyte concentrations, and makes processing and error propagation numerically simpler.<br> <br> To apply the ratio filter, select the analyte you wish to use from the drop-down menu, then click <i>APPLY</i>.<br>",
 
 	"standard_label": "Internal Standard",
 	"standard_description": "<qt/>Choose an analyte to use as an internal standard."
