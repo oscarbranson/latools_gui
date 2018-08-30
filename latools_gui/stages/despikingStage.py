@@ -237,7 +237,11 @@ class DespikingStage():
 		# If the exponential decay despiker is applied without specifying the 'exponent' option, the automatically
 		# calculated value is provided to the exponent textbox.
 		if self.pane1expdecayOption.isChecked():
-			self.pane1Exponent.setText(str(self.project.eg.expdecay_coef[0]))
+			try :
+				self.pane1Exponent.setText(str(self.project.eg.expdecay_coef[0]))
+			except:
+				self.raiseError("A problem has occured with your exponent. Please check that the value is correct")
+				return
 
 		self.graphPaneObj.updateGraph()
 		self.progressPaneObj.completedStage(1)
