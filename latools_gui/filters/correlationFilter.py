@@ -189,13 +189,17 @@ class CorrelationFilter:
 			self.raiseError("The " + self.filterTab.filterInfo["p_threshold_label"] +
 							" value must be a floating point number.")
 			return
-
-		self.filterTab.project.eg.filter_correlation(x_analyte = self.x_analyteCombo.currentText(),
+		try:
+			self.filterTab.project.eg.filter_correlation(x_analyte = self.x_analyteCombo.currentText(),
 													 y_analyte = self.y_analyteCombo.currentText(),
 													 window = window,
 													 r_threshold = r_threshold,
 													 p_threshold = p_threshold,
 													 filt = self.filtCheckBox.isChecked())
+		except:
+			self.raiseError("An error occurred while trying to create this filter. <br> There may be a problem with " +
+							"the input values.")
+			return
 
 		# To determine the name that LAtools has given the filter, we first take a sample:
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]

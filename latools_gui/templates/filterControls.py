@@ -204,6 +204,7 @@ class SummaryTab:
 
 		# We use a special widget purely to help with resizing the scrollable area to the window width
 		self.summary = QWidget()
+		self.project = project
 
 		self.summaryMainLayout = QHBoxLayout(self.summary)
 		self.scrollWidget = SummaryWidget()
@@ -338,7 +339,13 @@ class SummaryTab:
 
 	def applyButtonPress(self):
 		""" Called when the 'Apply' button in the summary tab is pressed """
-		pass
+		self.project.eg.trace_plots()
+		infoBox = QMessageBox.information(self.summary, "Export",
+										  "Your data plots have been saved as pdfs in the reports folder " +
+										  "which was created on import, and can be found alongside your data " +
+										  "folder. <br> Updating the graph below with the filters is currently " +
+										  "under development.",
+										  QMessageBox.Ok)
 
 
 class SummaryWidget(QWidget):

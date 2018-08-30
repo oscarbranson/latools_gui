@@ -975,6 +975,9 @@ class Crossplot(GraphWindow):
 
 		self.cells = {}
 		self.labels = {}
+		self.current = None
+
+		self.populated = False
 
 		# Initialise samples menu
 		self.initialiseSamples()
@@ -1015,18 +1018,24 @@ class Crossplot(GraphWindow):
 		self.populateSamples()
 
 	def startup(self):
-		self.createCrossplot(False, 'hist2d')
-		self.scrollMain.setWidget(self.graphs['allFalsehist2d']['grid'])
+		self.sampleName = self.sampleList.item(0).text()
 		self.sampleList.setCurrentItem(self.sampleList.item(0))
+		if not self.populated:
+			self.createCrossplot()
+			#print(self.sampleName+str(self.filtCheckBox.isChecked())+str(self.scatterCheckBox.isChecked()))
+			holder = QWidget()
+			holderLayout = QHBoxLayout(holder)
+			self.holderLayout = holderLayout
+			self.scrollMain.setWidget(holder)
+			self.current = self.graphs[self.sampleName+'False'+str(self.scatterCheckBox.isChecked())]['grid']
+			self.holderLayout.addWidget(self.current)
+			self.populated = True
 	
-	def createCrossplot(self, filt, mode):
-		if not 'all'+str(filt)+mode in self.graphs:
+	def createCrossplot(self):
+		key = self.sampleName+str(self.filtCheckBox.isChecked())+str(self.scatterCheckBox.isChecked())
+		if not key in self.graphs:
 			dat = self.project.eg
-			analytes = dat.analytes
 			cmap = dat.cmaps
-
-			if dat.focus_stage in ['ratio', 'calibrated']:
-				analytes = [a for a in analytes if dat.internal_standard not in a]
 
 			# set up colour scales
 			if self.colourful:
@@ -1037,17 +1046,33 @@ class Crossplot(GraphWindow):
 			else:
 				cmlist = ['Greys']
 
+			# determine normalisation shceme
+			if self.lognorm:
+				norm = True
+			else:
+				norm = False
+
+
 			#AnalyteObject
 
-			grid = self.initialiseGrid('all'+str(filt)+mode)
+			grid = self.initialiseGrid(key)
 
+			if self.sampleName == "ALL":
+				self.createCrossplotAll(key, dat, cmap, cmlist, norm, grid)
+			else:
+				self.createCrossplotDat(key, dat, cmap, cmlist, norm, grid)
+
+	def createCrossplotAll(self, key, dat, cmap, cmlist, norm,  grid):
+			analytes = dat.analytes
+			if dat.focus_stage in ['ratio', 'calibrated']:
+				analytes = [a for a in analytes if dat.internal_standard not in a]
 			# sort analytes
 			try:
 				analytes = sorted(analytes, key=lambda x: float(re.findall('[0-9.-]+', x)[0]))
 			except IndexError:
 				analytes = sorted(analytes)
 
-			dat.get_focus(filt=filt, samples=self.samples, subset=self.subset)
+			dat.get_focus(filt=self.filtCheckBox.isChecked(), samples=self.samples, subset=self.subset)
 
 			numvars = len(analytes)
 			"""
@@ -1093,14 +1118,8 @@ class Crossplot(GraphWindow):
 				pi = focus[ai] * udict[ai][0]
 				pj = focus[aj] * udict[aj][0]
 
-				# determine normalisation shceme
-				if self.lognorm:
-					norm = True
-				else:
-					norm = False
-
 				# draw plots
-				if mode == 'hist2d':
+				if not self.scatterCheckBox.isChecked():
 					# remove nan
 					pi = pi[~np.isnan(pi)]
 					pj = pj[~np.isnan(pj)]
@@ -1115,7 +1134,7 @@ class Crossplot(GraphWindow):
 					box.setRange(xRange=[0, h[0].shape[0]], yRange=[0, h[0].shape[1]])
 					view1.setCentralItem(box)
 
-					self.cells[('all'+mode, (i, j))] = box
+					self.cells[(key, (i, j))] = box
 					
 
 					h = np.histogram2d(pi, pj, self.bins, normed = norm)
@@ -1128,20 +1147,21 @@ class Crossplot(GraphWindow):
 					box.setRange(xRange=[0, h[0].shape[0]], yRange=[0, h[0].shape[1]])
 					view2.setCentralItem(box)
 
-					self.cells[('all'+mode, (j, i))] = box
+					self.cells[(key, (j, i))] = box
 
 					grid['gridLayout'].addWidget(view1, i, j)
 					grid['gridLayout'].addWidget(view2, j, i)
 
-				elif mode == 'scatter':
+				else:
+					pass
+					"""
 					axes[i, j].scatter(pj, pi, s=10,
 									c=cmap[ai], lw=0.5, edgecolor='k',
 									alpha=0.4)
 					axes[j, i].scatter(pi, pj, s=10,
 									c=cmap[aj], lw=0.5, edgecolor='k',
 									alpha=0.4)
-				else:
-					raise ValueError("invalid mode. Must be 'hist2d' or 'scatter'.")
+					"""
 
 
 			# diagonal labels
@@ -1149,8 +1169,8 @@ class Crossplot(GraphWindow):
 				a2 = udict[a][1]
 				a2 = a2.replace("$^{", "<sup>")
 				a2 = a2.replace("}$", "</sup>")
-				a2 = a2.replace("$\mu$", "&mu;")
-				print(a2)
+				a2 = a2.replace("$\\mu$", "&mu;")
+
 				item = pg.TextItem(anchor=(0.5,0.5), html='<div style="text-align: center"><span style="color: #000;font-size:8em;">%(txt)s</span></div>'%{"txt": a + '<br />' + a2})
 				view = pg.GraphicsView()
 				box = pg.ViewBox()
@@ -1160,8 +1180,8 @@ class Crossplot(GraphWindow):
 				item.setPos(0.5, 0.5)
 				view.setCentralItem(box)
 
-				self.labels[('all'+mode, n)] = item
-				self.cells[('all'+mode, (n, n))] = box
+				self.labels[(key, n)] = item
+				self.cells[(key, (n, n))] = box
 				grid['gridLayout'].addWidget(view, n, n)
 
 			"""
@@ -1174,83 +1194,104 @@ class Crossplot(GraphWindow):
 			"""
 
 
-	def createCrossplotDat(self, filt, mode):
+	def createCrossplotDat(self, key, dat, cmap, cmlist, norm, grid):
+		
 		#DatObject
-		for sample in dat.samples:
-			sampleObj = dat.data[sample]
+		sampleObj = dat.data[self.sampleName]
+		analytes = sampleObj.analytes
+		if dat.focus_stage in ['ratio', 'calibrated']:
+			analytes = [a for a in analytes if dat.internal_standard not in a]
 
-			numvars = len(analytes)
-			fig, axes = plt.subplots(nrows=numvars, ncols=numvars,
-									figsize=(12, 12))
-			fig.subplots_adjust(hspace=0.05, wspace=0.05)
+		numvars = len(analytes)
+		axes = np.zeros((numvars, numvars))
 
-			for ax in axes.flat:
-				ax.xaxis.set_visible(False)
-				ax.yaxis.set_visible(False)
+		while len(cmlist) < len(analytes):
+			cmlist *= 2
 
-				if ax.is_first_col():
-					ax.yaxis.set_ticks_position('left')
-				if ax.is_last_col():
-					ax.yaxis.set_ticks_position('right')
-				if ax.is_first_row():
-					ax.xaxis.set_ticks_position('top')
-				if ax.is_last_row():
-					ax.xaxis.set_ticks_position('bottom')
+		udict = {}
+		for i, j in zip(*np.triu_indices_from(axes, k=1)):
+			for x, y in [(i, j), (j, i)]:
+				# set unit multipliers
+				mx, ux = helpers.helpers.unitpicker(np.nanmean(sampleObj.focus[analytes[x]]),
+									denominator=dat.internal_standard,
+									focus_stage=dat.focus_stage)
+				my, uy = helpers.helpers.unitpicker(np.nanmean(sampleObj.focus[analytes[y]]),
+									denominator=dat.internal_standard,
+									focus_stage=dat.focus_stage)
+				udict[analytes[x]] = (x, ux)
+				#print(sampleObj.filt.grab_filt(self.filtCheckBox.isChecked(), analytes[x]))
+				print(helpers.stat_fns.nominal_values(sampleObj.focus[analytes[x]]))
+				# get filter
+				ind = (sampleObj.filt.grab_filt(self.filtCheckBox.isChecked(), analytes[x]) &
+					sampleObj.filt.grab_filt(self.filtCheckBox.isChecked(), analytes[y]) &
+					~np.isnan(helpers.stat_fns.nominal_values(sampleObj.focus[analytes[x]])) &
+					~np.isnan(helpers.stat_fns.nominal_values(sampleObj.focus[analytes[y]])))
 
-			while len(cmlist) < len(analytes):
-				cmlist *= 2
+				#print(ind)
 
-			udict = {}
-			for i, j in zip(*np.triu_indices_from(axes, k=1)):
-				for x, y in [(i, j), (j, i)]:
-					# set unit multipliers
-					mx, ux = unitpicker(np.nanmean(sampleObj.focus[analytes[x]]),
-										denominator=dat.internal_standard,
-										focus_stage=dat.focus_stage)
-					my, uy = unitpicker(np.nanmean(sampleObj.focus[analytes[y]]),
-										denominator=dat.internal_standard,
-										focus_stage=dat.focus_stage)
-					udict[analytes[x]] = (x, ux)
+				# make plot
+				pi = helpers.stat_fns.nominal_values(sampleObj.focus[analytes[x]][ind]) * mx
+				pj = helpers.stat_fns.nominal_values(sampleObj.focus[analytes[y]][ind]) * my
 
-					# get filter
-					ind = (self.filt.grab_filt(filt, analytes[x]) &
-						self.filt.grab_filt(filt, analytes[y]) &
-						~np.isnan(sampleObj.focus[analytes[x]]) &
-						~np.isnan(sampleObj.focus[analytes[y]]))
+				# draw plots
+				h = np.histogram2d(pj, pi, self.bins, normed = norm)
+				item = pg.ImageItem(image=h[0], autoLevels=True)
+				view1 = pg.GraphicsView()
+				box = pg.ViewBox()
+				box.setMouseEnabled(False, False)
+				box.addItem(item)
+				box.setAspectLocked(False)
+				box.setRange(xRange=[0, h[0].shape[0]], yRange=[0, h[0].shape[1]])
+				view1.setCentralItem(box)
 
-					# make plot
-					pi = sampleObj.focus[analytes[x]][ind] * mx
-					pj = sampleObj.focus[analytes[y]][ind] * my
+				self.cells[(key, (i, j))] = box
+				
 
-					# determine normalisation shceme
-					if lognorm:
-						norm = mpl.colors.LogNorm()
-					else:
-						norm = None
+				h = np.histogram2d(pi, pj, self.bins, normed = norm)
+				item = pg.ImageItem(image=h[0])
+				view2 = pg.GraphicsView()
+				box = pg.ViewBox()
+				box.setMouseEnabled(False, False)
+				box.addItem(item)
+				box.setAspectLocked(False)
+				box.setRange(xRange=[0, h[0].shape[0]], yRange=[0, h[0].shape[1]])
+				view2.setCentralItem(box)
 
-					# draw plots
-					axes[i, j].hist2d(pj, pi, self.bins,
-									norm=norm,
-									cmap=plt.get_cmap(cmlist[i]))
-					axes[j, i].hist2d(pi, pj, self.bins,
-									norm=norm,
-									cmap=plt.get_cmap(cmlist[j]))
+				self.cells[(key, (j, i))] = box
 
-					axes[x, y].set_ylim([pi.min(), pi.max()])
-					axes[x, y].set_xlim([pj.min(), pj.max()])
-			# diagonal labels
-			for a, (i, u) in udict.items():
-				axes[i, i].annotate(a + '\n' + u, (0.5, 0.5),
-									xycoords='axes fraction',
-									ha='center', va='center')
-			# switch on alternating axes
-			for i, j in zip(range(numvars), itertools.cycle((-1, 0))):
-				axes[j, i].xaxis.set_visible(True)
-				for label in axes[j, i].get_xticklabels():
-					label.set_rotation(90)
-				axes[i, j].yaxis.set_visible(True)
+				grid['gridLayout'].addWidget(view1, i, j)
+				grid['gridLayout'].addWidget(view2, j, i)
 
-			axes[0, 0].set_title(self.sample, weight='bold', x=0.05, ha='left')
+		# diagonal labels
+		for a, (i, u) in udict.items():
+			a2 = u
+			a2 = a2.replace("$^{", "<sup>")
+			a2 = a2.replace("}$", "</sup>")
+			a2 = a2.replace("$\\mu$", "&mu;")
+
+			item = pg.TextItem(anchor=(0.5,0.5), html='<div style="text-align: center"><span style="color: #000;font-size:8em;">%(txt)s</span></div>'%{"txt": a + '<br />' + a2})
+			view = pg.GraphicsView()
+			box = pg.ViewBox()
+			box.autoRange()
+			box.setMouseEnabled(False, False)
+			box.addItem(item)
+			item.setPos(0.5, 0.5)
+			view.setCentralItem(box)
+
+			self.labels[(key, i)] = item
+			self.cells[(key, (i, i))] = box
+			grid['gridLayout'].addWidget(view, i, i)
+		
+		"""
+		# switch on alternating axes
+		for i, j in zip(range(numvars), itertools.cycle((-1, 0))):
+			axes[j, i].xaxis.set_visible(True)
+			for label in axes[j, i].get_xticklabels():
+				label.set_rotation(90)
+			axes[i, j].yaxis.set_visible(True)
+
+		axes[0, 0].set_title(self.sample, weight='bold', x=0.05, ha='left')
+		"""
 
 		
 
@@ -1293,11 +1334,36 @@ class Crossplot(GraphWindow):
 			selectedSample = selectedSamples[0]
 			self.sampleName = selectedSample.text()
 
+		if self.populated:
+			self.createCrossplot()
+			self.current.setParent(None)
+			self.current = self.graphs[self.sampleName+'False'+str(self.scatterCheckBox.isChecked())]['grid']
+			self.holderLayout.addWidget(self.current)
+
 	def updateFilt(self):
-		pass
+		if not self.filtCheckBox.isChecked():
+			self.createCrossplot()
+			self.current.setParent(None)
+			self.current = self.graphs[self.sampleName+'False'+str(self.scatterCheckBox.isChecked())]['grid']
+			self.holderLayout.addWidget(self.current)
+		else:
+			self.createCrossplot()
+			self.current.setParent(None)
+			self.current = self.graphs[self.sampleName+'True'+str(self.scatterCheckBox.isChecked())]['grid']
+			self.holderLayout.addWidget(self.current)
+
 
 	def updateScatter(self):
-		pass
+		if not self.scatterCheckBox.isChecked():
+			self.createCrossplot()
+			self.current.setParent(None)
+			self.current = self.graphs[self.sampleName+'False'+str(self.scatterCheckBox.isChecked())]['grid']
+			self.holderLayout.addWidget(self.current)
+		elif self.sampleName == "ALL":
+			self.createCrossplot()
+			self.current.setParent(None)
+			self.current = self.graphs[self.sampleName+'True'+str(self.scatterCheckBox.isChecked())]['grid']
+			self.holderLayout.addWidget(self.current)
 
 	def showGraph(self):
 		"""

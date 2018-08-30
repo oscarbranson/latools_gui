@@ -1,6 +1,7 @@
 """ A stage of the program that defines and executes one step of the data-processing """
 
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
@@ -145,6 +146,14 @@ class AutorangeStage():
 
                 # Initializing the logger
 		self.logger = logging.getLogger(__name__)
+
+
+                #Validators
+		self.gwinEdit.setValidator(QIntValidator())
+		self.swinEdit.setValidator(QIntValidator())
+		self.winEdit.setValidator(QIntValidator())
+		self.on_multEdit1.setValidator(QDoubleValidator())
+		self.off_multEdit1.setValidator(QDoubleValidator())
 
 	#@logged
 	def pressedApplyButton(self):

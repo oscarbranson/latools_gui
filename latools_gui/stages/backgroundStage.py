@@ -1,6 +1,7 @@
 """ A stage of the program that defines and executes one step of the data-processing """
 
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
@@ -201,9 +202,21 @@ class BackgroundStage():
 		self.stageControls.addApplyButton(self.subtractButton)
 		self.subtractButton.setEnabled(False)
 
+                #Logging
 		self.logger = logging.getLogger(__name__)
 		self.logger.info('Background initialised')
 
+                #Validation
+		self.weight_fwhmOption.setValidator(QDoubleValidator())
+		self.n_minOption.setValidator(QIntValidator())
+		self.n_maxOption.setValidator(QIntValidator())
+		self.cstepOption.setValidator(QDoubleValidator())
+		self.f_winOption.setValidator(QIntValidator())
+		self.f_n_limOption.setValidator(QIntValidator())
+		self.kindOption.setValidator(QIntValidator())
+		self.n_minOption2.setValidator(QIntValidator())
+		self.n_maxOption2.setValidator(QIntValidator())
+		
 
 	#@logged
 	def pressedCalcButton(self):
@@ -221,7 +234,7 @@ class BackgroundStage():
 				try:
 					myweight = float(self.weight_fwhmOption.text())
 				except:
-					self.logger.exception()
+					self.logger.exception("Invalid value")
 					self.raiseError("The 'weight_fwhm' value must be a floating point number")
 					return
 
@@ -230,7 +243,7 @@ class BackgroundStage():
 				try:
 					myn_min = int(self.n_minOption.text())
 				except:
-					self.logger.exception()
+					self.logger.exception("Invalid value")
 					self.raiseError("The 'n_min' value must be an integer")
 					return
 
@@ -239,7 +252,7 @@ class BackgroundStage():
 				try:
 					myn_max = int(self.n_maxOption.text())
 				except:
-					self.logger.exception()
+					self.logger.exception("Invalid value")
 					self.raiseError("The 'n_max' value must be an integer")
 					return
 
@@ -248,7 +261,7 @@ class BackgroundStage():
 				try:
 					mycstep = float(self.cstepOption.text())
 				except:
-					self.logger.exception()
+					self.logger.exception("Invalid value")
 					self.raiseError("The 'cstep' value must be a floating point number")
 					return
 
@@ -257,7 +270,7 @@ class BackgroundStage():
 				try:
 					myf_win = int(self.f_winOption.text())
 				except:
-					self.logger.exception()
+					self.logger.exception("Invalid value")
 					self.raiseError("The 'f_win' value must be an integer")
 					return
 
@@ -266,7 +279,7 @@ class BackgroundStage():
 				try:
 					myf_n_lim = int(self.f_n_limOption.text())
 				except:
-					self.logger.exception()
+					self.logger.exception("Invalid value")
 					self.raiseError("The 'f_n_lim' value must be an integer")
 					return
 
@@ -354,7 +367,7 @@ class BackgroundStage():
 											f_win=myf_win,
 											f_n_lim=myf_n_lim)
 			except:
-				self.logger.exception()
+				self.logger.exception("Exception in background stage:")
 				self.raiseError("A problem occurred. There may be a problem with the input values.")
 				return
 
