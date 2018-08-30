@@ -169,22 +169,13 @@ class ImportStage():
 			self.project.setDataLocation(self.fileLocationLine.text())
 
 			# Automatically saves the project if it already has a save location
-			self.project.reSave()
-
-		except IOError: ## IO error seems obvious as we are importing data.
-			self.logger.exception("Error with Importing Data")
-			
-			errorBox = QMessageBox.critical(self.importStageWidget,
-											"""self.stageInfo["Import Error!"]""",
-											"""self.stageInfo["Unable to correctly access your data!"]""",
-										QMessageBox.Ok)
-		
-		except:
+			self.project.reSave()		
+		except Exception as ex: ## Catch what the exception was
 			self.logger.exception("Error with Importing Data")
 			print("An error occured")
 
 			errorBox = QMessageBox.critical(self.importStageWidget,
-											"""self.stageInfo["general_error_label"]""",
+											"Error! " + type(ex).__name__,
 											"""self.stageInfo["general_error_description"]""",
 										QMessageBox.Ok)
 	#@logged
