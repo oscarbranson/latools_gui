@@ -235,9 +235,15 @@ class ThresholdFilter:
 				return
 
 			# We create the filter
-			self.filterTab.project.eg.filter_threshold_percentile(analyte=self.analyteCombo.currentText(),
+			try:
+				self.filterTab.project.eg.filter_threshold_percentile(analyte=self.analyteCombo.currentText(),
 																  percentiles=localPercent,
 																  level=self.levelCombo.currentText())
+			except:
+				self.raiseError(
+					"An error occurred while trying to create this filter. <br> There may be a problem with " +
+					"the input values.")
+				return
 
 		# Gradient Threshold filter selected:
 		elif self.typeCombo.currentText() == self.thresholdTypes[2]:
@@ -255,9 +261,15 @@ class ThresholdFilter:
 				return
 
 			# We create the filter
-			self.filterTab.project.eg.filter_gradient_threshold(analyte=self.analyteCombo.currentText(),
+			try:
+				self.filterTab.project.eg.filter_gradient_threshold(analyte=self.analyteCombo.currentText(),
 																threshold=localThreshold,
 																win=localWin)
+			except:
+				self.raiseError(
+					"An error occurred while trying to create this filter. <br> There may be a problem with " +
+					"the input values.")
+				return
 
 		# Gradient Threshold Percentile filter selected:
 		elif self.typeCombo.currentText() == self.thresholdTypes[2]:
@@ -275,10 +287,16 @@ class ThresholdFilter:
 				return
 
 			# We create the filter
-			self.filterTab.project.eg.filter_gradient_threshold_percentile(analyte=self.analyteCombo.currentText(),
+			try:
+				self.filterTab.project.eg.filter_gradient_threshold_percentile(analyte=self.analyteCombo.currentText(),
 																		   percentiles=localPercent,
 																		   level=self.levelCombo.currentText(),
 																		   win=localWin)
+			except:
+				self.raiseError(
+					"An error occurred while trying to create this filter. <br> There may be a problem with " +
+					"the input values.")
+				return
 
 		# To determine the name that LAtools has given the filter, we first take a sample:
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]

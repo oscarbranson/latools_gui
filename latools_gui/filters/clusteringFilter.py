@@ -163,8 +163,8 @@ class ClusteringFilter:
 		except:
 			self.raiseError("The " + self.filterTab.filterInfo["min_label"] + " value must be an integer")
 			return
-
-		self.filterTab.project.eg.filter_clustering(analytes = self.analyteCombo.currentText(),
+		try:
+			self.filterTab.project.eg.filter_clustering(analytes = self.analyteCombo.currentText(),
 													filt = self.filtCheckBox.isChecked(),
 													normalise = self.normaliseCheckBox.isChecked(),
 													method = self.methodCombo.currentText(),
@@ -172,6 +172,10 @@ class ClusteringFilter:
 													sort = self.sortCheckBox.isChecked(),
 													min_data = min)
 													#n_clusters = 2)
+		except:
+			self.raiseError("An error occurred while trying to create this filter. <br> There may be a problem with " +
+							"the input values.")
+			return
 
 		# To determine the name that LAtools has given the filter, we first take a sample:
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]

@@ -136,9 +136,14 @@ class TrimFilter:
 			self.raiseError("The " + self.filterTab.filterInfo["end_label"] + " value must be an integer")
 			return
 
-		self.filterTab.project.eg.filter_trim(start = start,
+		try:
+			self.filterTab.project.eg.filter_trim(start = start,
 											  end = end,
 											  filt = self.filtCheckBox.isChecked())
+		except:
+			self.raiseError("An error occurred while trying to create this filter. <br> There may be a problem with " +
+							"the input values.")
+			return
 
 		# To determine the name that LAtools has given the filter, we first take a sample:
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
