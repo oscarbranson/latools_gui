@@ -34,11 +34,11 @@ class FilterControls:
 
 		# A list of all of the available filter types
 		self.filterList = ["Threshold",
-						   "Trim"]
-						   #"Clustering",
-						   #"Correlation",
-						   #"Defragment",
-						   #"Exclude"]
+						   "Trim",
+						   "Correlation",
+						   "Defragment",
+						   "Exclude",
+						   "Clustering"]
 
 		# This will hold the contents of the selected filter's json information file
 		self.filterInfo = None
@@ -184,7 +184,7 @@ class FilterControls:
 		for f in filters:
 
 			if f[0] == "filter_threshold":
-				self.plusFilterCombo.setCurrentIndex(1)
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Threshold"))
 				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
 				self.plusFilterChange()
 				self.addTab()
@@ -192,7 +192,7 @@ class FilterControls:
 				self.tabsList[-1].filterType.loadFilter(f[1], 0)
 
 			if f[0] == "filter_threshold_percentile":
-				self.plusFilterCombo.setCurrentIndex(1)
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Threshold"))
 				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
 				self.plusFilterChange()
 				self.addTab()
@@ -200,7 +200,7 @@ class FilterControls:
 				self.tabsList[-1].filterType.loadFilter(f[1], 1)
 
 			if f[0] == "filter_gradient_threshold":
-				self.plusFilterCombo.setCurrentIndex(1)
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Threshold"))
 				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
 				self.plusFilterChange()
 				self.addTab()
@@ -208,7 +208,35 @@ class FilterControls:
 				self.tabsList[-1].filterType.loadFilter(f[1], 2)
 
 			if f[0] == "filter_trim":
-				self.plusFilterCombo.setCurrentIndex(2)
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Trim"))
+				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
+				self.plusFilterChange()
+				self.addTab()
+				self.tabsList[-1].filterType.loadFilter(f[1])
+
+			if f[0] == "filter_correlation":
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Correlation"))
+				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
+				self.plusFilterChange()
+				self.addTab()
+				self.tabsList[-1].filterType.loadFilter(f[1])
+
+			if f[0] == "filter_defragment":
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Defragment"))
+				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
+				self.plusFilterChange()
+				self.addTab()
+				self.tabsList[-1].filterType.loadFilter(f[1])
+
+			if f[0] == "filter_exclude_downhole":
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Exclude"))
+				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
+				self.plusFilterChange()
+				self.addTab()
+				self.tabsList[-1].filterType.loadFilter(f[1])
+
+			if f[0] == "filter_clustering":
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Clustering"))
 				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
 				self.plusFilterChange()
 				self.addTab()
@@ -233,7 +261,7 @@ class SummaryTab:
 		# We create the scroll area that will display the table of analytes and filters
 		self.scroll = QScrollArea()
 		self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-		self.scroll.setFixedHeight(210)
+		self.scroll.setFixedHeight(190)
 		self.scroll.setWidgetResizable(True)
 
 		self.summaryMainLayout.addWidget(self.scroll)
@@ -387,7 +415,7 @@ class FilterTab:
 		# We create the scroll area that will display the table of analytes and filters
 		self.scroll = QScrollArea()
 		self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-		self.scroll.setFixedHeight(90)
+		self.scroll.setFixedHeight(70)
 		#self.scroll.setFixedWidth(self.filter.frameSize().width() - 100)
 		self.scroll.setWidgetResizable(True)
 

@@ -149,7 +149,6 @@ class RunningProject():
 
 			if "filter_threshold :: args=() kwargs=" in line:
 				subLine = line.replace("filter_threshold :: args=() kwargs=", "")
-				print("running: " + subLine)
 				self.filters.append(("filter_threshold", ast.literal_eval(subLine)))
 
 			if "filter_threshold_percentile :: args=() kwargs=" in line:
@@ -164,14 +163,28 @@ class RunningProject():
 				subLine = line.replace("filter_trim :: args=() kwargs=", "")
 				self.filters.append(("filter_trim", ast.literal_eval(subLine)))
 
+			if "filter_correlation :: args=() kwargs=" in line:
+				subLine = line.replace("filter_correlation :: args=() kwargs=", "")
+				self.filters.append(("filter_correlation", ast.literal_eval(subLine)))
+
+			if "filter_defragment :: args=() kwargs=" in line:
+				subLine = line.replace("filter_defragment :: args=() kwargs=", "")
+				self.filters.append(("filter_defragment", ast.literal_eval(subLine)))
+
+			if "filter_exclude_downhole :: args=() kwargs=" in line:
+				subLine = line.replace("filter_exclude_downhole :: args=() kwargs=", "")
+				self.filters.append(("filter_exclude_downhole", ast.literal_eval(subLine)))
+
+			if "filter_clustering :: args=() kwargs=" in line:
+				subLine = line.replace("filter_clustering :: args=() kwargs=", "")
+				self.filters.append(("filter_clustering", ast.literal_eval(subLine)))
+
 			if "filter_on :: args=" in line:
 				subLine = line.replace("filter_on :: args=", "").replace(" kwargs={}", "")
-				print(subLine)
 				self.filterOnOff.append(("filter_on", ast.literal_eval(subLine)))
 
 			if "filter_off :: args=" in line:
 				subLine = line.replace("filter_off :: args=", "").replace(" kwargs={}", "")
-				print(subLine)
 				self.filterOnOff.append(("filter_off", ast.literal_eval(subLine)))
 
 		# Any parameters that are listed as None are replaced with an empty string, so that they
