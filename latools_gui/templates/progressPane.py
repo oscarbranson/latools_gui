@@ -43,6 +43,7 @@ class ProgressPane:
 		# TO DO: progress bar functionality
 		self.progressBar = QProgressBar()
 		self.progressLayout.addWidget(self.progressBar)
+		self.project.progressBar = self.progressBar
 
 		# The object that updates the progress bar
 		self.progressUpdater = progressUpdater.ProgressUpdater(self.progressBar)

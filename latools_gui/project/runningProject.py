@@ -31,6 +31,9 @@ class RunningProject():
 		self.stageParams = {}
 		self.lastStage = 0
 
+		# A reference to the Progress Bar, used for occasional resetting
+		self.progressBar = None
+
 	#@logged
 	def saveProject(self):
 		""" Save overwrites the current save file with the latest file strings """
@@ -83,6 +86,8 @@ class RunningProject():
 		self.fileName = name
 		self.folder = location
 		self.hasSaved = True
+		self.filters = []
+		self.filterOnOff = []
 
 		# We open the log file and split into lines
 		logName = location + "/" + name + ".lalog"
@@ -142,6 +147,33 @@ class RunningProject():
 				self.stageParams["calibrate"] = ast.literal_eval(subLine)
 				self.updateLastStage(5)
 
+			if "filter_threshold :: args=() kwargs=" in line:
+				subLine = line.replace("filter_threshold :: args=() kwargs=", "")
+				print("running: " + subLine)
+				self.filters.append(("filter_threshold", ast.literal_eval(subLine)))
+
+			if "filter_threshold_percentile :: args=() kwargs=" in line:
+				subLine = line.replace("filter_threshold_percentile :: args=() kwargs=", "")
+				self.filters.append(("filter_threshold_percentile", ast.literal_eval(subLine)))
+
+			if "filter_gradient_threshold :: args=() kwargs=" in line:
+				subLine = line.replace("filter_gradient_threshold :: args=() kwargs=", "")
+				self.filters.append(("filter_gradient_threshold", ast.literal_eval(subLine)))
+
+			if "filter_trim :: args=() kwargs=" in line:
+				subLine = line.replace("filter_trim :: args=() kwargs=", "")
+				self.filters.append(("filter_trim", ast.literal_eval(subLine)))
+
+			if "filter_on :: args=" in line:
+				subLine = line.replace("filter_on :: args=", "").replace(" kwargs={}", "")
+				print(subLine)
+				self.filterOnOff.append(("filter_on", ast.literal_eval(subLine)))
+
+			if "filter_off :: args=" in line:
+				subLine = line.replace("filter_off :: args=", "").replace(" kwargs={}", "")
+				print(subLine)
+				self.filterOnOff.append(("filter_off", ast.literal_eval(subLine)))
+
 		# Any parameters that are listed as None are replaced with an empty string, so that they
 		# can be input into the stage parameter textboxes.
 		for stage in self.stageParams.keys():
@@ -158,6 +190,12 @@ class RunningProject():
 			self.importListener.loadStage(i)
 			if progress is not None:
 				bar.update()
+
+		# The filters are loaded
+		if len(self.filters) != 0:
+			self.importListener.loadFilters(self.filters, self.filterOnOff)
+
+
 
 		if progress is not None:
 			bar.reset()

@@ -1,6 +1,7 @@
 """ A filter for defining a threshold """
 
 from PyQt5.QtWidgets import *
+import ast
 
 
 class ThresholdFilter:
@@ -14,45 +15,6 @@ class ThresholdFilter:
 
 		# The layout that this filter will put its option controls in
 		self.optionsLayout = QGridLayout(self.filterTab.optionsWidget)
-
-		# The complete set of checkboxes that can turn on or off analytes
-		self.analyteCheckBoxes = {
-			"controlsAbove": [],
-			"controlsBelow": [],
-			"summaryAbove": [],
-			"summaryBelow": [],
-		}
-
-		# Determines is this filter will have "above" and "below" rows
-		self.twoRows = True
-
-		# Registers which rows this filter occupies in Summary
-		self.aboveRow = 0
-		self.belowRow = 0
-
-		self.filtNameAbove = ""
-		self.filtNameBelow = ""
-
-		# Determines if the filter has been created yet
-		self.created = False
-
-		# Prevents updating based on the program activating check boxes
-		self.updating = False
-
-		# We create each checkbox that will appear in the filter controls and summary tabs
-		for i in range(len(self.filterTab.project.eg.analytes)):
-
-			self.analyteCheckBoxes["controlsAbove"].append(QCheckBox())
-			self.analyteCheckBoxes["controlsBelow"].append(QCheckBox())
-			self.analyteCheckBoxes["summaryAbove"].append(QCheckBox())
-			self.analyteCheckBoxes["summaryBelow"].append(QCheckBox())
-
-			# We connect the summary and control checkboxes with functions that will activate when their state changes.
-			# There are different functions because we need to know which set to override with the new states
-			self.analyteCheckBoxes["controlsAbove"][i].stateChanged.connect(self.controlChecksRegister)
-			self.analyteCheckBoxes["controlsBelow"][i].stateChanged.connect(self.controlChecksRegister)
-			self.analyteCheckBoxes["summaryAbove"][i].stateChanged.connect(self.summaryChecksRegister)
-			self.analyteCheckBoxes["summaryBelow"][i].stateChanged.connect(self.summaryChecksRegister)
 
 		# A label for the type
 		self.typeLabel = QLabel(self.filterTab.filterInfo["type_label"])
@@ -141,69 +103,13 @@ class ThresholdFilter:
 		self.createButton.clicked.connect(self.createClick)
 		self.filterTab.addButton(self.createButton)
 
-		# We create a row in the analytes table for the "above" version
-		self.filterTab.table.addWidget(QLabel(self.filterTab.name + " (above)"), self.filterTab.table.rowCount(), 0)
-
-		# We populate the row with checkboxes
-		for i in range(self.filterTab.table.columnCount() - 1):
-			self.filterTab.table.addWidget(
-				self.analyteCheckBoxes["controlsAbove"][i], self.filterTab.table.rowCount() - 1, i + 1)
-
-		# We create a row in the analytes table for the "below" version
-		self.filterTab.table.addWidget(QLabel(self.filterTab.name + " (below)"), self.filterTab.table.rowCount(), 0)
-
-		# We populate the row with checkboxes
-		for i in range(self.filterTab.table.columnCount() - 1):
-			self.filterTab.table.addWidget(
-				self.analyteCheckBoxes["controlsBelow"][i], self.filterTab.table.rowCount() - 1, i + 1)
-
-	def controlChecksRegister(self):
-		""" Sets the checkboxes in the Summary tab to be the same as those in the Controls tab """
-		if not self.updating:
-			self.updating = True
-			for i in range(len(self.analyteCheckBoxes["controlsAbove"])):
-
-				self.analyteCheckBoxes["summaryAbove"][i].setCheckState(
-					self.analyteCheckBoxes["controlsAbove"][i].checkState())
-
-				self.analyteCheckBoxes["summaryBelow"][i].setCheckState(
-					self.analyteCheckBoxes["controlsBelow"][i].checkState())
-
-				# We make sure that if the "Select All" checkbox for that row is on,
-				# any deselect will set it to partial
-				if self.created:
-					if self.analyteCheckBoxes["summaryAbove"][i].checkState() == 0:
-						self.filterTab.summaryTab.allPartial(self.aboveRow)
-					if self.analyteCheckBoxes["summaryBelow"][i].checkState() == 0:
-						self.filterTab.summaryTab.allPartial(self.belowRow)
-
-			self.updateAnalyteToggles()
-			self.updating = False
-
-	def summaryChecksRegister(self):
-		""" Sets the checkboxes in the Controls tab to be the same as those in the Summary tab """
-		if not self.updating:
-			self.updating = True
-			for i in range(len(self.analyteCheckBoxes["controlsAbove"])):
-				self.analyteCheckBoxes["controlsAbove"][i].setCheckState(
-					self.analyteCheckBoxes["summaryAbove"][i].checkState())
-
-				self.analyteCheckBoxes["controlsBelow"][i].setCheckState(
-					self.analyteCheckBoxes["summaryBelow"][i].checkState())
-
-				# We make sure that if the "Select All" checkbox for that row is on,
-				# any deselect will set it to partial
-				if self.created:
-					if self.analyteCheckBoxes["summaryAbove"][i].checkState() == 0:
-						self.filterTab.summaryTab.allPartial(self.aboveRow)
-					if self.analyteCheckBoxes["summaryBelow"][i].checkState() == 0:
-						self.filterTab.summaryTab.allPartial(self.belowRow)
-
-			self.updateAnalyteToggles()
-			self.updating = False
-
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
+
+		# We take a reading of the current number of filters so that we can determine how many new
+		# ones this will create
+		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
+		oldFilters = len(list(self.filterTab.project.eg.data[egSubset].filt.components.keys()))
 
 		# All threshold filter types need an analyte selected
 		if self.analyteCombo.currentText() == " ":
@@ -222,8 +128,17 @@ class ThresholdFilter:
 				return
 
 			# We create the filter
-			self.filterTab.project.eg.filter_threshold(analyte = self.analyteCombo.currentText(),
+			try:
+				self.filterTab.project.eg.filter_threshold(analyte = self.analyteCombo.currentText(),
 													   threshold = localThreshold)
+			except:
+				self.raiseError(
+					"An error occurred while trying to create this filter. <br> There may be a problem with " +
+					"the input values.")
+				return
+
+			# We update the name of the filter
+			self.createName("threshold", self.analyteCombo.currentText(), localThreshold)
 
 		# Threshold Percentile filter selected:
 		elif self.typeCombo.currentText() == self.thresholdTypes[1]:
@@ -244,6 +159,9 @@ class ThresholdFilter:
 					"An error occurred while trying to create this filter. <br> There may be a problem with " +
 					"the input values.")
 				return
+
+			# We update the name of the filter
+			self.createName("threshold_percentile", self.analyteCombo.currentText(), localPercent)
 
 		# Gradient Threshold filter selected:
 		elif self.typeCombo.currentText() == self.thresholdTypes[2]:
@@ -270,6 +188,9 @@ class ThresholdFilter:
 					"An error occurred while trying to create this filter. <br> There may be a problem with " +
 					"the input values.")
 				return
+
+			# We update the name of the filter
+			self.createName("gradient_threshold", self.analyteCombo.currentText(), localThreshold)
 
 		# Gradient Threshold Percentile filter selected:
 		elif self.typeCombo.currentText() == self.thresholdTypes[2]:
@@ -298,85 +219,22 @@ class ThresholdFilter:
 					"the input values.")
 				return
 
-		# To determine the name that LAtools has given the filter, we first take a sample:
+			# We update the name of the filter
+			self.createName("gradient_threshold_percentile", self.analyteCombo.currentText(), localPercent)
+
+		# We determine how many filters have been created
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
-		print(self.filterTab.project.eg.data[egSubset].filt.components.keys())
+		currentFilters = list(self.filterTab.project.eg.data[egSubset].filt.components.keys())
 
-		# Then check the last filter names that have been added to that sample:
-		self.filtNameAbove = list(self.filterTab.project.eg.data[egSubset].filt.components.keys())[-1]
-		self.filtNameBelow = list(self.filterTab.project.eg.data[egSubset].filt.components.keys())[-2]
+		# We create filter rows for each new filter
+		for i in range(len(currentFilters) - oldFilters):
+			self.filterTab.createFilter(currentFilters[i + oldFilters])
 
-		# We toggle the analytes on and off based on the check boxes
-		self.updateAnalyteToggles()
-
-		row = self.filterTab.summaryTab.table.rowCount()
-
-		# We create a row in the analytes table in the Summary tab for the "above" version of this filter
-		self.filterTab.summaryTab.table.addWidget(
-			QLabel(self.filterTab.name + " (above)"), row, 0)
-
-		# We populate the row with checkboxes
-		for i in range(self.filterTab.summaryTab.table.columnCount() - 2):
-			self.filterTab.summaryTab.table.addWidget(
-				self.analyteCheckBoxes["summaryAbove"][i], row, i + 1)
-
-		# We add a "select all" checkbox
-		self.filterTab.summaryTab.addSelectAll(row)
-
-		# We register our checkbox list for that row
-		self.aboveRow = self.filterTab.summaryTab.registerRow(self.analyteCheckBoxes["summaryAbove"],
-															  self.analyteCheckBoxes["controlsAbove"])
-
-		row += 1
-
-		# We create a row in the analytes table in the Summary tab for the "below" version of this filter
-		self.filterTab.summaryTab.table.addWidget(
-			QLabel(self.filterTab.name + " (below)"), row, 0)
-
-		# We populate the row with checkboxes
-		for i in range(self.filterTab.summaryTab.table.columnCount() - 2):
-			self.filterTab.summaryTab.table.addWidget(
-				self.analyteCheckBoxes["summaryBelow"][i], row, i + 1)
-
-		# We add a "select all" checkbox
-		self.filterTab.summaryTab.addSelectAll(row)
-
-		# We register our checkbox list for that row
-		self.belowRow = self.filterTab.summaryTab.registerRow(self.analyteCheckBoxes["summaryBelow"],
-															  self.analyteCheckBoxes["controlsBelow"])
-
-		# We deactivate the create button
-		self.createButton.setEnabled(False)
-
-		# The actual filter creation
-		self.created = True
+		self.freezeOptions()
 
 	def raiseError(self, message):
 		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.filterTab.filter, "Error", message, QMessageBox.Ok)
-
-	def updateAnalyteToggles(self):
-		""" Updates each analyte in the filter to conform to the state of that analyte's checkbox """
-
-		if self.created:
-
-			for i in range(len(self.filterTab.project.eg.analytes)):
-				# We update for the "Above" filter
-				# If the checkbox is not unchecked...
-				if self.analyteCheckBoxes["summaryAbove"][i].checkState() != 0:
-					self.filterTab.project.eg.filter_on(self.filtNameAbove,
-															 self.filterTab.project.eg.analytes[i])
-				else:
-					self.filterTab.project.eg.filter_off(self.filtNameAbove,
-															 self.filterTab.project.eg.analytes[i])
-
-				# Update for the "Below" filter
-				if self.analyteCheckBoxes["summaryBelow"][i].checkState() != 0:
-					self.filterTab.project.eg.filter_on(self.filtNameBelow,
-															 self.filterTab.project.eg.analytes[i])
-				else:
-					self.filterTab.project.eg.filter_off(self.filtNameBelow,
-															 self.filterTab.project.eg.analytes[i])
 
 	def typeChanged(self):
 		""" Sets the enabled options based on what threshold type is currently selected """
@@ -408,3 +266,30 @@ class ThresholdFilter:
 			self.percentEdit.setEnabled(True)
 			self.winEdit.setEnabled(True)
 			self.levelCombo.setEnabled(True)
+
+	def createName(self, type, analyte, thresh):
+		""" We create a more descriptive name to display on the tab """
+		self.filterTab.name = type + " " + analyte + " " + str(thresh)
+		self.filterTab.updateName()
+
+	def loadFilter(self, params, typeIndex):
+		self.typeCombo.setCurrentIndex(typeIndex)
+		self.analyteCombo.setCurrentIndex(self.analyteCombo.findText(params.get("analyte", "")))
+		self.threshValueEdit.setText(str(params.get("threshold", "")))
+		self.percentEdit.setText(str(params.get("percentiles", [""])[0]))
+		self.winEdit.setText(str(params.get("win", "")))
+		self.levelCombo.setCurrentIndex(self.levelCombo.findText(params.get("level", "")))
+		self.createClick()
+
+	def freezeOptions(self):
+		"""
+		We lock the option fields after the filter has been created so that they will give a representation
+		of the details of the filter
+		"""
+		self.typeCombo.setEnabled(False)
+		self.threshValueEdit.setEnabled(False)
+		self.analyteCombo.setEnabled(False)
+		self.percentEdit.setEnabled(False)
+		self.winEdit.setEnabled(False)
+		self.levelCombo.setEnabled(False)
+		self.createButton.setEnabled(False)

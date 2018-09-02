@@ -962,7 +962,7 @@ class CaliGraph(GraphWindow):
 		"""
 			Display graph window
 		"""
-		self.showMaximized()
+		self.show()
 
 class Crossplot(GraphWindow):
 	def __init__(self, project):

@@ -166,7 +166,8 @@ class CalibrationStage():
 		try:
 			#Logging
 			
-			self.logger.info('Executing stage Import with stage variables: [drift_correct]:{}\n[srms_used]:{}\n[zero_intercept]:{}\n[n_min]:{}\n'.format( self.drift_correctOption.isChecked(),
+			self.logger.info('Executing stage Import with stage variables: [drift_correct]:{}\n[srms_used]:{}\n'
+							 '[zero_intercept]:{}\n[n_min]:{}\n'.format( self.drift_correctOption.isChecked(),
 																				 srmParam,
 																				 self.zero_interceptOption.isChecked(),
 																				 myn_min))
@@ -187,7 +188,7 @@ class CalibrationStage():
 		self.progressPaneObj.completedStage(5)
 
 		# Automatically saves the project if it already has a save location
-		self.project.reSave()
+		# self.project.reSave()
 
 		# Pop-up button press added to the apply button
 		# TO DO: review this.
