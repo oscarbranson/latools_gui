@@ -289,6 +289,7 @@ class MainGraph(GraphWindow):
 		super().__init__(project)
 		self.showRanges = False
 		self.ranges = []
+		self.filts = {}
 
 		# By default the focus stage is 'rawdata'
 		self.focusStage = 'rawdata'
@@ -404,26 +405,33 @@ class MainGraph(GraphWindow):
 		Update lines for new self.sampleName and/or self.focusStage
 		"""
 		dat = self.project.eg.data[self.sampleName]
-		# update line data for new sample
-		for analyte in dat.analytes:
-			x = dat.Time
-			y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][analyte])
-			# if in log mode, transform y
-			if self.yLogCheckBox.isChecked():
-				y = np.log10(y)
-			self.graphLines[analyte].curve.setData(x=x, y=y)
-
-		# this plots the ranges after 'autorange' calculation
 		for graph in self.graphWins:
+			# update line data for new sample
+			for analyte in dat.analytes:
+				x = dat.Time
+				y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][analyte])
+				# if in log mode, transform y
+				if self.yLogCheckBox.isChecked():
+					y = np.log10(y)
+				if self.focusStage == "filtering":
+					self.graphLines[analyte].hide()
+					self.applyFilters(dat, analyte, x, y, yerr, graph)
+				else:
+					self.applyFilters(dat, analyte, x, y, yerr, graph)
+					self.graphLines[analyte].show()
+					self.graphLines[analyte].curve.setData(x=x, y=y)
+
+			# this plots the ranges after 'autorange' calculation
 			for gRange in self.ranges:
 				graph.removeItem(gRange)
 				
-		if self.showRanges:
-			for graph in self.graphWins:
+			if self.showRanges:
 				for lims in dat.bkgrng:
 					self.addRegion(graph, lims, pg.mkBrush((255,0,0,25)))
 				for lims in dat.sigrng:
 					self.addRegion(graph, lims, pg.mkBrush((0,0,0,25)))
+		
+		
 	
 	def updateFocus(self, showRanges):
 		"""
@@ -472,8 +480,38 @@ class MainGraph(GraphWindow):
 		self.ranges.append(region)
 		targetGraph.addItem(region)
 
-	def applyFilters(self):
-		pass
+	def applyFilters(self, dat, analyte, x, y, yerr, graph):
+		ind = dat.filt.grab_filt(True, analyte)
+		xf = x.copy()
+		yf = y.copy()
+		#yerrf = yerr.copy()
+		if any(~ind):
+			xf[~ind] = np.nan
+			yf[~ind] = np.nan
+			#yerrf[~ind] = np.nan
+		
+		if analyte in self.filts:
+			self.filts[analyte][0].setData(x, y)
+			self.filts[analyte][1].setData(xf, yf)
+			
+			for item in self.filts[analyte]:
+				if self.focusStage == "filtering":
+					item.show()
+				else:
+					item.hide()
+		elif self.focusStage == "filtering":
+			if any(~ind):
+				line1 = pg.PlotDataItem(x,
+				y,
+				pen=pg.mkPen(color=self.hex_2_rgba(dat.cmaps[analyte], 127), width=0.6))
+			line2 = pg.PlotDataItem(xf,
+			yf,
+			pen=pg.mkPen(color=self.hex_2_rgba(dat.cmaps[analyte], 255)))
+			self.filts[analyte] = (line1, line2)
+			graph.addItem(line1)
+			graph.addItem(line2)
+
+		
 		
 class BkgGraph(GraphWindow):
 	"""
@@ -953,7 +991,7 @@ class CaliGraph(GraphWindow):
 			Display graph window
 		"""
 		self.showNormal()
-		
+
 class Crossplot(GraphWindow):
 	def __init__(self, project):
 		super().__init__(project)
