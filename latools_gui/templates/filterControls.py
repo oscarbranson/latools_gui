@@ -34,11 +34,11 @@ class FilterControls:
 
 		# A list of all of the available filter types
 		self.filterList = ["Threshold",
-						   "Clustering",
+						   "Trim",
 						   "Correlation",
 						   "Defragment",
 						   "Exclude",
-						   "Trim"]
+						   "Clustering"]
 
 		# This will hold the contents of the selected filter's json information file
 		self.filterInfo = None
@@ -63,18 +63,9 @@ class FilterControls:
 		self.plusTab.layout = QGridLayout()
 		self.plusTab.setLayout(self.plusTab.layout)
 
-		# The name option for the New Filter
-		self.plusNameLabel = QLabel("Name")
-		self.plusTab.layout.addWidget(self.plusNameLabel, 0, 0)
-		self.plusNameField = QLineEdit()
-		self.plusTab.layout.addWidget(self.plusNameField, 0, 1, 1, 2)
-		self.plusNameField.textChanged.connect(self.plusNameEdit)
-
-		# We limit the maximum name length
-		self.plusNameField.setMaxLength(30)
-
 		# The filter type option for the New Filter
 		self.plusFilterLabel = QLabel("Filter")
+		self.plusFilterLabel.setMaximumWidth(60)
 		self.plusTab.layout.addWidget(self.plusFilterLabel, 1, 0)
 		self.plusFilterCombo = QComboBox()
 		self.plusFilterCombo.activated.connect(self.plusFilterChange)
@@ -88,7 +79,7 @@ class FilterControls:
 		# The description box for the New Filter
 		self.plusDescription = QTextEdit()
 		self.plusDescription.setReadOnly(True)
-		self.plusDescription.setFixedHeight(180)
+		#self.plusDescription.setFixedHeight(180)
 
 		self.plusTab.layout.addWidget(self.plusDescription, 0, 3, 4, 8)
 
@@ -102,37 +93,28 @@ class FilterControls:
 		""" Makes a new filter tab when the New Filter Add button is pressed """
 
 		# Creates the filter's control tab
-		newTab = FilterTab(self.plusNameField.text(),
+		newTab = FilterTab(self.plusFilterCombo.currentText(),
 						   self.plusFilterCombo.currentText(),
 						   self.summaryTab,
 						   self.filterInfo,
 						   self.project,
-						   self.graphPaneObj)
+						   self.graphPaneObj,
+						   self.tabsArea)
 		# self.summaryTab.addFilter(self.plusNameField.text())
 		self.tabsList.append(newTab)
 
 		# Shuffles the tabs so that the Add Filter tab is at the end
 		self.plusTab.setParent(None)
-		self.tabsArea.addTab(newTab.filter, self.plusNameField.text())
+		self.tabsArea.addTab(newTab.filter, self.plusFilterCombo.currentText())
 		self.tabsArea.addTab(self.plusTab, "+")
 
 		# Opens the newly created filter tab
 		self.tabsArea.setCurrentIndex(self.tabsArea.currentIndex() + 1)
 
 		# Resets the Add Filter tab fields
-		self.plusNameField.setText("")
 		self.plusAddButton.setEnabled(False)
 		self.plusFilterCombo.setCurrentIndex(0)
 		self.plusFilterChange()
-
-	def plusNameEdit(self):
-		""" Activates when the New Filter tab's name field is edited """
-
-		# Only activates the Create button when the name and filter type options are legit
-		if self.plusNameField.text() != "" and self.plusFilterCombo.currentText() != "":
-			self.plusAddButton.setEnabled(True)
-		else:
-			self.plusAddButton.setEnabled(False)
 
 	def updateStageInfo(self):
 		""" Updates the stage after data is imported at runtime """
@@ -192,10 +174,78 @@ class FilterControls:
 			self.updateDescription(self.filterInfo["filter_name"], self.filterInfo["filter_description"])
 
 		# Only activates the Create button when the name and filter type options are legit
-		if self.plusNameField.text() != "" and self.plusFilterCombo.currentText() != "":
+		if self.plusFilterCombo.currentText() != "":
 			self.plusAddButton.setEnabled(True)
 		else:
 			self.plusAddButton.setEnabled(False)
+
+	def loadFilters(self, filters, filterOnOff):
+
+		for f in filters:
+
+			if f[0] == "filter_threshold":
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Threshold"))
+				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
+				self.plusFilterChange()
+				self.addTab()
+				# f[1] is the filter arguments, the int is the threshold type in the combobox
+				self.tabsList[-1].filterType.loadFilter(f[1], 0)
+
+			if f[0] == "filter_threshold_percentile":
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Threshold"))
+				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
+				self.plusFilterChange()
+				self.addTab()
+				# f[1] is the filter arguments, the int is the threshold type in the combobox
+				self.tabsList[-1].filterType.loadFilter(f[1], 1)
+
+			if f[0] == "filter_gradient_threshold":
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Threshold"))
+				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
+				self.plusFilterChange()
+				self.addTab()
+				# f[1] is the filter arguments, the int is the threshold type in the combobox
+				self.tabsList[-1].filterType.loadFilter(f[1], 2)
+
+			if f[0] == "filter_trim":
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Trim"))
+				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
+				self.plusFilterChange()
+				self.addTab()
+				self.tabsList[-1].filterType.loadFilter(f[1])
+
+			if f[0] == "filter_correlation":
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Correlation"))
+				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
+				self.plusFilterChange()
+				self.addTab()
+				self.tabsList[-1].filterType.loadFilter(f[1])
+
+			if f[0] == "filter_defragment":
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Defragment"))
+				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
+				self.plusFilterChange()
+				self.addTab()
+				self.tabsList[-1].filterType.loadFilter(f[1])
+
+			if f[0] == "filter_exclude_downhole":
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Exclude"))
+				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
+				self.plusFilterChange()
+				self.addTab()
+				self.tabsList[-1].filterType.loadFilter(f[1])
+
+			if f[0] == "filter_clustering":
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Clustering"))
+				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
+				self.plusFilterChange()
+				self.addTab()
+				self.tabsList[-1].filterType.loadFilter(f[1])
+
+		for f in filterOnOff:
+			for tab in self.tabsList:
+				tab.filtOnOff(f)
+
 
 class SummaryTab:
 	""" The tab that lists all of the created filters and can activate the filtering process """
@@ -207,18 +257,15 @@ class SummaryTab:
 		self.project = project
 
 		self.summaryMainLayout = QHBoxLayout(self.summary)
-		self.scrollWidget = SummaryWidget()
-
-		self.summaryMainLayout.addWidget(self.scrollWidget)
 
 		# We create the scroll area that will display the table of analytes and filters
-		self.scroll = QScrollArea(self.scrollWidget)
+		self.scroll = QScrollArea()
 		self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-		self.scroll.setFixedHeight(220)
-		self.scroll.setFixedWidth(self.summary.frameSize().width())
+		self.scroll.setFixedHeight(190)
 		self.scroll.setWidgetResizable(True)
 
-		self.scrollWidget.scrollArea = self.scroll
+		self.summaryMainLayout.addWidget(self.scroll)
+		self.summary.scroll = self.scroll
 
 		# We make an area inside the scroll to fill with the table
 		self.innerWidget = QWidget()
@@ -248,10 +295,13 @@ class SummaryTab:
 		# The buttons layout is added to the main layout
 		self.summaryMainLayout.addWidget(self.buttonLayoutWidget)
 
+		self.scroll.setWidget(self.innerWidget)
+
 		# These variables are used to run the "All" checkboxes
 
 		# A list of the "All" checkboxes
 		self.selectAllBoxes = []
+		self.selectAllDict = {}
 
 		# A list of ints that register the current state of the checkboxes
 		self.selectAllChecks = []
@@ -272,71 +322,6 @@ class SummaryTab:
 		self.table.addWidget(QLabel("<span style=\"color:#888888\"><strong>ALL</strong></span>"),
 							 0, self.table.columnCount())
 
-	def addSelectAll(self, row):
-		""" Adds a "select all" checkbox to the end of the row of analyte checkboxes """
-		checkBox = QCheckBox()
-		checkBox.stateChanged.connect(self.selectAllClicked)
-		self.selectAllBoxes.append(checkBox)
-		self.selectAllChecks.append(0)
-		self.table.addWidget(checkBox, row, self.table.columnCount() - 1)
-
-	def selectAllClicked(self):
-		""" The function called when one of the "select all" checkboxes is clicked """
-
-		# If we didn't change the checkbox in the program
-		if self.updateChecked:
-
-			# We check the current state of the checkboxes against our register to see which one was clicked
-			for i in range(len(self.selectAllChecks)):
-
-				# if the box has changed
-				if self.selectAllBoxes[i].checkState() != self.selectAllChecks[i]:
-
-					# We have found the box that was clicked, now we update our register
-					# If the box was previously off set it to on, otherwise set to off
-					if self.selectAllChecks[i] == 0:
-						self.selectAllChecks[i] = 2
-						self.selectAllBoxes[i].setCheckState(2)
-					else:
-						self.selectAllChecks[i] = 0
-						self.selectAllBoxes[i].setCheckState(0)
-
-					# If the new state is ticked
-					if self.selectAllChecks[i] == 2:
-						# Set all the row's boxes to on
-						for j in range(len(self.rowRegister[i][0])):
-							self.rowRegister[i][0][j].setCheckState(2)
-							self.rowRegister[i][1][j].setCheckState(2)
-
-						# Set the select all check to on
-						self.selectAllBoxes[i].setCheckState(2)
-					else:
-						# Set all the row's boxes to off
-						for j in range(len(self.rowRegister[i][0])):
-							self.rowRegister[i][0][j].setCheckState(0)
-							self.rowRegister[i][1][j].setCheckState(0)
-
-						# Set the select all check to off
-						self.selectAllBoxes[i].setCheckState(0)
-
-	def registerRow(self, summaryRow, controlsRow):
-		""" registers the lists of checkboxes for each row, so that we can turn them all on or off here """
-		self.rowRegister.append([summaryRow, controlsRow])
-		return len(self.rowRegister) - 1
-
-	def allPartial(self, row):
-		"""
-		When the user clicks 'select all' then unchecks a box, this function sets the 'all' checkbox to off
-		"""
-		# If the given row's 'all' checkbox is currently on
-		if self.selectAllChecks[row] == 2:
-			# We prevent the program from registering that we're changing the checkbox state
-			self.updateChecked = False
-			# Then we change the state to off
-			self.selectAllBoxes[row].setCheckState(0)
-			self.selectAllChecks[row] = 0
-			self.updateChecked = True
-
 	def applyButtonPress(self):
 		""" Called when the 'Apply' button in the summary tab is pressed """
 		self.project.eg.trace_plots()
@@ -347,19 +332,10 @@ class SummaryTab:
 										  "under development.",
 										  QMessageBox.Ok)
 
-
-class SummaryWidget(QWidget):
-	""" A simple helper class to allow the scrollable area in the summary filter tab to resize with the window """
-
-	def resizeEvent(self, event):
-		self.scrollArea.setFixedWidth(self.frameSize().width())
-		return super().resizeEvent(event)
-
-
 class FilterTab:
 	""" Creates the controls tab for a filter """
 
-	def __init__(self, name, filterName, summaryTab, filterInfo, project, graphPaneObj):
+	def __init__(self, name, filterName, summaryTab, filterInfo, project, graphPaneObj, tabsArea):
 
 		# The name given by the user
 		self.name = name
@@ -381,6 +357,11 @@ class FilterTab:
 
 		# A reference to the graph pane to create the data visualisations
 		self.graphPaneObj = graphPaneObj
+
+		self.tabsArea = tabsArea
+
+		# A list that will contain an AnalyteCheckBoxes object for each row in the filter
+		self.checkBoxes = []
 
 		# Builds the layout for the tab
 		self.filter = QWidget()
@@ -427,7 +408,20 @@ class FilterTab:
 		self.controlButtonsLayout.addWidget(self.plotButton)
 
 		# The area for the table of analytes.
-		# TO DO: make this area properly scrollable
+
+		# We use a special widget purely to help with resizing the scrollable area to the window width
+		self.checksArea = QWidget()
+
+		# We create the scroll area that will display the table of analytes and filters
+		self.scroll = QScrollArea()
+		self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+		self.scroll.setFixedHeight(70)
+		#self.scroll.setFixedWidth(self.filter.frameSize().width() - 100)
+		self.scroll.setWidgetResizable(True)
+
+		self.filter.layout.addWidget(self.scroll)
+		self.checksArea.scroll = self.scroll
+
 		self.innerWidget = QWidget()
 
 		self.innerWidget.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
@@ -444,7 +438,7 @@ class FilterTab:
 										str(self.project.eg.analytes[i]) +
 										"< / strong > < / span > "), 0, i + 1)
 
-		self.filter.layout.addWidget(self.innerWidget)
+		self.scroll.setWidget(self.innerWidget)
 
 		# Here the specific filter type is determined and created
 		if self.filterName == "Threshold":
@@ -460,9 +454,31 @@ class FilterTab:
 		if self.filterName == "Trim":
 			self.filterType = TrimFilter(self)
 
+		# Stops the checkboxes from registering programmatic changes
+		self.updatingCheckboxes = False
+
+	def updateName(self):
+
+		self.tabsArea.setTabText(self.tabsArea.currentIndex(), self.name)
+
+		# We also take the opportunity of changing back to the Summary tab
+		self.tabsArea.setCurrentIndex(0)
+
+		# We reset the progress bar
+		self.project.progressBar.reset()
+
 	def addButton(self, buttonWidget):
 		""" Adds a given button to the right-most Options section """
 		self.controlButtonsLayout.addWidget(buttonWidget)
+
+	def filtOnOff(self, f):
+
+		for checks in self.checkBoxes:
+			checks.filtOnOff(f)
+
+
+	def createFilter(self, name):
+		self.checkBoxes.append(AnalyteCheckBoxes(name, self, self.summaryTab))
 
 	def crossPlotClick(self):
 		""" Activates when the Cross-plot button is pressed """
@@ -471,3 +487,137 @@ class FilterTab:
 	def plotClick(self):
 		""" Activates when the Plot button is pressed """
 		pass
+
+
+class AnalyteCheckBoxes:
+	""" Contains and controls the checkboxes for one row of a filter """
+
+	def __init__(self, filterName, filterTab, summaryTab):
+		"""
+		:param filterName: The technical name that LA Tools gives the filter row
+		:param filterTab: A reference to the Filter's tab object
+		:param summaryTab: A reference to the Summary tab
+		"""
+		self.name = filterName
+		self.filterTab = filterTab
+		self.summaryTab = summaryTab
+
+		# Lists that contain the checkbox objects for the filter's tab and the summary tab
+		self.controlsBoxes = []
+		self.summaryBoxes = []
+
+		# A variable that we use to determine when we are programmatically updating checkboxes, so that
+		# these updates will not trigger the program to think that the user has made that update
+		self.updatingCheckboxes = False
+
+		# We create each checkbox that will appear in the filter controls and summary tabs
+		for i in range(len(self.filterTab.project.eg.analytes)):
+			self.controlsBoxes.append(QCheckBox())
+			self.summaryBoxes.append(QCheckBox())
+
+			# We connect the summary and control checkboxes with functions that will activate when their state changes
+			self.controlsBoxes[i].stateChanged.connect(
+				lambda a, i=i: self.updateCheckBox(i, 0))
+
+			self.summaryBoxes[i].stateChanged.connect(
+				lambda a, i=i: self.updateCheckBox(i, 1))
+
+		# We create a row in the analytes table for the filter
+		self.filterTab.table.addWidget(QLabel(self.name), self.filterTab.table.rowCount(), 0)
+
+		# We populate the row with checkboxes
+		for i in range(self.filterTab.table.columnCount() - 1):
+			self.filterTab.table.addWidget(self.controlsBoxes[i], self.filterTab.table.rowCount() - 1, i + 1)
+
+		row = self.summaryTab.table.rowCount()
+
+		# We create a row in the analytes table in the Summary tab for the filter
+		self.summaryTab.table.addWidget(QLabel(self.name), row, 0)
+
+		# We populate the row with checkboxes
+		for i in range(self.filterTab.summaryTab.table.columnCount() - 2):
+			self.filterTab.summaryTab.table.addWidget(self.summaryBoxes[i], row, i + 1)
+
+		# We add a "select all" checkbox
+		self.selectAllCheckBox = QCheckBox()
+		self.selectAllCheckBox.stateChanged.connect(self.selectAllClicked)
+		self.summaryTab.table.addWidget(self.selectAllCheckBox, row, self.summaryTab.table.columnCount() - 1)
+
+	def updateCheckBox(self, i, ID):
+		""" Activates when a checkbox is clicked
+		i: The index of the checkbox in the list (same as the list of analytes)
+		ID: 0 = controls tab was clicked. 1 == summary tab was clicked
+		"""
+
+		# If the change was the result of user input (rather than us updating the checkbox via the program)
+		if not self.updatingCheckboxes:
+
+			self.updatingCheckboxes = True
+
+			if ID == 0:
+				selfBox = self.controlsBoxes[i]
+				otherBox = self.summaryBoxes[i]
+			else:
+				otherBox = self.controlsBoxes[i]
+				selfBox = self.summaryBoxes[i]
+
+			# We set the paired checkbox to the original's state
+			otherBox.setCheckState(selfBox.checkState())
+
+			# We update the filter for each analyte
+			if selfBox.checkState() != 0:
+				# The checkbox is on
+				self.filterTab.project.eg.filter_on(self.name, self.filterTab.project.eg.analytes[i])
+			else:
+				# The checkbox is off
+				self.filterTab.project.eg.filter_off(self.name, self.filterTab.project.eg.analytes[i])
+				self.selectAllCheckBox.setChecked(False)
+
+			self.updatingCheckboxes = False
+
+	def selectAllClicked(self):
+		""" Activates when the "select all" checkbox is clicked """
+
+		if not self.updatingCheckboxes:
+			self.updatingCheckboxes = True
+
+			if self.selectAllCheckBox.checkState() == 2:
+				for i in range(len(self.controlsBoxes)):
+					self.controlsBoxes[i].setChecked(True)
+					self.summaryBoxes[i].setChecked(True)
+			else:
+				for i in range(len(self.controlsBoxes)):
+					self.controlsBoxes[i].setChecked(False)
+					self.summaryBoxes[i].setChecked(False)
+
+			self.updatingCheckboxes = False
+
+	def filtOnOff(self, f):
+		""" When loading a file any line about filter being turned on or off is sent here.
+		f: a tuple containing: ("filter_on" or "filter_off", (The filter's technical name, The analyte name)
+		"""
+
+		# We check all filter on/off calls with all rows, and just update when the names match
+		if f[1][0] == self.name:
+
+			analyte = f[1][1]
+			column = 0
+
+			# We find the column index based on the analyte name
+			for i in range(len(self.filterTab.project.eg.analytes)):
+				if self.filterTab.project.eg.analytes[i] == analyte:
+					column = i
+
+			self.updatingCheckboxes = True
+
+			# We run the loaded filter on/off call, and then update the checkboxes
+			if f[0] == "filter_on":
+				self.filterTab.project.eg.filter_on(self.name, analyte)
+				self.summaryBoxes[column].setChecked(True)
+				self.controlsBoxes[column].setChecked(True)
+			else:
+				self.filterTab.project.eg.filter_off(self.name, analyte)
+				self.summaryBoxes[column].setChecked(False)
+				self.controlsBoxes[column].setChecked(False)
+
+			self.updatingCheckboxes = False

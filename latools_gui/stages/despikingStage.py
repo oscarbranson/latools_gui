@@ -247,7 +247,7 @@ class DespikingStage():
 		self.progressPaneObj.completedStage(1)
 
 		# Automatically saves the project if it already has a save location
-		self.project.reSave()
+		# self.project.reSave()
 
 	#@logged
 	def raiseError(self, message):

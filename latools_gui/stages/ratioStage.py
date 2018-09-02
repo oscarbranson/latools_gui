@@ -83,7 +83,7 @@ class RatioStage():
 		self.stageControls.addApplyButton(self.applyButton)
 		self.applyButton.setEnabled(False)
 
-                #log
+		#log
 		self.logger = logging.getLogger(__name__)
 		self.logger.info('ratio initialised')
 
@@ -95,7 +95,7 @@ class RatioStage():
 		self.project.eg.ratio(internal_standard=self.internal_standardOption.currentText())
 
 		# Automatically saves the project if it already has a save location
-		self.project.reSave()
+		# self.project.reSave()
 
 		self.graphPaneObj.updateGraph()
 		self.progressPaneObj.completedStage(4)

@@ -953,7 +953,7 @@ class CaliGraph(GraphWindow):
 			Display graph window
 		"""
 		self.showNormal()
-
+		
 class Crossplot(GraphWindow):
 	def __init__(self, project):
 		super().__init__(project)

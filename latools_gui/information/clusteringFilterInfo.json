@@ -14,5 +14,7 @@
 	"sort_label": "Sort",
 	"sort_description": "<qt/>Whether or not you want the cluster labels to be sorted by the mean magnitude of the signals they are based on (0 = lowest)",
 	"min_label": "Minimum points",
-	"min_description": "<qt/>The minimum number of data points that should be considered by the filter. Default = 10."
+	"min_description": "<qt/>The minimum number of data points that should be considered by the filter. Default = 10.",
+	"n_clusters_label": "Clusters",
+	"n_clusters_description": "<qt/>The number of clusters to be created. Only applies to the kmeans method." 
 }

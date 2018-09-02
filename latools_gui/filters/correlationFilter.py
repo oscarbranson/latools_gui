@@ -15,37 +15,6 @@ class CorrelationFilter:
 		# The layout that this filter will put its option controls in
 		self.optionsLayout = QGridLayout(self.filterTab.optionsWidget)
 
-		# The complete set of checkboxes that can turn on or off analytes
-		self.analyteCheckBoxes = {
-			"controls": [],
-			"summary": [],
-		}
-
-		# Determines is this filter will have "above" and "below" rows
-		self.twoRows = False
-
-		# Registers which rows this filter occupies in Summary
-		self.summaryRow = 0
-
-		self.filtName = ""
-
-		# Determines if the filter has been created yet
-		self.created = False
-
-		# Prevents updating based on the program activating check boxes
-		self.updating = False
-
-		# We create each checkbox that will appear in the filter controls and summary tabs
-		for i in range(len(self.filterTab.project.eg.analytes)):
-
-			self.analyteCheckBoxes["controls"].append(QCheckBox())
-			self.analyteCheckBoxes["summary"].append(QCheckBox())
-
-			# We connect the summary and control checkboxes with functions that will activate when their state changes.
-			# There are different functions because we need to know which set to override with the new states
-			self.analyteCheckBoxes["controls"][i].stateChanged.connect(self.controlChecksRegister)
-			self.analyteCheckBoxes["summary"][i].stateChanged.connect(self.summaryChecksRegister)
-
 		# An option to select the first analyte
 		self.y_analyteLabel = QLabel(self.filterTab.filterInfo["y_analyte_label"])
 		self.optionsLayout.addWidget(self.y_analyteLabel, 0, 0)
@@ -113,52 +82,13 @@ class CorrelationFilter:
 		self.createButton.clicked.connect(self.createClick)
 		self.filterTab.addButton(self.createButton)
 
-		# We create a row in the analytes table for the filter
-		self.filterTab.table.addWidget(QLabel(self.filterTab.name), self.filterTab.table.rowCount(), 0)
-
-		# We populate the row with checkboxes
-		for i in range(self.filterTab.table.columnCount() - 1):
-			self.filterTab.table.addWidget(
-				self.analyteCheckBoxes["controls"][i], self.filterTab.table.rowCount() - 1, i + 1)
-
-
-	def controlChecksRegister(self):
-		""" Sets the checkboxes in the Summary tab to be the same as those in the Controls tab """
-		if not self.updating:
-			self.updating = True
-			for i in range(len(self.analyteCheckBoxes["controls"])):
-
-				self.analyteCheckBoxes["summary"][i].setCheckState(
-					self.analyteCheckBoxes["controls"][i].checkState())
-
-				# We make sure that if the "Select All" checkbox for that row is on,
-				# any deselect will set it to partial
-				if self.created:
-					if self.analyteCheckBoxes["summary"][i].checkState() == 0:
-						self.filterTab.summaryTab.allPartial(self.summaryRow)
-
-			self.updateAnalyteToggles()
-			self.updating = False
-
-	def summaryChecksRegister(self):
-		""" Sets the checkboxes in the Controls tab to be the same as those in the Summary tab """
-		if not self.updating:
-			self.updating = True
-			for i in range(len(self.analyteCheckBoxes["controls"])):
-				self.analyteCheckBoxes["controls"][i].setCheckState(
-					self.analyteCheckBoxes["summary"][i].checkState())
-
-				# We make sure that if the "Select All" checkbox for that row is on,
-				# any deselect will set it to partial
-				if self.created:
-					if self.analyteCheckBoxes["summary"][i].checkState() == 0:
-						self.filterTab.summaryTab.allPartial(self.summaryRow)
-
-			self.updateAnalyteToggles()
-			self.updating = False
-
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
+
+		# We take a reading of the current number of filters so that we can determine how many new
+		# ones this will create
+		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
+		oldFilters = len(list(self.filterTab.project.eg.data[egSubset].filt.components.keys()))
 
 		if self.y_analyteCombo.currentText() == " ":
 			self.raiseError("You must select a Y analyte to apply the filter to.")
@@ -201,54 +131,44 @@ class CorrelationFilter:
 							"the input values.")
 			return
 
-		# To determine the name that LAtools has given the filter, we first take a sample:
+		self.createName("Correlation", self.x_analyteCombo.currentText(), self.y_analyteCombo.currentText())
+
+		# We determine how many filters have been created
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
-		print(self.filterTab.project.eg.data[egSubset].filt.components.keys())
+		currentFilters = list(self.filterTab.project.eg.data[egSubset].filt.components.keys())
 
-		# Then check the last filter names that have been added to that sample:
-		self.filtName = list(self.filterTab.project.eg.data[egSubset].filt.components.keys())[-1]
+		# We create filter rows for each new filter
+		for i in range(len(currentFilters) - oldFilters):
+			self.filterTab.createFilter(currentFilters[i + oldFilters])
 
-		# We toggle the analytes on and off based on the check boxes
-		self.updateAnalyteToggles()
-
-		row = self.filterTab.summaryTab.table.rowCount()
-
-		# We create a row in the analytes table in the Summary tab for the filter
-		self.filterTab.summaryTab.table.addWidget(
-			QLabel(self.filterTab.name), row, 0)
-
-		# We populate the row with checkboxes
-		for i in range(self.filterTab.summaryTab.table.columnCount() - 2):
-			self.filterTab.summaryTab.table.addWidget(
-				self.analyteCheckBoxes["summary"][i], row, i + 1)
-
-		# We add a "select all" checkbox
-		self.filterTab.summaryTab.addSelectAll(row)
-
-		# We register our checkbox list for that row
-		self.summaryRow = self.filterTab.summaryTab.registerRow(self.analyteCheckBoxes["summary"],
-																self.analyteCheckBoxes["controls"])
-
-		# We deactivate the create button
-		self.createButton.setEnabled(False)
-
-		# The actual filter creation
-		self.created = True
+		self.freezeOptions()
 
 	def raiseError(self, message):
 		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.filterTab.filter, "Error", message, QMessageBox.Ok)
 
-	def updateAnalyteToggles(self):
-		""" Updates each analyte in the filter to conform to the state of that analyte's checkbox """
+	def createName(self, name, elem1, elem2):
+		""" We create a more descriptive name to display on the tab """
+		self.filterTab.name = name + " " + elem1 + " " + elem2
+		self.filterTab.updateName()
 
-		if self.created:
+	def loadFilter(self, params):
+		self.y_analyteCombo.setCurrentIndex(self.y_analyteCombo.findText(params.get("y_analyte", "")))
+		self.x_analyteCombo.setCurrentIndex(self.x_analyteCombo.findText(params.get("x_analyte", "")))
+		self.windowEdit.setText(str(params.get("window", "")))
+		self.r_thresholdEdit.setText(str(params.get("r_threshold", "")))
+		self.p_thresholdEdit.setText(str(params.get("p_threshold", "")))
+		self.filtCheckBox.setChecked(params.get("filt", True))
+		self.createClick()
 
-			for i in range(len(self.filterTab.project.eg.analytes)):
-				# If the checkbox is not unchecked...
-				if self.analyteCheckBoxes["summary"][i].checkState() != 0:
-					# We switch the filter on for that analyte
-					self.filterTab.project.eg.filter_on(self.filtName, self.filterTab.project.eg.analytes[i])
-				else:
-					# We switch the filter off for that analyte
-					self.filterTab.project.eg.filter_off(self.filtName, self.filterTab.project.eg.analytes[i])
+	def freezeOptions(self):
+		"""
+		We lock the option fields after the filter has been created so that they will give a representation
+		of the details of the filter
+		"""
+		self.y_analyteCombo.setEnabled(False)
+		self.x_analyteCombo.setEnabled(False)
+		self.windowEdit.setEnabled(False)
+		self.r_thresholdEdit.setEnabled(False)
+		self.p_thresholdEdit.setEnabled(False)
+		self.filtCheckBox.setEnabled(False)

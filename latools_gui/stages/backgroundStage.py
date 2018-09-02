@@ -286,7 +286,8 @@ class BackgroundStage():
 			# The actual call to the analyse object for this stage is run, using the stage values as parameters
 			try:
 				# logging 
-				self.logger.info('Executing stage Import with stage variables: [weight_fwhm]:{}\n[n_min]:{}\n[n_max]:{}\n[cstep]:{}\n[bkg_filter]:{}\n[f_win]:{}\n[f_n_lim]:{}\n'.format( myweight,
+				self.logger.info('Executing stage Import with stage variables: [weight_fwhm]:{}\n[n_min]:{}\n[n_max]:'
+								 '{}\n[cstep]:{}\n[bkg_filter]:{}\n[f_win]:{}\n[f_n_lim]:{}\n'.format( myweight,
 																								     myn_min,
 																								     myn_max,
 																								     mycstep,
@@ -378,7 +379,7 @@ class BackgroundStage():
 		self.popupButton.setEnabled(True)
 
 		# Automatically saves the project if it already has a save location
-		self.project.reSave()
+		# self.project.reSave()
 
 	#@logged
 	def pressedPopupButton(self):

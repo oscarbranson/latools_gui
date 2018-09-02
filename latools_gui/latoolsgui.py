@@ -507,6 +507,9 @@ class ImportListener():
 			# If we are on the stages screen, the command is sent to the indexed stage
 			self.stageObjects[stage].enterPressed()
 
+	def loadFilters(self, filters, filterOnOff):
+		self.filteringStage.stageControls.loadFilters(filters, filterOnOff)
+
 # This is where the GUI is actually created and run.
 # Autodocs executes side effects when it imports modules to be read. Therefore the GUI must be created and
 # run in a conditional that only accepts the main routine.
