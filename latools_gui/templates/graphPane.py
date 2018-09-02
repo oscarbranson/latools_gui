@@ -472,18 +472,8 @@ class MainGraph(GraphWindow):
 		self.ranges.append(region)
 		targetGraph.addItem(region)
 
-	# Creates new window which contains a copy of the current main graph
-	def makeWindow(self):
-		"""
-		Creates a new graph that is opened as an external window
-		"""
-		newWin = pg.PlotWidget(title=self.sampleName)
-		newWin.setWindowTitle("LAtools Graph")
-		self.graphWins.append(newWin)
-		self.initialiseGraph()
-
-		# self.updateGraphs(ranges=self.ranges)
-		newWin.show()
+	def applyFilters(self):
+		pass
 		
 class BkgGraph(GraphWindow):
 	"""
@@ -599,7 +589,7 @@ class BkgGraph(GraphWindow):
 		"""
 			Display graph window
 		"""
-		self.show()
+		self.showNormal()
 
 	# populate sample list
 	def populateSamples(self):
@@ -962,7 +952,7 @@ class CaliGraph(GraphWindow):
 		"""
 			Display graph window
 		"""
-		self.showMaximized()
+		self.showNormal()
 
 class Crossplot(GraphWindow):
 	def __init__(self, project):
@@ -1010,9 +1000,6 @@ class Crossplot(GraphWindow):
 		self.scrollMain = scrollMain
 
 		self.layout.addWidget(scrollMain, 1)
-
-		# Initialise Legend
-		self.initialiseLegend()
 
 	def initialiseGraph(self):
 		self.populateSamples()
@@ -1220,7 +1207,7 @@ class Crossplot(GraphWindow):
 									focus_stage=dat.focus_stage)
 				udict[analytes[x]] = (x, ux)
 				#print(sampleObj.filt.grab_filt(self.filtCheckBox.isChecked(), analytes[x]))
-				print(helpers.stat_fns.nominal_values(sampleObj.focus[analytes[x]]))
+				#print(helpers.stat_fns.nominal_values(sampleObj.focus[analytes[x]]))
 				# get filter
 				ind = (sampleObj.filt.grab_filt(self.filtCheckBox.isChecked(), analytes[x]) &
 					sampleObj.filt.grab_filt(self.filtCheckBox.isChecked(), analytes[y]) &
@@ -1369,4 +1356,4 @@ class Crossplot(GraphWindow):
 		"""
 			Display graph window
 		"""
-		self.showMaximized()
+		self.showNormal()

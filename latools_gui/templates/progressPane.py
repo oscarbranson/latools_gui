@@ -110,8 +110,9 @@ class ProgressPane:
 			ranges = True
 		else:
 			ranges = False
+		#print(currentStage)
 		# If the new stage has already been applied, the graph is updated
-		if currentStage in self.project.eg.stages_complete:
+		if currentStage in self.project.eg.stages_complete or currentStage == 'filtering':
 			stageIndex = 0
 			if self.focusStages[currentStage][stageIndex] not in self.project.eg.stages_complete:
 				stageIndex += 1
