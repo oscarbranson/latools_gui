@@ -14,6 +14,7 @@ from filters.correlationFilter import CorrelationFilter
 from filters.defragmentFilter import DefragmentFilter
 from filters.excludeFilter import ExcludeFilter
 from filters.trimFilter import TrimFilter
+from filters.signalFilter import SignalFilter
 
 
 class FilterControls:
@@ -37,8 +38,9 @@ class FilterControls:
 						   "Trim",
 						   "Correlation",
 						   "Defragment",
-						   "Exclude",
-						   "Clustering"]
+						   "Exclude Downhole",
+						   "Clustering",
+						   "Signal Optimiser"]
 
 		# This will hold the contents of the selected filter's json information file
 		self.filterInfo = None
@@ -146,11 +148,14 @@ class FilterControls:
 		elif self.plusFilterCombo.currentText() == "Defragment":
 			currentFilt = "information/defragmentFilterInfo.json"
 
-		elif self.plusFilterCombo.currentText() == "Exclude":
+		elif self.plusFilterCombo.currentText() == "Exclude Downhole":
 			currentFilt = "information/excludeFilterInfo.json"
 
 		elif self.plusFilterCombo.currentText() == "Trim":
 			currentFilt = "information/trimFilterInfo.json"
+
+		elif self.plusFilterCombo.currentText() == "Signal Optimiser":
+			currentFilt = "information/signalFilterInfo.json"
 
 		else:
 			# Otherwise the blank was selected, so we clear the info box
@@ -229,7 +234,7 @@ class FilterControls:
 				self.tabsList[-1].filterType.loadFilter(f[1])
 
 			if f[0] == "filter_exclude_downhole":
-				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Exclude"))
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Exclude Downhole"))
 				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
 				self.plusFilterChange()
 				self.addTab()
@@ -449,10 +454,12 @@ class FilterTab:
 			self.filterType = CorrelationFilter(self)
 		if self.filterName == "Defragment":
 			self.filterType = DefragmentFilter(self)
-		if self.filterName == "Exclude":
+		if self.filterName == "Exclude Downhole":
 			self.filterType = ExcludeFilter(self)
 		if self.filterName == "Trim":
 			self.filterType = TrimFilter(self)
+		if self.filterName == "Signal Optimiser":
+			self.filterType = SignalFilter(self)
 
 		# Stops the checkboxes from registering programmatic changes
 		self.updatingCheckboxes = False
