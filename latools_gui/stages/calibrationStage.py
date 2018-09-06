@@ -77,13 +77,23 @@ class CalibrationStage():
 		self.optionsLeft = QGridLayout(self.optionsLeftWidget)
 		self.optionsHBox.addWidget(self.optionsLeftWidget)
 
-		self.optionsRightWidget = QScrollArea()
-		self.optionsRightWidget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-		self.optionsRightWidget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-		self.optionsRightWidget.setWidgetResizable(False)
-		self.optionsRightWidget.setMinimumWidth(70)
-		self.optionsRight = QVBoxLayout(self.optionsRightWidget)
-		self.optionsHBox.addWidget(self.optionsRightWidget)
+		self.analytesWidget = QWidget()
+
+		self.scroll = QScrollArea()
+		self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+		self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+		self.scroll.setWidgetResizable(True)
+		self.scroll.setMinimumWidth(70)
+
+		self.innerWidget = QWidget()
+		self.innerWidget.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+
+		self.optionsRight = QVBoxLayout(self.innerWidget)
+		self.optionsHBox.addWidget(self.scroll)
+
+		self.analytesWidget.scroll = self.scroll
+
+		self.scroll.setWidget(self.innerWidget)
 
 		# We define the stage options and add them to the Controls Pane
 

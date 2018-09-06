@@ -1,10 +1,14 @@
 {
 	"filter_name": "Signal Optimiser",
 	"filter_description": "Optimise data selection based on specified analytes. <br><br>Identifies the longest possible contiguous data region in the signal where the relative standard deviation (std) and concentration of all analytes is minimised. <br><br>Optimisation is performed via a grid search of all possible contiguous data regions. For each region, the mean std and mean scaled analyte concentration (‘amplitude’) are calculated. <br><br>The size and position of the optimal data region are identified using threshold std and amplitude values. Thresholds are derived from all calculated stds and amplitudes using the method specified by threshold_mode. For example, using the ‘kde_max’ method, a probability density function (PDF) is calculated for std and amplitude values, and the threshold is set as the maximum of the PDF. These thresholds are then used to identify the size and position of the longest contiguous region where the std is below the threshold, and the amplitude is either below the threshold. <br><br>All possible regions of the data that have at least min_points are considered.",
-	"analyte_label": "Analyte",
-	"analyte_description": "<qt/>The analyte that the filter applies to.",
+	"analyte_label": "Analytes",
+	"analyte_description": "<qt/>Which analytes to consider.",
 	"min_label": "Min points",
 	"min_description": "<qt/>The minimum number of contiguous points to consider.",
 	"mode_label": "Threshold mode",
-	"mode_description": "The method used to calculate the optimisation thresholds. Can be ‘<em>mean</em>’, ‘<em>median</em>’, ‘<em>kde_max</em>’ or ‘<em>bayes_mvs</em>’, or a custom function. If a function, must take a 1D array, and return a single, real number."
+	"mode_description": "The method used to calculate the optimisation thresholds. Can be ‘<em>mean</em>’, ‘<em>median</em>’, ‘<em>kde_first_max</em>’ or ‘<em>bayes_mvs</em>’, or a custom function. If a function, must take a 1D array, and return a single, real number.",
+	"filt_label": "To filtered",
+	"filt_description": "<qt/>Whether or not to apply existing filters to the data before calculating this filter.",
+	"x_bias_label": "x bias",
+	"x_bias_description": ""
 }

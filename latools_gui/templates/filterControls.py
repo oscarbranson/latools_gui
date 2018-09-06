@@ -247,6 +247,13 @@ class FilterControls:
 				self.addTab()
 				self.tabsList[-1].filterType.loadFilter(f[1])
 
+			if f[0] == "optimise_signal":
+				self.plusFilterCombo.setCurrentIndex(self.plusFilterCombo.findText("Signal Optimiser"))
+				self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
+				self.plusFilterChange()
+				self.addTab()
+				self.tabsList[-1].filterType.loadFilter(f[1])
+
 		for f in filterOnOff:
 			for tab in self.tabsList:
 				tab.filtOnOff(f)

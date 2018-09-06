@@ -179,6 +179,10 @@ class RunningProject():
 				subLine = line.replace("filter_clustering :: args=() kwargs=", "")
 				self.filters.append(("filter_clustering", ast.literal_eval(subLine)))
 
+			if "optimise_signal :: args=() kwargs=" in line:
+				subLine = line.replace("optimise_signal :: args=() kwargs=", "")
+				self.filters.append(("optimise_signal", ast.literal_eval(subLine)))
+
 			if "filter_on :: args=" in line:
 				subLine = line.replace("filter_on :: args=", "").replace(" kwargs={}", "")
 				self.filterOnOff.append(("filter_on", ast.literal_eval(subLine)))
