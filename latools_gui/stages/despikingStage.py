@@ -20,7 +20,7 @@ class DespikingStage():
 	project.
 	"""
 	#@logged
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, despikingWidget, project):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, despikingWidget, project, guideDomain):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -42,6 +42,7 @@ class DespikingStage():
 		self.progressPaneObj = progressPaneObj
 		self.despikingWidget = despikingWidget
 		self.project = project
+		self.guideDomain = guideDomain
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
@@ -152,6 +153,11 @@ class DespikingStage():
 		self.defaultButton.clicked.connect(self.defaultButtonPress)
 		self.stageControls.addDefaultButton(self.defaultButton)
 
+		# We create a button to link to the user guide
+		self.guideButton = QPushButton("User guide")
+		self.guideButton.clicked.connect(self.userGuide)
+		self.stageControls.addDefaultButton(self.guideButton)
+
 		# We create the button for the right-most section of the Controls Pane.
 
 		self.applyButton = QPushButton("APPLY")
@@ -159,15 +165,13 @@ class DespikingStage():
 		self.stageControls.addApplyButton(self.applyButton)
 
 		self.pane1Exponent.setValidator(QDoubleValidator())
-
 		self.pane2win.setValidator(QDoubleValidator())
-
 		self.pane2nlim.setValidator(QDoubleValidator())
-
 		self.pane2Maxiter.setValidator(QIntValidator())
 		
 		self.logger=logging.getLogger(__name__)
 		self.logger.info('Initialised despiking stage')
+
 	#@logged
 	def pressedApplyButton(self):
 		""" Applies a despiking filter to the project data when a button is pressed. """
@@ -210,18 +214,18 @@ class DespikingStage():
 				self.raiseError("The 'maxiter' value must be an integer")
 				return
 
-                
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		try:
 			
-			self.logger.info('Executing despiking stags with stage variables: [expdecay_despiker]:{}\n[exponent]:{}\n[noise_despiker]:{}\n[win]:{}\n[nlim]:{}\n[maxiter]:{}\n'.format( self.pane1expdecayOption.isChecked(),
-																									      localExponent,
-																									      self.pane2NoiseOption.isChecked(),
-																									      localWin,
-																									      localNlim,
-																									      localMaxiter))
+			self.logger.info('Executing despiking stage with stage variables: [expdecay_despiker]:'
+							 '{}\n[exponent]:{}\n[noise_despiker]:{}\n[win]:{}\n[nlim]:{}\n[maxiter]'
+							 ':{}\n'.format( self.pane1expdecayOption.isChecked(),
+											 localExponent,
+											 self.pane2NoiseOption.isChecked(),
+											 localWin,
+											 localNlim,
+											 localMaxiter))
 
-                                                                                                                                                                                                             
 			self.project.eg.despike(expdecay_despiker=self.pane1expdecayOption.isChecked(),
 								exponent=localExponent,
 								noise_despiker=self.pane2NoiseOption.isChecked(),
@@ -297,3 +301,7 @@ class DespikingStage():
 			"maxiter": self.defaultParams['maxiter']
 		}
 		self.fillValues(params)
+
+	def userGuide(self):
+		""" Opens the online user guide to a particular page for the current stage """
+		self.stageControls.userGuide(self.guideDomain + "LAtoolsGUIUserGuide/users/04-data-despiking.html")

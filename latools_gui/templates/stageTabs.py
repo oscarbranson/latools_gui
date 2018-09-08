@@ -17,6 +17,8 @@ class StageTabs:
 			The layout for the screen that the tabs section adds itself to
 		"""
 
+		self.STAGES = STAGES
+
 		# The tabs are created and displayed
 		self.tabs = QTabWidget()
 		stagesScreenLayout.addWidget(self.tabs)
@@ -49,7 +51,7 @@ class StageTabs:
 			self.tabsList[i].setLayout(self.tabsList[i].layout)
 			self.tabs.setTabEnabled(i, False)
 
-		# The tabs are disabled at the beginning, except the first tab
+		# The tabs are disabled at the beginning, except the first tab and the export tab
 		self.tabs.setTabEnabled(0, True)
 
 	def completedStage(self, i):
@@ -68,9 +70,13 @@ class StageTabs:
 		if self.upToStage == 1:
 			self.upToStage = 2
 
+
 		# All tabs up to the stage the project is up to, are enabled. The others are disabled.
 		for i in range(len(self.tabsList)):
 			self.tabs.setTabEnabled(i, i <= self.upToStage)
+
+		# The export tab is enabled
+		self.tabs.setTabEnabled(len(self.STAGES) - 1, True)
 
 	def rightPress(self):
 		""" When the right button is pressed we move to the next tab """

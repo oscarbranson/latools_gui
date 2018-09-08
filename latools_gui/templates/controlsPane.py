@@ -3,9 +3,8 @@
 """
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPainter, QColor, QFont, QImage, QPixmap
-from PyQt5.QtCore import Qt, QSize
-import sys 
+from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtGui import QDesktopServices
 
 class ControlsPane():
 	"""
@@ -108,3 +107,8 @@ class ControlsPane():
 				A button to be added to the right-most layout
 		"""
 		self.controlStandardsLayout.insertWidget(0, button)
+
+	def userGuide(self, url):
+		""" Opens the online user guide to a particular page for the current stage """
+		url = QUrl(url)
+		QDesktopServices.openUrl(url)

@@ -24,7 +24,8 @@ class ProgressPane:
 
 		self.STAGES = STAGES
 		self.focusStages = {'rawdata':('rawdata',), 'despiked':('despiked',), 'autorange':('despiked', 'rawdata'),
-							'bkgsub':('bkgsub',), 'ratios':('ratios',), 'calibrated':('calibrated',), 'filtering':('calibrated',)}
+							'bkgsub':('bkgsub',), 'ratios':('ratios',), 'calibrated':('calibrated',),
+							'filtering':('calibrated',), 'export':('export')}
 		self.graphPane = graphPane
 		self.project = project
 		self.progressWidget = QWidget()
@@ -106,7 +107,16 @@ class ProgressPane:
 		index : int
 			The index of the completed stage
 		"""
+
+		# If we're on the export tab
+		if index == len(self.STAGES) - 1:
+			self.progressUpdater.reset()
+			self.rightButton.setEnabled(False)
+			self.leftButton.setEnabled(False)
+			return
+
 		currentStage = list(self.focusStages.keys())[index]
+
 		if currentStage in ['autorange', 'bkgsub']:
 			ranges = True
 		else:
@@ -122,3 +132,4 @@ class ProgressPane:
 
 		# Resets the progress bar
 		self.progressUpdater.reset()
+

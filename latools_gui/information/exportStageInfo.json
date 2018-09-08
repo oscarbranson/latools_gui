@@ -1,0 +1,5 @@
+{
+	"stage_description": "You can export reports of your data at any time. This will save a series of PDF files in the specified folder. ",
+	"location_label": "Folder",
+	"location_description": "<qt/>The folder that the reports will be saved to."
+}

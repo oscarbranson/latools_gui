@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt, QUrl
 import sys
 import os
 import latools as la
+import json
 
 # Import the templates
 from templates import titleScreen
@@ -23,6 +24,7 @@ from stages import backgroundStage
 from stages import ratioStage
 from stages import calibrationStage
 from stages import filteringStage
+from stages import exportStage
 
 from project import runningProject
 from project.ErrLogger import *
@@ -31,7 +33,7 @@ import logging.config
 
 
 # List of stages
-STAGES = ["Import","De-Spiking","Autorange","Background","Ratio","Calibration","Filtering"]
+STAGES = ["Import","De-Spiking","Autorange","Background","Ratio","Calibration","Filtering", "Export"]
 #logging.config.fileConfig('logging.conf')
 
 # Set the appropriate file paths to write logs to
@@ -97,8 +99,6 @@ class MainWindow(QMainWindow):
 		# Moves the window x pixels to the right, and y pixels down
 		self.move(100, 0)
 		self.setWindowTitle("LAtools")
-
-
 		
 		# We move on to build the UI
 		self.initUI()
@@ -108,6 +108,21 @@ class MainWindow(QMainWindow):
 
 		self.mainWidget = QWidget()
 		self.setCentralWidget(self.mainWidget)
+
+		# We import the user guide location information from a json file
+		if getattr(sys, 'frozen', False):
+			# If the program is running as a bundle, then get the relative directory
+			infoFile = os.path.join(os.path.dirname(sys.executable), 'information/guiInfo.json')
+			infoFile = infoFile.replace('\\', '/')
+		else:
+			# Otherwise the program is running in a normal python environment
+			infoFile = "information/guiInfo.json"
+
+		with open(infoFile, "r") as read_file:
+			self.guiInfo = json.load(read_file)
+			read_file.close()
+
+		self.userGuideDomain = self.guiInfo["user_guide_domain"]
 
 		# principalLayout is a vertical box that runs down the entire window
 		self.principalLayout = QVBoxLayout(self.mainWidget)
@@ -126,7 +141,7 @@ class MainWindow(QMainWindow):
 		self.project = runningProject.RunningProject(self.mainWidget)
 
 		# Here we create a title screen object from the file in templates
-		self.titleScreenObj = titleScreen.TitleScreen(self.mainStack, self.project)
+		self.titleScreenObj = titleScreen.TitleScreen(self.mainStack, self.project, self.userGuideDomain)
 		self.project.addRecentProjects(self.titleScreenObj.recentProjects)
 
 		# And it is added to the mainstack in position 0.
@@ -172,6 +187,10 @@ class MainWindow(QMainWindow):
 		self.filteringStageLayout = QVBoxLayout(self.filteringStageWidget)
 		self.stageLayouts.append(self.filteringStageLayout)
 
+		self.exportStageWidget = QWidget()
+		self.exportStageLayout = QVBoxLayout(self.exportStageWidget)
+		self.stageLayouts.append(self.exportStageLayout)
+
 		# All of the stage layouts are passed to the stageTabs, to be placed in tabs
 		self.stageTabs.passStageLayouts(self.stageLayouts)
 
@@ -183,22 +202,59 @@ class MainWindow(QMainWindow):
 		self.progressPaneObj = progressPane.ProgressPane(STAGES, self.graphPaneObj, self.project, self.stageTabs)
 
 		# The stage objects are then created. Their content will populate the tabs
-		self.importStageObj = importStage.ImportStage(
-			self.importStageLayout, self.graphPaneObj, self.progressPaneObj, self.importStageWidget, self.project)
-		self.despikingStageObj = despikingStage.DespikingStage(
-			self.despikingStageLayout, self.graphPaneObj, self.progressPaneObj, self.despikingStageWidget, self.project)
-		self.autorangeStageObj = autorangeStage.AutorangeStage(
-			self.autorangeStageLayout, self.graphPaneObj, self.progressPaneObj, self.autorangeStageWidget, self.project)
-		self.backgroundStageObj = backgroundStage.BackgroundStage(
-			self.backgroundStageLayout, self.graphPaneObj, self.progressPaneObj, self.backgroundStageWidget,
-			self.project)
-		self.ratioStageObj = ratioStage.RatioStage(
-			self.ratioStageLayout, self.graphPaneObj, self.progressPaneObj, self.ratioStageWidget, self.project)
-		self.calibrationStageObj = calibrationStage.CalibrationStage(
-			self.calibrationStageLayout, self.graphPaneObj, self.progressPaneObj, self.calibrationStageWidget,
-			self.project)
-		self.filteringStageObj = filteringStage.FilteringStage(
-			self.filteringStageLayout, self.graphPaneObj, self.progressPaneObj, self.filteringStageWidget, self.project)
+		self.importStageObj = importStage.ImportStage(self.importStageLayout,
+													  self.graphPaneObj,
+													  self.progressPaneObj,
+													  self.importStageWidget,
+													  self.project,
+													  self.userGuideDomain)
+
+		self.despikingStageObj = despikingStage.DespikingStage(self.despikingStageLayout,
+															   self.graphPaneObj,
+															   self.progressPaneObj,
+															   self.despikingStageWidget,
+															   self.project,
+															   self.userGuideDomain)
+
+		self.autorangeStageObj = autorangeStage.AutorangeStage(self.autorangeStageLayout,
+															   self.graphPaneObj,
+															   self.progressPaneObj,
+															   self.autorangeStageWidget,
+															   self.project,
+															   self.userGuideDomain)
+
+		self.backgroundStageObj = backgroundStage.BackgroundStage(self.backgroundStageLayout,
+																  self.graphPaneObj,
+																  self.progressPaneObj,
+																  self.backgroundStageWidget,
+																  self.project,
+																  self.userGuideDomain)
+
+		self.ratioStageObj = ratioStage.RatioStage(self.ratioStageLayout,
+												   self.graphPaneObj,
+												   self.progressPaneObj,
+												   self.ratioStageWidget,
+												   self.project,
+												   self.userGuideDomain)
+
+		self.calibrationStageObj = calibrationStage.CalibrationStage(self.calibrationStageLayout,
+																	 self.graphPaneObj,
+																	 self.progressPaneObj,
+																	 self.calibrationStageWidget,
+																	 self.project,
+																	 self.userGuideDomain)
+
+		self.filteringStageObj = filteringStage.FilteringStage(self.filteringStageLayout,
+															   self.graphPaneObj,
+															   self.project,
+															   self.userGuideDomain)
+
+		self.exportStageObj = exportStage.ExportStage(self.exportStageLayout,
+													  self.graphPaneObj,
+													  self.progressPaneObj,
+													  self.exportStageWidget,
+													  self.project,
+													  self.userGuideDomain)
 
 		# ImportListener handles all interaction between stages at run time.
 		self.importListener = ImportListener(self.importStageObj,
@@ -208,6 +264,7 @@ class MainWindow(QMainWindow):
 											self.ratioStageObj,
 											self.calibrationStageObj,
 											self.filteringStageObj,
+											self.exportStageObj,
 											self.progressPaneObj,
 											self.graphPaneObj,
 											self.titleScreenObj,
@@ -221,7 +278,7 @@ class MainWindow(QMainWindow):
 		self.progressPaneObj.addToLayout(self.stagesLayout)
 		self.graphPaneObj.addToLayout(self.stagesLayout)
 
-		# This bool is used to avoid having to confirm quitting twice
+		# This bool is used to avoid having to confirm quitting twice in a row
 		self.quitting = False
 
 		# The config window is a popup window that is recorded here so that it is not destroyed after being created.
@@ -273,6 +330,13 @@ class MainWindow(QMainWindow):
 
 		configMenu = menubar.addMenu('&Configuration')
 		configMenu.addAction(makeConfig)
+
+		guideMenu = QAction(QIcon('help.png'), 'User Guide', self)
+		guideMenu.setStatusTip('Read the user guide')
+		guideMenu.triggered.connect(self.helpButton)
+
+		helpMenu = menubar.addMenu('&User Guide')
+		helpMenu.addAction(guideMenu)
 	
 	def saveButton(self):
 		""" Runs the save command on the current running project """
@@ -320,6 +384,12 @@ class MainWindow(QMainWindow):
 	def setProjectTitle(self, title):
 		""" Updates the program window with the project title """
 		self.setWindowTitle("LAtools - " + title)
+
+	def helpButton(self):
+		""" Opens the online user guide """
+		url = QUrl(self.userGuideDomain + "LAtoolsGUIUserGuide/index.html")
+		QDesktopServices.openUrl(url)
+
 
 class ConfigWindow(QWidget):
 	""" A popup window, accessed via the file menu, that allows the user to define a new configuration for LAtools """
@@ -451,6 +521,7 @@ class ImportListener():
 				 ratioStage,
 				 calibrationStage,
 				 filteringStage,
+				 exportStage,
 				 progressPane,
 				 graphPane,
 				 titleScreen,
@@ -463,6 +534,7 @@ class ImportListener():
 		self.ratioStage = ratioStage
 		self.calibrationStage = calibrationStage
 		self.filteringStage = filteringStage
+		self.exportStage = exportStage
 		self.progressPane = progressPane
 		self.graphPane = graphPane
 		self.titleScreen = titleScreen
@@ -475,7 +547,8 @@ class ImportListener():
 							 self.backgroundStage,
 							 self.ratioStage,
 							 self.calibrationStage,
-							 self.filteringStage]
+							 self.filteringStage,
+							 self.exportStage]
 
 	def dataImported(self):
 		""" When data is first imported in the Import Stage, several fields can be updated in later
@@ -484,6 +557,7 @@ class ImportListener():
 		self.ratioStage.updateStageInfo()
 		self.calibrationStage.updateStageInfo()
 		self.filteringStage.updateStageInfo()
+		self.exportStage.updateStageInfo()
 		self.backgroundStage.resetButtons()
 
 	def setTitle(self, title):
@@ -509,6 +583,12 @@ class ImportListener():
 
 	def loadFilters(self, filters, filterOnOff):
 		self.filteringStage.stageControls.loadFilters(filters, filterOnOff)
+
+	def makeConfiguration(self):
+		""" Displays the make new configuration pop-up window """
+		self.mainWindow.configWindow = ConfigWindow(self.importStage)
+		self.mainWindow.configWindow.show()
+
 
 # This is where the GUI is actually created and run.
 # Autodocs executes side effects when it imports modules to be read. Therefore the GUI must be created and

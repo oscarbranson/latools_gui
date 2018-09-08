@@ -20,7 +20,7 @@ class BackgroundStage():
 	project.
 	"""
 	#@logged
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, backgroundWidget, project):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, backgroundWidget, project, guideDomain):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -42,6 +42,7 @@ class BackgroundStage():
 		self.progressPaneObj = progressPaneObj
 		self.backgroundWidget = backgroundWidget
 		self.project = project
+		self.guideDomain = guideDomain
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
@@ -186,6 +187,11 @@ class BackgroundStage():
 		self.defaultButton.clicked.connect(self.defaultButtonPress)
 		self.stageControls.addDefaultButton(self.defaultButton)
 
+		# We create a button to link to the user guide
+		self.guideButton = QPushButton("User guide")
+		self.guideButton.clicked.connect(self.userGuide)
+		self.stageControls.addDefaultButton(self.guideButton)
+
 		# We create the buttons for the right-most section of the Controls Pane.
 
 		self.calcButton = QPushButton("Calculate background")
@@ -202,11 +208,11 @@ class BackgroundStage():
 		self.stageControls.addApplyButton(self.subtractButton)
 		self.subtractButton.setEnabled(False)
 
-                #Logging
+		#Logging
 		self.logger = logging.getLogger(__name__)
 		self.logger.info('Background initialised')
 
-                #Validation
+		#Validation
 		self.weight_fwhmOption.setValidator(QDoubleValidator())
 		self.n_minOption.setValidator(QIntValidator())
 		self.n_maxOption.setValidator(QIntValidator())
@@ -495,3 +501,7 @@ class BackgroundStage():
 
 		self.methodUpdate()
 		self.bkgUpdate()
+
+	def userGuide(self):
+		""" Opens the online user guide to a particular page for the current stage """
+		self.stageControls.userGuide(self.guideDomain + "LAtoolsGUIUserGuide/users/06-background.html")

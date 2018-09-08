@@ -22,7 +22,7 @@ class CalibrationStage():
 	project.
 	"""
 	#@logged
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, calibrationWidget, project):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, calibrationWidget, project, guideDomain):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -44,6 +44,7 @@ class CalibrationStage():
 		self.progressPaneObj = progressPaneObj
 		self.calibrationWidget = calibrationWidget
 		self.project = project
+		self.guideDomain = guideDomain
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 		self.srmfile = None
@@ -130,6 +131,11 @@ class CalibrationStage():
 		self.defaultButton = QPushButton("Defaults")
 		self.defaultButton.clicked.connect(self.defaultButtonPress)
 		self.stageControls.addDefaultButton(self.defaultButton)
+
+		# We create a button to link to the user guide
+		self.guideButton = QPushButton("User guide")
+		self.guideButton.clicked.connect(self.userGuide)
+		self.stageControls.addDefaultButton(self.guideButton)
 
 		# We create the buttons for the bottom of the right-most section of the Controls Pane.
 
@@ -302,3 +308,7 @@ class CalibrationStage():
 	#@logged
 	def ChooseCalibrationButtonPress(self):
 		pass
+
+	def userGuide(self):
+		""" Opens the online user guide to a particular page for the current stage """
+		self.stageControls.userGuide(self.guideDomain + "LAtoolsGUIUserGuide/users/08-calibration.html")

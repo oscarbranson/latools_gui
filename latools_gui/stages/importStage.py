@@ -21,7 +21,7 @@ class ImportStage():
 	project.
 	"""
 	#@logged
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, importStageWidget, project):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, importStageWidget, project, guideDomain):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -49,6 +49,7 @@ class ImportStage():
 		self.fileLocation = ""
 		self.project = project
 		self.importListener = None
+		self.guideDomain = guideDomain
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
@@ -117,14 +118,22 @@ class ImportStage():
 		self.file_extensionOption.setToolTip(self.stageInfo["file_extension_description"])
 		self.file_extensionLabel.setToolTip(self.stageInfo["file_extension_description"])
 
-		# We create a reset to default button
+		# We create a button to open the Make a New Configuration popup window
+		self.makeConfigButton = QPushButton("Make configuration")
+		self.makeConfigButton.clicked.connect(self.makeConfig)
+		self.stageControls.addDefaultButton(self.makeConfigButton)
 
+		# We create a reset to default button
 		self.defaultButton = QPushButton("Defaults")
 		self.defaultButton.clicked.connect(self.defaultButtonPress)
 		self.stageControls.addDefaultButton(self.defaultButton)
 
-		# We create the button for the right-most section of the Controls Pane.
+		# We create a button to link to the user guide
+		self.guideButton = QPushButton("User guide")
+		self.guideButton.clicked.connect(self.userGuide)
+		self.stageControls.addDefaultButton(self.guideButton)
 
+		# We create the button for the right-most section of the Controls Pane.
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
@@ -156,12 +165,12 @@ class ImportStage():
 
 			self.progressPaneObj.completedStage(0)
 
+			# The data location is recorded to be used as the default savefile location
+			self.project.setDataLocation(self.fileLocationLine.text())
+
 			# When the data is imported various stage parameters are updated via the importListener
 			if not self.importListener is None:
 				self.importListener.dataImported()
-
-			# The data location is recorded to be used as the default savefile location
-			self.project.setDataLocation(self.fileLocationLine.text())
 
 			# Automatically saves the project if it already has a save location
 			# self.project.reSave()
@@ -194,6 +203,10 @@ class ImportStage():
 	#@logged
 	def setImportListener(self, importListener):
 		self.importListener = importListener
+
+	def makeConfig(self):
+		if not self.importListener is None:
+			self.importListener.makeConfiguration()
 
 	#@logged
 	def loadValues(self):
@@ -247,4 +260,7 @@ class ImportStage():
 
 		self.fillValues(params)
 
+	def userGuide(self):
+		""" Opens the online user guide to a particular page for the current stage """
+		self.stageControls.userGuide(self.guideDomain + "LAtoolsGUIUserGuide/users/03-data-import.html")
 

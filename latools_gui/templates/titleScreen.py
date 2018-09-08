@@ -9,14 +9,13 @@ from PyQt5.QtCore import QUrl
 import os
 import sys
 from templates import progressUpdater
-import json
 
 class TitleScreen():
 	"""
 	The screen that shows up at the beginning of the program and allows a user to define a new project,
 	or continue an existing one.
 	"""
-	def __init__(self, stack, project):
+	def __init__(self, stack, project, userGuideDomain):
 		"""
 		Initialising builds and displays the screen.
 
@@ -35,19 +34,7 @@ class TitleScreen():
 		self.loadProjectBool = False
 		self.importListener = None
 		self.nameOK = False
-
-		# We import the user guide location information from a json file
-		if getattr(sys, 'frozen', False):
-			# If the program is running as a bundle, then get the relative directory
-			infoFile = os.path.join(os.path.dirname(sys.executable), 'information/guiInfo.json')
-			infoFile = infoFile.replace('\\', '/')
-		else:
-			# Otherwise the program is running in a normal python environment
-			infoFile = "information/guiInfo.json"
-
-		with open(infoFile, "r") as read_file:
-			self.userGuideDomain = json.load(read_file)
-			read_file.close()
+		self.userGuideDomain = userGuideDomain
 
 		# The layout is created from the mainWidget
 		self.mainLayout = QVBoxLayout(self.mainWidget)
@@ -307,7 +294,7 @@ class TitleScreen():
 
 	def helpButtonClick(self):
 		""" Link to online user guide """
-		url = QUrl(self.userGuideDomain["user_manual_domain"] + "LAtoolsGUIUserGuide/index.html")
+		url = QUrl(self.userGuideDomain + "LAtoolsGUIUserGuide/index.html")
 		QDesktopServices.openUrl(url)
 
 	def enterPressed(self):

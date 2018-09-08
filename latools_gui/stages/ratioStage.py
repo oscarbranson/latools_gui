@@ -19,7 +19,7 @@ class RatioStage():
 	"""
 	
 	#@logged
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, ratioWidget, project):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, ratioWidget, project, guideDomain):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -41,6 +41,7 @@ class RatioStage():
 		self.progressPaneObj = progressPaneObj
 		self.ratioWidget = ratioWidget
 		self.project = project
+		self.guideDomain = guideDomain
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
@@ -76,8 +77,12 @@ class RatioStage():
 		self.standardLabel.setToolTip(self.stageInfo["standard_description"])
 		self.standardLabel.setMaximumWidth(150)
 
-		# We create the button for the right-most section of the Controls Pane.
+		# We create a button to link to the user guide
+		self.guideButton = QPushButton("User guide")
+		self.guideButton.clicked.connect(self.userGuide)
+		self.stageControls.addDefaultButton(self.guideButton)
 
+		# We create the apply button for the right-most section of the Controls Pane.
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
@@ -90,7 +95,7 @@ class RatioStage():
 	#@logged
 	def pressedApplyButton(self):
 		""" Ratios the project data with a given standard when a button is pressed. """
-                            
+
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		self.project.eg.ratio(internal_standard=self.internal_standardOption.currentText())
 
@@ -133,3 +138,7 @@ class RatioStage():
 		""" When enter is pressed on this stage """
 		if self.applyButton.isEnabled():
 			self.pressedApplyButton()
+
+	def userGuide(self):
+		""" Opens the online user guide to a particular page for the current stage """
+		self.stageControls.userGuide(self.guideDomain + "LAtoolsGUIUserGuide/users/07-ratio.html")

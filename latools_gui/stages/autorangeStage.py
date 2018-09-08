@@ -21,7 +21,7 @@ class AutorangeStage():
 	project.
 	"""
 	#@logged
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, autorangeWidget, project):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, autorangeWidget, project, guideDomain):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -42,6 +42,7 @@ class AutorangeStage():
 		self.progressPaneObj = progressPaneObj
 		self.autorangeWidget = autorangeWidget
 		self.project = project
+		self.guideDomain = guideDomain
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
@@ -133,13 +134,16 @@ class AutorangeStage():
 		self.logTransformCheck.setToolTip(self.stageInfo["log_transform_description"])
 
 		# We create a reset to default button
-
 		self.defaultButton = QPushButton("Defaults")
 		self.defaultButton.clicked.connect(self.defaultButtonPress)
 		self.stageControls.addDefaultButton(self.defaultButton)
 
-		# We create the button for the right-most section of the Controls Pane.
+		# We create a button to link to the user guide
+		self.guideButton = QPushButton("User guide")
+		self.guideButton.clicked.connect(self.userGuide)
+		self.stageControls.addDefaultButton(self.guideButton)
 
+		# We create the button for the right-most section of the Controls Pane.
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
 		self.stageControls.addApplyButton(self.applyButton)
@@ -301,3 +305,7 @@ class AutorangeStage():
 		}
 
 		self.fillValues(params)
+
+	def userGuide(self):
+		""" Opens the online user guide to a particular page for the current stage """
+		self.stageControls.userGuide(self.guideDomain + "LAtoolsGUIUserGuide/users/05-autorange.html")

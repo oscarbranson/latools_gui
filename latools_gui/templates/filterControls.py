@@ -2,7 +2,8 @@
 """
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt, QSize, QObject, QMetaObject
+from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtGui import QDesktopServices
 import json
 import sys
 import os
@@ -21,7 +22,7 @@ class FilterControls:
 	"""
 	The Filtering Stage has its own customised controls pane
 	"""
-	def __init__(self, stageLayout, project, graphPaneObj):
+	def __init__(self, stageLayout, project, graphPaneObj, guideDomain):
 		"""
 		Initialising builds the pane and prepares it for options to be added by the stage object.
 
@@ -47,6 +48,7 @@ class FilterControls:
 
 		self.project = project
 		self.graphPaneObj = graphPaneObj
+		self.guideDomain = guideDomain
 		self.tabsArea = QTabWidget()
 		stageLayout.addWidget(self.tabsArea)
 
@@ -54,7 +56,7 @@ class FilterControls:
 		self.tabsList = []
 
 		# The first tab is the Summary tab
-		self.summaryTab = SummaryTab(self.project)
+		self.summaryTab = SummaryTab(self.project, self.guideDomain)
 		self.tabsArea.addTab(self.summaryTab.summary, "Summary")
 
 		# The last tab is the "New Filter tab"
@@ -262,11 +264,12 @@ class FilterControls:
 class SummaryTab:
 	""" The tab that lists all of the created filters and can activate the filtering process """
 
-	def __init__(self, project):
+	def __init__(self, project, guideDomain):
 
 		# We use a special widget purely to help with resizing the scrollable area to the window width
 		self.summary = QWidget()
 		self.project = project
+		self.guideDomain = guideDomain
 
 		self.summaryMainLayout = QHBoxLayout(self.summary)
 
@@ -297,6 +300,11 @@ class SummaryTab:
 		self.buttonLayoutWidget = QWidget()
 		self.buttonLayout = QVBoxLayout(self.buttonLayoutWidget)
 		self.buttonLayoutWidget.setMaximumWidth(120)
+
+		# We make an user guide button
+		self.guideButton = QPushButton("User guide")
+		self.guideButton.clicked.connect(self.userGuide)
+		self.buttonLayout.addWidget(self.guideButton)
 
 		# We make an apply button
 		self.applyButton = QPushButton("Apply")
@@ -343,6 +351,11 @@ class SummaryTab:
 										  "folder. <br> Updating the graph below with the filters is currently " +
 										  "under development.",
 										  QMessageBox.Ok)
+
+	def userGuide(self):
+		""" Opens the online user guide to the filtering section """
+		url = QUrl(self.guideDomain + "LAtoolsGUIUserGuide/users/09-filtering.html")
+		QDesktopServices.openUrl(url)
 
 class FilterTab:
 	""" Creates the controls tab for a filter """
