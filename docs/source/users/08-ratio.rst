@@ -10,4 +10,4 @@ In this stage, we will normalise the data to an internal standard. Select the in
         :alt: ratio
         :align: center
 
-.. note:: LAtools works entirely in ratios from here on. This avoids cumbersome assumptions regarding bulk sample composition required to attain absolute analyte concentrations, and makes processing and error propagation numerically simpler. If you require absolute concentrations, these may be calculated from the ratio values at the end of data processing, as long as you know the concentration of the internal standard in your samples.
+.. note:: ``latools`` works entirely in ratios from here on. This avoids cumbersome assumptions regarding bulk sample composition required to attain absolute analyte concentrations, and makes processing and error propagation numerically simpler. If you require absolute concentrations, these may be calculated from the ratio values at the end of data processing, as long as you know the concentration of the internal standard in your samples.

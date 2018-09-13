@@ -1,20 +1,20 @@
-Stage 2. Data despiking
+Stage 2. Data Despiking
 ***********************
 
-In this stage, you will 'despike' the raw data to remove physically unrealistic outliers (i.e. higher than is physically possible based on your system setup). LAtools provides two despiking methods - **Cell Washout Despiking** and **Signal Smoothing**. You can modify several parameters that change of behaviour of these methods.
+In this stage, you will 'despike' the raw data to remove physically unrealistic outliers (i.e. higher than is physically possible based on your system setup). ``latools`` provides two despiking methods - **Cell Washout Despiking** and **Signal Smoothing**. You can modify several parameters that change of behaviour of these methods.
 
 In this tutorial, we will apply both despiking methods.
 
 .. tip:: You can skip this step if you wish by simply clicking on the :guilabel:`&->` or the Autorange tab.
 
 
-Cell Washout Despiking
-======================
+Exponential decay despiker
+==========================
 
 :guilabel:`&Cell Washout Despiking` removes all the low outliers in your data, based on the signal washout time of your laser cell. The signal washout is described using an exponential decay function. If the measured signal decreases faster than physically possible based on your laser setup, these points are removed, and replaced with the average of the adjacent values. The following list details the different parameters this function uses.
 
 * Exponent
-    If you know the exponential decay constant that describes the washout characteristics of your laser ablation cell, you can enter this value in the :guilabel:`&Washout Exponent` dialogue box. If you do not know this value, leave the :guilabel:`&Washout Exponent` dialogue box blank. LAtools will automatically calculate it for you by fitting an exponential decay function to the washout phase of measured SRMs in your data. The value will be displayed in the :guilabel:`&Washout Exponent` dialogue box.
+    If you know the exponential decay constant that describes the washout characteristics of your laser ablation cell, you can enter this value in the :guilabel:`&Washout Exponent` dialogue box. If you do not know this value, leave the :guilabel:`&Washout Exponent` dialogue box blank. ``latools`` will automatically calculate it for you by fitting an exponential decay function to the washout phase of measured SRMs in your data. The value will be displayed in the :guilabel:`&Washout Exponent` dialogue box.
 
 .. can we show that value?
 
@@ -28,8 +28,9 @@ To apply this method, tick the :guilabel:`&Cell Washout Despiking` check box, ch
         :align: center
 
 
-Signal Smoothing
-================
+Noise Despiker
+==============
+
 :guilabel:`&Signal Smoothing` removes high outliers by calculating a rolling mean and standard deviation, and replacing points that are greater than n standard deviations above the mean with the mean of the adjacent data points. The following list details the different parameters this function uses.
 
 * Smoothing Window

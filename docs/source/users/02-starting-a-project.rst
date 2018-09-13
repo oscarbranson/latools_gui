@@ -1,13 +1,17 @@
+..  _beginners_guide:
+
+###############
+Beginners Guide
+###############
+
 Starting a project
 ******************
 
-Welcome to LAtools! This short tutorial will guide you through an entire analysis session using sample ablation data included with LAtools. We highly recommend working through this tutorial to understand the mechanics of the software before working on your own data.
-
-.. where will the data be? still default?
+This short tutorial will guide you through an entire analysis session using sample ablation data included with ``latools``. We highly recommend working through this tutorial to understand the mechanics of the software before working on your own data.
 
 Project Options
 ===============
-LAtools allows you to create new projects, or open existing projects that you or someone else has created. In this tutorial, we will be creating a new project.
+``latools`` allows you to create new projects, or open existing projects that you or someone else has created. In this tutorial, we will be creating a new project.
 
 
 Creating a new project
@@ -33,7 +37,7 @@ If you would like to open an existing project, click :guilabel:`&Open project`. 
         :alt: open existing project
         :align: center
 
-.. note:: LAtools project files have a **.lalog** file extension.
+.. note:: ``latools`` project files have a **.lalog** file extension.
 
 
 Recent projects

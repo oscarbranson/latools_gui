@@ -11,7 +11,7 @@ This is the beginning of the analysis session. In this stage, you will:
 
 Selecting your data and standards
 =================================
-To start the analysis session, you will need to load your data. The data used for this tutorial is stored within the LAtools directory under **latools_gui\\data**. This directory contains the following files:
+To start the analysis session, you will need to load your data. The data used for this tutorial is stored within the ``latools`` directory under **latools_gui\\data**. This directory contains the following files:
 
     -   Sample-1.csv
     -   Sample-2.csv
@@ -19,20 +19,20 @@ To start the analysis session, you will need to load your data. The data used fo
     -   STD-1.csv
     -   STD-2.csv
 
-For this tutorial, LAtools will automatically load the data, so no change is required.
+For this tutorial, ``latools`` will automatically load the data, so no change is required.
 
 Using your own data
 -------------------
-If you wish to use your own data, you will need to place all your data and standards into a single folder. To load the data into LAtools, open your computers file explorer by clicking :guilabel:`&Browse`, then navigate to the folder containing all your files. Then click open.
+If you wish to use your own data, you will need to place all your data and standards into a single folder. To load the data into ``latools``, open your computers file explorer by clicking :guilabel:`&Browse`, then navigate to the folder containing all your files. Then click open.
 
 
 Configuring LAtools
-=====================
+===================
 A configuration stores information about the way your data is formatted, and where on your computer your SRM tables are saved. In this example, we will use the **DEFAULT** configuration.
 
-If you are using your own data, you may need to either select a different configuration, or create a new configuration. To select a different configuration, simply click on the :guilabel:`&Configuration` drop down menu, then select the one you wish to use for your analysis session. For instructions on how to create a new configuration, see :ref:`Creating or modifying a configuration`.
+If you are using your own data, you may need to either select a different configuration, or create a new configuration. To select a different configuration, simply click on the :guilabel:`&Configuration` drop down menu, then select the one you wish to use for your analysis session. For instructions on how to create a new configuration, see :ref:`create_configuration`.
 
-.. note::that multiple configurations can be set up and chosen during data import, allowing LAtools to flexibly work with data from different instruments.
+.. note::that multiple configurations can be set up and chosen during data import, allowing ``latools`` to flexibly work with data from different instruments.
 
 
 Specifying a SRM identifier

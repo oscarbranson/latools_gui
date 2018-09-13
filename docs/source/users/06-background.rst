@@ -1,11 +1,11 @@
-Stage 4. Background
-*******************
+Stage 4. Background Correction
+******************************
 
 There are two parts to the background stage. First, we will calculate and then remove the background underlying the signal regions; then we will subtract the background from the signal regions.
 
 Calculating background
 ======================
-LAtools has two background calculation algorithms that you can use:
+``latools`` has two background calculation algorithms that you can use:
 
 
 * Background calculation using 1D interpolation
