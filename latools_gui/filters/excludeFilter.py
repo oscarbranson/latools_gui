@@ -96,3 +96,4 @@ class ExcludeFilter:
 		"""
 		self.thresholdEdit.setEnabled(False)
 		self.filtCheckBox.setEnabled(False)
+		self.createButton.setEnabled(False)

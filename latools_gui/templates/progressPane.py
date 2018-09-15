@@ -98,6 +98,9 @@ class ProgressPane:
 		self.setRightEnabled()
 		self.stageTabs.completedStage(index)
 
+		# We need to update the export stage with the completed focus stage
+		self.project.importListener.updateExport()
+
 	def tabChanged(self, index):
 		"""
 		Alerts that a stage is completed, so that the tab and button can be enabled

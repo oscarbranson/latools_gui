@@ -1,5 +1,15 @@
 {
 	"stage_description": "You can export reports of your data at any time. This will save a series of PDF files in the specified folder. ",
 	"location_label": "Folder",
-	"location_description": "<qt/>The folder that the reports will be saved to."
+	"location_description": "<qt/>The folder that the reports will be saved to.",
+	"type_label": "Type",
+	"type_description": "<qt/>The type of export. Either a full report, or sample statistics.",
+	"focus_label": "Focus stage",
+	"focus_description": "<qt/>The name of the analysis stage to export.",
+	"analyte_description": "<qt/>The analytes to include in the export.",
+	"filt_label": "Apply filters",
+	"filt_description": "<qt/>Include filters in the export.",
+	"stats_label": "Statistics",
+	"stats_description": "<qt/>mean(): arithmetic mean<br>std(): arithmetic standard deviation<br>se(): arithmetic standard error<br>H15_mean(): Huber mean (outlier removal)<br>H15_std(): Huber standard deviation (outlier removal)<br>H15_se(): Huber standard error (outlier removal)"
+
 }

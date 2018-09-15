@@ -172,3 +172,4 @@ class CorrelationFilter:
 		self.r_thresholdEdit.setEnabled(False)
 		self.p_thresholdEdit.setEnabled(False)
 		self.filtCheckBox.setEnabled(False)
+		self.createButton.setEnabled(False)

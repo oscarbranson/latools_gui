@@ -111,3 +111,4 @@ class TrimFilter:
 		self.endEdit.setEnabled(False)
 		self.filtCheckBox.setEnabled(False)
 		self.createButton.setEnabled(False)
+

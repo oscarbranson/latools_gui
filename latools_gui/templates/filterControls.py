@@ -344,13 +344,7 @@ class SummaryTab:
 
 	def applyButtonPress(self):
 		""" Called when the 'Apply' button in the summary tab is pressed """
-		self.project.eg.trace_plots()
-		infoBox = QMessageBox.information(self.summary, "Export",
-										  "Your data plots have been saved as pdfs in the reports folder " +
-										  "which was created on import, and can be found alongside your data " +
-										  "folder. <br> Updating the graph below with the filters is currently " +
-										  "under development.",
-										  QMessageBox.Ok)
+		pass
 
 	def userGuide(self):
 		""" Opens the online user guide to the filtering section """
@@ -503,7 +497,6 @@ class FilterTab:
 		for checks in self.checkBoxes:
 			checks.filtOnOff(f)
 
-
 	def createFilter(self, name):
 		self.checkBoxes.append(AnalyteCheckBoxes(name, self, self.summaryTab))
 
@@ -605,14 +598,21 @@ class AnalyteCheckBoxes:
 	def selectAllClicked(self):
 		""" Activates when the "select all" checkbox is clicked """
 
+		# Using the updatingCheckboxes bool will prevent the toggled checkboxes from activating their clicked functions
 		if not self.updatingCheckboxes:
 			self.updatingCheckboxes = True
 
 			if self.selectAllCheckBox.checkState() == 2:
+				# We use a call to filter_on without an analyte listed to turn them all on
+				self.filterTab.project.eg.filter_on(self.name)
+				# We switch on all of the actual checkboxes.
 				for i in range(len(self.controlsBoxes)):
 					self.controlsBoxes[i].setChecked(True)
 					self.summaryBoxes[i].setChecked(True)
 			else:
+				# We use a call to filter_off without an analyte listed to turn them all off
+				self.filterTab.project.eg.filter_off(self.name)
+				# We switch all of the checkboxes off
 				for i in range(len(self.controlsBoxes)):
 					self.controlsBoxes[i].setChecked(False)
 					self.summaryBoxes[i].setChecked(False)
@@ -621,30 +621,36 @@ class AnalyteCheckBoxes:
 
 	def filtOnOff(self, f):
 		""" When loading a file any line about filter being turned on or off is sent here.
-		f: a tuple containing: ("filter_on" or "filter_off", (The filter's technical name, The analyte name)
+		f: a tuple containing: ("filter_on" or "filter_off", (The filter's technical name, The analyte name or not)
 		"""
 
 		# We check all filter on/off calls with all rows, and just update when the names match
 		if f[1][0] == self.name:
 
-			analyte = f[1][1]
-			column = 0
+			# If there is an analyte listed in the filt_on or filt_off call
+			if len(f[1]) == 2:
+				analyte = f[1][1]
+				column = 0
 
-			# We find the column index based on the analyte name
-			for i in range(len(self.filterTab.project.eg.analytes)):
-				if self.filterTab.project.eg.analytes[i] == analyte:
-					column = i
+				# We find the column index based on the analyte name
+				for i in range(len(self.filterTab.project.eg.analytes)):
+					if self.filterTab.project.eg.analytes[i] == analyte:
+						column = i
 
-			self.updatingCheckboxes = True
+				#self.updatingCheckboxes = True
 
-			# We run the loaded filter on/off call, and then update the checkboxes
-			if f[0] == "filter_on":
-				self.filterTab.project.eg.filter_on(self.name, analyte)
-				self.summaryBoxes[column].setChecked(True)
-				self.controlsBoxes[column].setChecked(True)
+				# We run the loaded filter on/off call, and then update the checkboxes
+				if f[0] == "filter_on":
+					#self.filterTab.project.eg.filter_on(self.name, analyte)
+					self.summaryBoxes[column].setChecked(True)
+					#self.controlsBoxes[column].setChecked(True)
+				else:
+					#self.filterTab.project.eg.filter_off(self.name, analyte)
+					self.summaryBoxes[column].setChecked(False)
+					#self.controlsBoxes[column].setChecked(False)
+
+				self.updatingCheckboxes = False
+
+			# The filt_on or filt_off applies to a select all call
 			else:
-				self.filterTab.project.eg.filter_off(self.name, analyte)
-				self.summaryBoxes[column].setChecked(False)
-				self.controlsBoxes[column].setChecked(False)
-
-			self.updatingCheckboxes = False
+				self.selectAllCheckBox.setChecked(not self.selectAllCheckBox.isChecked())

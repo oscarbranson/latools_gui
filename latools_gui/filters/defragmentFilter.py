@@ -108,3 +108,4 @@ class DefragmentFilter:
 		self.thresholdEdit.setEnabled(False)
 		self.modeCombo.setEnabled(False)
 		self.filtCheckBox.setEnabled(False)
+		self.createButton.setEnabled(False)

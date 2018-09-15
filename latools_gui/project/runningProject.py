@@ -236,7 +236,7 @@ class RunningProject():
 	def setDataLocation(self, location):
 		""" Saves the location of the specified data folder """
 		self.dataLocation = location
-		print(location)
+		#print(location)
 
 	def reSave(self):
 		""" Only saves the project if it already has a save file location. Used when stage apply buttons are pressed """

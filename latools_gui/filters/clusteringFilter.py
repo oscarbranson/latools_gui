@@ -1,6 +1,7 @@
 """ A filter for clustering elements """
 
 from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt
 
 
 class ClusteringFilter:
@@ -15,21 +16,40 @@ class ClusteringFilter:
 		# The layout that this filter will put its option controls in
 		self.optionsLayout = QGridLayout(self.filterTab.optionsWidget)
 
-		# An option for what analyte to base the filter on
-		self.analyteLabel = QLabel(self.filterTab.filterInfo["analyte_label"])
-		self.optionsLayout.addWidget(self.analyteLabel, 0, 0)
-		self.analyteCombo = QComboBox()
-		self.optionsLayout.addWidget(self.analyteCombo, 0, 1)
-		self.analyteCombo.addItem(" ")
+		# We make a scrollable area to house the list of analyte checkboxes
+		self.analytesWidget = QWidget()
+		self.scroll = QScrollArea()
+		self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+		self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+		self.scroll.setWidgetResizable(True)
+		self.scroll.setMinimumWidth(100)
+		self.innerWidget = QWidget()
+		self.innerWidget.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+		self.analytesLayout = QVBoxLayout(self.innerWidget)
+		self.optionsLayout.addWidget(self.scroll, 0, 0, 3, 1)
+		self.analytesWidget.scroll = self.scroll
+		self.scroll.setWidget(self.innerWidget)
+
+		# We store a list of each checkbox that will be displayed in the scrollable area
+		self.analyteList = []
+
+		# We add a label to the top of the scrollable area
+		self.analytesLayout.addWidget(QLabel(self.filterTab.filterInfo["analyte_label"]))
+
+		# We create a checkbox for each analyte, add it to out internal list, and to the scrollable area
 		for i in range(len(self.filterTab.project.eg.analytes)):
-			self.analyteCombo.addItem(str(self.filterTab.project.eg.analytes[i]))
-		self.analyteLabel.setToolTip(self.filterTab.filterInfo["analyte_description"])
-		self.analyteCombo.setToolTip(self.filterTab.filterInfo["analyte_description"])
+			self.analyteList.append(QCheckBox(str(self.filterTab.project.eg.analytes[i])))
+			self.analyteList[-1].setChecked(False)
+			self.analytesLayout.addWidget(self.analyteList[-1])
+		self.analytesLayout.addStretch(1)
+
+		# We add a tooltip to the whole scrollable area
+		self.innerWidget.setToolTip(self.filterTab.filterInfo["analyte_description"])
 
 		# The filt check box
 		self.filtCheckBox = QCheckBox(self.filterTab.filterInfo["filt_label"])
 		self.filtCheckBox.setToolTip(self.filterTab.filterInfo["filt_description"])
-		self.optionsLayout.addWidget(self.filtCheckBox, 0, 2)
+		self.optionsLayout.addWidget(self.filtCheckBox, 0, 3)
 		self.filtCheckBox.setMinimumWidth(120)
 
 		# The method of clustering algorithm used
@@ -40,25 +60,25 @@ class ClusteringFilter:
 		self.methods = ["meanshift", "kmeans"]
 		for s in self.methods:
 			self.methodCombo.addItem(s)
-		self.optionsLayout.addWidget(self.methodLabel, 1, 0)
-		self.optionsLayout.addWidget(self.methodCombo, 1, 1)
+		self.optionsLayout.addWidget(self.methodLabel, 0, 1)
+		self.optionsLayout.addWidget(self.methodCombo, 0, 2)
 		self.methodCombo.activated.connect(self.methodUpdate)
 
 		# The normalise check box
 		self.normaliseCheckBox = QCheckBox(self.filterTab.filterInfo["normalise_label"])
 		self.normaliseCheckBox.setToolTip(self.filterTab.filterInfo["normalise_description"])
-		self.optionsLayout.addWidget(self.normaliseCheckBox, 1, 2)
+		self.optionsLayout.addWidget(self.normaliseCheckBox, 1, 3)
 		self.normaliseCheckBox.setChecked(True)
 
 		# The time check box
 		self.timeCheckBox = QCheckBox(self.filterTab.filterInfo["time_label"])
 		self.timeCheckBox.setToolTip(self.filterTab.filterInfo["time_description"])
-		self.optionsLayout.addWidget(self.timeCheckBox, 0, 3)
+		self.optionsLayout.addWidget(self.timeCheckBox, 2, 3)
 
 		# The sort check box
 		self.sortCheckBox = QCheckBox(self.filterTab.filterInfo["sort_label"])
 		self.sortCheckBox.setToolTip(self.filterTab.filterInfo["sort_description"])
-		self.optionsLayout.addWidget(self.sortCheckBox, 1, 3)
+		self.optionsLayout.addWidget(self.sortCheckBox, 0, 4)
 		self.sortCheckBox.setChecked(True)
 
 		# The minimum data points option
@@ -68,8 +88,8 @@ class ClusteringFilter:
 		self.minEdit.setMaximumWidth(100)
 		self.minLabel.setToolTip(self.filterTab.filterInfo["min_description"])
 		self.minEdit.setToolTip(self.filterTab.filterInfo["min_description"])
-		self.optionsLayout.addWidget(self.minLabel, 2, 0)
-		self.optionsLayout.addWidget(self.minEdit, 2, 1)
+		self.optionsLayout.addWidget(self.minLabel, 1, 1)
+		self.optionsLayout.addWidget(self.minEdit, 1, 2)
 
 		# The number of clusters option
 		self.n_clustersLabel = QLabel(self.filterTab.filterInfo["n_clusters_label"])
@@ -78,12 +98,12 @@ class ClusteringFilter:
 		self.n_clustersEdit.setMaximumWidth(100)
 		self.n_clustersLabel.setToolTip(self.filterTab.filterInfo["n_clusters_description"])
 		self.n_clustersEdit.setToolTip(self.filterTab.filterInfo["n_clusters_description"])
-		self.optionsLayout.addWidget(self.n_clustersLabel, 2, 2)
-		self.optionsLayout.addWidget(self.n_clustersEdit, 2, 3)
+		self.optionsLayout.addWidget(self.n_clustersLabel, 2, 1)
+		self.optionsLayout.addWidget(self.n_clustersEdit, 2, 2)
 		self.n_clustersEdit.setEnabled(False)
 
 		# We add a stretch that will fill any extra space on the right-most column
-		self.optionsLayout.setColumnStretch(4, 1)
+		self.optionsLayout.setColumnStretch(5, 1)
 
 		# We create the control buttons
 		self.createButton = QPushButton("Create filter")
@@ -105,8 +125,13 @@ class ClusteringFilter:
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
 		oldFilters = len(list(self.filterTab.project.eg.data[egSubset].filt.components.keys()))
 
-		if self.analyteCombo.currentText() == " ":
-			self.raiseError("You must select an analyte to apply the filter to")
+		selectedAnalytes = []
+		for i in range(len(self.filterTab.project.eg.analytes)):
+			if self.analyteList[i].isChecked():
+				selectedAnalytes.append(str(self.filterTab.project.eg.analytes[i]))
+
+		if len(selectedAnalytes) == 0:
+			self.raiseError("You must select one or more analytes to apply the signal optimiser filter to.")
 			return
 
 		try:
@@ -117,7 +142,7 @@ class ClusteringFilter:
 
 		if self.methodCombo.currentText() == "meanshift":
 			try:
-				self.filterTab.project.eg.filter_clustering(analytes = self.analyteCombo.currentText(),
+				self.filterTab.project.eg.filter_clustering(analytes = selectedAnalytes,
 														filt = self.filtCheckBox.isChecked(),
 														normalise = self.normaliseCheckBox.isChecked(),
 														method = self.methodCombo.currentText(),
@@ -138,7 +163,7 @@ class ClusteringFilter:
 				return
 
 			try:
-				self.filterTab.project.eg.filter_clustering(analytes = self.analyteCombo.currentText(),
+				self.filterTab.project.eg.filter_clustering(analytes = selectedAnalytes,
 														filt = self.filtCheckBox.isChecked(),
 														normalise = self.normaliseCheckBox.isChecked(),
 														method = self.methodCombo.currentText(),
@@ -152,7 +177,7 @@ class ClusteringFilter:
 				return
 
 
-		self.createName("Clustering", self.methodCombo.currentText(), self.analyteCombo.currentText())
+		self.createName("Clustering", self.methodCombo.currentText(), str(selectedAnalytes))
 
 		# We determine how many filters have been created
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
@@ -175,7 +200,17 @@ class ClusteringFilter:
 
 	def loadFilter(self, params):
 
-		self.analyteCombo.setCurrentIndex(self.analyteCombo.findText(params.get("analytes", "")))
+		# We first take all of the analyte names that were included in the save file's analyte list
+		# and put them in a set
+		analytes = set()
+		for a in params.get("analytes", []):
+			analytes.add(str(a))
+
+		# For all of the analytes in our list, if the name is in the set, we check its checkbox
+		for i in range(len(self.filterTab.project.eg.analytes)):
+			if str(self.filterTab.project.eg.analytes[i]) in analytes:
+				self.analyteList[i].setChecked(True)
+
 		self.filtCheckBox.setChecked(params.get("filt", True))
 		self.methodCombo.setCurrentIndex(self.methodCombo.findText(params.get("method", "meanshift")))
 		self.normaliseCheckBox.setChecked(params.get("normalise", True))
@@ -190,7 +225,9 @@ class ClusteringFilter:
 		We lock the option fields after the filter has been created so that they will give a representation
 		of the details of the filter
 		"""
-		self.analyteCombo.setEnabled(False)
+
+		for box in self.analyteList:
+			box.setEnabled(False)
 		self.filtCheckBox.setEnabled(False)
 		self.methodCombo.setEnabled(False)
 		self.normaliseCheckBox.setEnabled(False)
@@ -198,3 +235,4 @@ class ClusteringFilter:
 		self.sortCheckBox.setEnabled(False)
 		self.minEdit.setEnabled(False)
 		self.n_clustersEdit.setEnabled(False)
+		self.createButton.setEnabled(False)

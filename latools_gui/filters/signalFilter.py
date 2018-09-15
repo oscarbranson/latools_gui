@@ -184,3 +184,4 @@ class SignalFilter:
 		self.modeCombo.setEnabled(False)
 		self.x_biasEdit.setEnabled(False)
 		self.filtCheckBox.setEnabled(False)
+		self.createButton.setEnabled(False)
