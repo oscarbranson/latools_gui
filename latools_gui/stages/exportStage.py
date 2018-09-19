@@ -77,9 +77,8 @@ class ExportStage():
 		#self.optionsGrid.addWidget(self.typeLabel, 0, 0)
 		self.optionsGrid.addWidget(self.typeCombo, 0, 0, 1, 2)
 
-		# We add the two export type options
+		# We add the full export type option. The other will be added after the background removal stage.
 		self.typeCombo.addItem("Full export")
-		self.typeCombo.addItem("Sample statistics")
 
 		# Set the tooltips
 		#self.typeLabel.setToolTip(self.stageInfo["type_description"])
@@ -243,6 +242,11 @@ class ExportStage():
 			self.focusCombo.addItem(stage)
 			self.focusSet.add(stage)
 			self.focusCombo.setCurrentText(stage)
+			if stage == "bkgsub":
+				self.typeCombo.addItem("Sample statistics")
+		if stage == "rawdata" and self.typeCombo.count() == 2:
+			self.typeCombo.removeItem(1)
+			self.typeChange()
 
 	def locationButtonClicked(self):
 		""" Opens a file dialog to find a file directory for data export when the button is pressed. """
@@ -256,7 +260,11 @@ class ExportStage():
 
 	def updateStageInfo(self):
 		""" When the data is imported, we set the default export location to the imported data folder """
-		self.defaultDataFolder = self.project.dataLocation
+
+		if self.project.dataLocation[-1] == "/":
+			self.defaultDataFolder = self.project.dataLocation[0:-1] + "_export/"
+		else:
+			self.defaultDataFolder = self.project.dataLocation + "_export/"
 		self.fileLocationLine.setText(self.defaultDataFolder)
 
 		# We create the list of analyte checkboxes
@@ -278,6 +286,8 @@ class ExportStage():
 			return
 
 		if self.typeCombo.currentText() == "Full export":
+
+			#print(analytes)
 
 			self.project.eg.export_traces(outdir=self.fileLocationLine.text(),
 										  focus_stage=self.focusCombo.currentText(),
@@ -302,12 +312,14 @@ class ExportStage():
 										 filt=self.filtStats.isChecked(),
 										 stats=stats)
 			print("sample_stats created")
-			df = self.project.eg.getstats()
+			df = self.project.eg.getstats(save=False)
 			df.to_csv(self.fileLocationLine.text() + "/Sample_stats" + str(self.statsExportCount) + ".csv")
 			self.statsExportCount += 1
 
 			infoBox = QMessageBox.information(self.exportStageWidget, "Export",
-											  "The sample statistics have been exported.",
+											  "The sample statistics have been exported at " +
+											  self.fileLocationLine.text() + "/Sample_stats" +
+											  str(self.statsExportCount - 1) + ".csv",
 											  QMessageBox.Ok)
 
 	def raiseError(self, message):
