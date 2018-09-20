@@ -314,4 +314,5 @@ class CalibrationStage():
 		self.stageControls.userGuide(self.guideDomain + "LAtoolsGUIUserGuide/users/08-calibration.html")
 
 	def updateRatio(self):
-		pass
+		self.popupButton.setEnabled(False)
+		#self.applyButton.setEnabled(False)

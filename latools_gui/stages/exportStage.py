@@ -287,8 +287,6 @@ class ExportStage():
 
 		if self.typeCombo.currentText() == "Full export":
 
-			#print(analytes)
-
 			self.project.eg.export_traces(outdir=self.fileLocationLine.text(),
 										  focus_stage=self.focusCombo.currentText(),
 										  analytes=analytes,
@@ -311,15 +309,13 @@ class ExportStage():
 			self.project.eg.sample_stats(analytes=analytes,
 										 filt=self.filtStats.isChecked(),
 										 stats=stats)
-			print("sample_stats created")
+
 			df = self.project.eg.getstats(save=False)
 			df.to_csv(self.fileLocationLine.text() + "/Sample_stats" + str(self.statsExportCount) + ".csv")
 			self.statsExportCount += 1
 
 			infoBox = QMessageBox.information(self.exportStageWidget, "Export",
-											  "The sample statistics have been exported at " +
-											  self.fileLocationLine.text() + "/Sample_stats" +
-											  str(self.statsExportCount - 1) + ".csv",
+											  "The sample statistics have been exported.",
 											  QMessageBox.Ok)
 
 	def raiseError(self, message):
