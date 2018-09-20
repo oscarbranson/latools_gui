@@ -56,7 +56,7 @@ class FilterControls:
 		self.tabsList = []
 
 		# The first tab is the Summary tab
-		self.summaryTab = SummaryTab(self.project, self.guideDomain)
+		self.summaryTab = SummaryTab(self.project, self.guideDomain, self.graphPaneObj)
 		self.tabsArea.addTab(self.summaryTab.summary, "Summary")
 
 		# The last tab is the "New Filter tab"
@@ -264,12 +264,13 @@ class FilterControls:
 class SummaryTab:
 	""" The tab that lists all of the created filters and can activate the filtering process """
 
-	def __init__(self, project, guideDomain):
+	def __init__(self, project, guideDomain, graphPaneObj):
 
 		# We use a special widget purely to help with resizing the scrollable area to the window width
 		self.summary = QWidget()
 		self.project = project
 		self.guideDomain = guideDomain
+		self.graphPaneObj = graphPaneObj
 
 		self.summaryMainLayout = QHBoxLayout(self.summary)
 
@@ -344,7 +345,8 @@ class SummaryTab:
 
 	def applyButtonPress(self):
 		""" Called when the 'Apply' button in the summary tab is pressed """
-		pass
+
+		self.graphPaneObj.graph.applyFilters()
 
 	def userGuide(self):
 		""" Opens the online user guide to the filtering section """

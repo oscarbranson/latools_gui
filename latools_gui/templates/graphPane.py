@@ -126,6 +126,7 @@ class GraphWindow(QWidget):
 		self.graphLines = {}
 		self.highlightedAnalytes = []
 		self.currentInternalStandard = None
+		self.filts = {}
 
 		# dicts for storing {analyte: checkbox pairs}
 		self.legendEntries = {}
@@ -259,16 +260,18 @@ class GraphWindow(QWidget):
 
 	def hideInternalStandard(self):
 		if self.currentInternalStandard != None:
-			self.legendEntries[self.currentInternalStandard].setVisible(True)
-			self.graphLines[self.currentInternalStandard].setVisible(True)
+			self.legendEntries[self.currentInternalStandard].show()
+			self.graphLines[self.currentInternalStandard].show()
 		analyte = self.project.eg.internal_standard
 		self.currentInternalStandard = analyte
 		if self.focusStage not in ['rawdata', 'despiked', 'bkgsub']:
-			self.legendEntries[analyte].setVisible(False)
-			self.graphLines[analyte].setVisible(False)
+			self.legendEntries[analyte].hide()
+			self.graphLines[analyte].hide()
+			if analyte in self.filts:
+				self.filts[analyte].hide()
 		else:
-			self.legendEntries[analyte].setVisible(True)
-			self.graphLines[analyte].setVisible(True)
+			self.legendEntries[analyte].show()
+			self.graphLines[analyte].show()
 
 	def toggleLegendItems(self):
 		for item in reversed(range(self.legendLayout.count())):
@@ -289,10 +292,12 @@ class MainGraph(GraphWindow):
 		super().__init__(project)
 		self.showRanges = False
 		self.ranges = []
-		self.filts = {}
+		
 
 		# By default the focus stage is 'rawdata'
 		self.focusStage = 'rawdata'
+		self.filtering = False
+		self.calibrated = False
 
 		self.initialiseSamples()
 
@@ -381,6 +386,8 @@ class MainGraph(GraphWindow):
 			self.sampleName = selectedSample.text()
 
 			self.updateLines()
+			if self.filtering:
+				self.applyFilters()
 			# self.updateLogScale()
 	
 	# change between log/linear y scale
@@ -399,6 +406,8 @@ class MainGraph(GraphWindow):
 		"""
 		# change line visibility
 		self.graphLines[analyte].setVisible(self.legendEntries[analyte].isChecked())
+		if analyte in self.filts:
+			self.filts[analyte].setVisible(self.legendEntries[analyte].isChecked())
 	
 	def updateLines(self):
 		"""
@@ -413,13 +422,9 @@ class MainGraph(GraphWindow):
 				# if in log mode, transform y
 				if self.yLogCheckBox.isChecked():
 					y = np.log10(y)
-				if self.focusStage == "filtering":
-					self.graphLines[analyte].hide()
-					self.applyFilters(dat, analyte, x, y, yerr, graph)
-				else:
-					self.applyFilters(dat, analyte, x, y, yerr, graph)
-					self.graphLines[analyte].show()
-					self.graphLines[analyte].curve.setData(x=x, y=y)
+				self.graphLines[analyte].curve.setData(x=x, y=y)
+				if analyte in self.filts:
+					self.filts[analyte].hide()
 
 			# this plots the ranges after 'autorange' calculation
 			for gRange in self.ranges:
@@ -438,7 +443,7 @@ class MainGraph(GraphWindow):
 		Update graph for new focus stage. Focus-specific tasks should be included here.
 		"""
 		self.showRanges = showRanges
-
+		
 		self.focusStage = self.project.eg.focus_stage
 		
 		self.updateLines()
@@ -480,36 +485,34 @@ class MainGraph(GraphWindow):
 		self.ranges.append(region)
 		targetGraph.addItem(region)
 
-	def applyFilters(self, dat, analyte, x, y, yerr, graph):
-		ind = dat.filt.grab_filt(True, analyte)
-		xf = x.copy()
-		yf = y.copy()
-		#yerrf = yerr.copy()
-		if any(~ind):
-			xf[~ind] = np.nan
-			yf[~ind] = np.nan
-			#yerrf[~ind] = np.nan
-		
-		if analyte in self.filts:
-			self.filts[analyte][0].setData(x, y)
-			self.filts[analyte][1].setData(xf, yf)
-			
-			for item in self.filts[analyte]:
-				if self.focusStage == "filtering":
-					item.show()
-				else:
-					item.hide()
-		elif self.focusStage == "filtering":
-			if any(~ind):
-				line1 = pg.PlotDataItem(x,
-				y,
-				pen=pg.mkPen(color=self.hex_2_rgba(dat.cmaps[analyte], 127), width=0.6))
-			line2 = pg.PlotDataItem(xf,
-			yf,
-			pen=pg.mkPen(color=self.hex_2_rgba(dat.cmaps[analyte], 255)))
-			self.filts[analyte] = (line1, line2)
-			graph.addItem(line1)
-			graph.addItem(line2)
+	def applyFilters(self):
+		dat = self.project.eg.data[self.sampleName]
+		for graph in self.graphWins:
+			for analyte in dat.analytes:
+				x = dat.Time
+				y, yerr = helpers.stat_fns.unpack_uncertainties(dat.data[self.focusStage][analyte])
+				ind = dat.filt.grab_filt(True, analyte)
+				xf = x.copy()
+				yf = y.copy()
+				#yerrf = yerr.copy()
+				#print(any(~ind))
+				if any(~ind):
+					xf[~ind] = np.nan
+					yf[~ind] = np.nan
+					#yerrf[~ind] = np.nan
+				
+				self.graphLines[analyte].setData(xf, yf)
+				if analyte in self.filts:
+					self.filts[analyte].setData(x, y)
+					self.filts[analyte].show()
+				elif self.filtering and any(~ind):
+					line = pg.PlotDataItem(x,
+					y,
+					pen=pg.mkPen(color=self.hex_2_rgba(self.project.eg.cmaps[analyte], 127), width=0.6), connect='finite')
+					graph.addItem(line)
+					self.filts[analyte] = line
+			self.hideInternalStandard()
+
 
 		
 		

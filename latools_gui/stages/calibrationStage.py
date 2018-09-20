@@ -312,3 +312,6 @@ class CalibrationStage():
 	def userGuide(self):
 		""" Opens the online user guide to a particular page for the current stage """
 		self.stageControls.userGuide(self.guideDomain + "LAtoolsGUIUserGuide/users/08-calibration.html")
+
+	def updateRatio(self):
+		pass

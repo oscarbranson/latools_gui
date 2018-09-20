@@ -105,6 +105,8 @@ class RatioStage():
 		self.graphPaneObj.updateGraph()
 		self.progressPaneObj.completedStage(4)
 
+		self.project.importListener.updateRatio()
+
 	#@logged
 	def updateStageInfo(self):
 		""" Updates the stage after data is imported at runtime """

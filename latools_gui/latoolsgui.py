@@ -591,6 +591,9 @@ class ImportListener():
 
 	def updateExport(self):
 		self.exportStage.updateFocus()
+	
+	def updateRatio(self):
+		self.calibrationStage.updateRatio()
 
 # This is where the GUI is actually created and run.
 # Autodocs executes side effects when it imports modules to be read. Therefore the GUI must be created and

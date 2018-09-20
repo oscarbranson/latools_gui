@@ -124,6 +124,7 @@ class ProgressPane:
 			ranges = True
 		else:
 			ranges = False
+
 		#print(currentStage)
 		# If the new stage has already been applied, the graph is updated
 		if currentStage in self.project.eg.stages_complete or currentStage == 'filtering':
@@ -131,7 +132,14 @@ class ProgressPane:
 			if self.focusStages[currentStage][stageIndex] not in self.project.eg.stages_complete:
 				stageIndex += 1
 			self.project.eg.set_focus(self.focusStages[currentStage][stageIndex])
+		
 		self.graphPane.updateGraph(showRanges=ranges)
+
+		if currentStage == "filtering":
+			self.graphPane.graph.filtering = True
+			self.graphPane.graph.applyFilters()
+		else:
+			self.graphPane.graph.filtering = False
 
 		# Resets the progress bar
 		self.progressUpdater.reset()
