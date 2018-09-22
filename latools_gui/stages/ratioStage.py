@@ -77,6 +77,8 @@ class RatioStage():
 		self.standardLabel.setToolTip(self.stageInfo["standard_description"])
 		self.standardLabel.setMaximumWidth(150)
 
+		self.optionsGrid.setColumnStretch(2,1)
+
 		# We create a button to link to the user guide
 		self.guideButton = QPushButton("User guide")
 		self.guideButton.clicked.connect(self.userGuide)
@@ -110,6 +112,9 @@ class RatioStage():
 	#@logged
 	def updateStageInfo(self):
 		""" Updates the stage after data is imported at runtime """
+
+		self.internal_standardOption.clear()
+		self.internal_standardOption.addItem(" ")
 		for analyte in self.project.eg.analytes:
 			self.internal_standardOption.addItem(str(analyte))
 

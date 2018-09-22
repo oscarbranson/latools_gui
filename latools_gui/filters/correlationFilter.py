@@ -85,6 +85,9 @@ class CorrelationFilter:
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
 
+		# We record the current tab index so that we know which tab to update the name of
+		tabIndex = self.filterTab.tabsArea.currentIndex()
+
 		# We take a reading of the current number of filters so that we can determine how many new
 		# ones this will create
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
@@ -131,7 +134,7 @@ class CorrelationFilter:
 							"the input values.")
 			return
 
-		self.createName("Correlation", self.x_analyteCombo.currentText(), self.y_analyteCombo.currentText())
+		self.createName(tabIndex, "Correlation", self.x_analyteCombo.currentText(), self.y_analyteCombo.currentText())
 
 		# We determine how many filters have been created
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
@@ -147,10 +150,10 @@ class CorrelationFilter:
 		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.filterTab.filter, "Error", message, QMessageBox.Ok)
 
-	def createName(self, name, elem1, elem2):
+	def createName(self, index, name, elem1, elem2):
 		""" We create a more descriptive name to display on the tab """
 		self.filterTab.name = name + " " + elem1 + " " + elem2
-		self.filterTab.updateName()
+		self.filterTab.updateName(index)
 
 	def loadFilter(self, params):
 		self.y_analyteCombo.setCurrentIndex(self.y_analyteCombo.findText(params.get("y_analyte", "")))

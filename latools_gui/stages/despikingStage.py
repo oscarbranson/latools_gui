@@ -99,6 +99,7 @@ class DespikingStage():
 		self.pane1Layout.addWidget(self.pane1Exponent, 1, 1)
 		self.pane1Exponent.setToolTip(self.stageInfo["exponent_description"])
 		self.pane1ExponentLabel.setToolTip(self.stageInfo["exponent_description"])
+		self.pane1Exponent.setPlaceholderText("auto")
 
 		#self.pane1Maxiter = QLineEdit(self.defaultParams('maxiter'))
 		#self.pane1Layout.addWidget(QLabel("maxiter"), 2, 0)
@@ -244,8 +245,9 @@ class DespikingStage():
 			try :
 				self.pane1Exponent.setText(str(self.project.eg.expdecay_coef[0]))
 			except:
-				self.raiseError("A problem has occured with your exponent. Please check that the value is correct")
-				return
+				pass
+				#self.raiseError("A problem has occured with your exponent. Please check that the value is correct")
+				#return
 
 		self.graphPaneObj.updateGraph()
 		self.progressPaneObj.completedStage(1)
@@ -276,7 +278,7 @@ class DespikingStage():
 
 		if params is not None:
 			self.pane1expdecayOption.setChecked(params.get("expdecay_despiker", False))
-			self.pane1Exponent.setText(params.get("exponent", ""))
+			self.pane1Exponent.setText(str(params.get("exponent", "")))
 			self.pane2NoiseOption.setChecked(params.get("noise_despiker", True))
 			self.pane2win.setText(str(params.get("win", "")))
 			self.pane2nlim.setText(str(params.get("nlim", "")))

@@ -43,6 +43,9 @@ class ExcludeFilter:
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
 
+		# We record the current tab index so that we know which tab to update the name of
+		tabIndex = self.filterTab.tabsArea.currentIndex()
+
 		# We take a reading of the current number of filters so that we can determine how many new
 		# ones this will create
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
@@ -62,7 +65,7 @@ class ExcludeFilter:
 							"the input values.")
 			return
 
-		self.createName("Exclude", str(threshold))
+		self.createName(tabIndex, "Exclude", str(threshold))
 
 		# We determine how many filters have been created
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
@@ -78,10 +81,10 @@ class ExcludeFilter:
 		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.filterTab.filter, "Error", message, QMessageBox.Ok)
 
-	def createName(self, name, thresh):
+	def createName(self, index, name, thresh):
 		""" We create a more descriptive name to display on the tab """
 		self.filterTab.name = name + " " + thresh
-		self.filterTab.updateName()
+		self.filterTab.updateName(index)
 
 	def loadFilter(self, params):
 

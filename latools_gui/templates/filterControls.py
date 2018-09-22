@@ -56,7 +56,7 @@ class FilterControls:
 		self.tabsList = []
 
 		# The first tab is the Summary tab
-		self.summaryTab = SummaryTab(self.project, self.guideDomain, self.graphPaneObj)
+		self.summaryTab = SummaryTab(self.project, self.guideDomain, self.graphPaneObj, self.tabsArea)
 		self.tabsArea.addTab(self.summaryTab.summary, "Summary")
 
 		# The last tab is the "New Filter tab"
@@ -66,6 +66,10 @@ class FilterControls:
 		# We build the New Filter tab, starting with a grid layout
 		self.plusTab.layout = QGridLayout()
 		self.plusTab.setLayout(self.plusTab.layout)
+
+		# The Create new filter label
+		self.plusFilterTitle = QLabel("<span style=\"color:#779999; font-size:15px;\"><b>Create new filter</b></span>")
+		self.plusTab.layout.addWidget(self.plusFilterTitle, 0, 0, 1, 2)
 
 		# The filter type option for the New Filter
 		self.plusFilterLabel = QLabel("Filter")
@@ -88,7 +92,7 @@ class FilterControls:
 		self.plusTab.layout.addWidget(self.plusDescription, 0, 3, 4, 8)
 
 		# The Add button for the New Filter
-		self.plusAddButton = QPushButton("Add filter")
+		self.plusAddButton = QPushButton("Create filter")
 		self.plusAddButton.clicked.connect(self.addTab)
 		self.plusAddButton.setEnabled(False)
 		self.plusTab.layout.addWidget(self.plusAddButton, 3, 2)
@@ -103,7 +107,8 @@ class FilterControls:
 						   self.filterInfo,
 						   self.project,
 						   self.graphPaneObj,
-						   self.tabsArea)
+						   self.tabsArea,
+						   self.tabsList)
 		# self.summaryTab.addFilter(self.plusNameField.text())
 		self.tabsList.append(newTab)
 
@@ -264,20 +269,22 @@ class FilterControls:
 class SummaryTab:
 	""" The tab that lists all of the created filters and can activate the filtering process """
 
-	def __init__(self, project, guideDomain, graphPaneObj):
+	def __init__(self, project, guideDomain, graphPaneObj, tabsArea):
 
 		# We use a special widget purely to help with resizing the scrollable area to the window width
 		self.summary = QWidget()
 		self.project = project
 		self.guideDomain = guideDomain
 		self.graphPaneObj = graphPaneObj
+		self.header_items = []
+		self.tabsArea = tabsArea
 
 		self.summaryMainLayout = QHBoxLayout(self.summary)
 
 		# We create the scroll area that will display the table of analytes and filters
 		self.scroll = QScrollArea()
 		self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-		self.scroll.setFixedHeight(190)
+		self.scroll.setFixedHeight(210)
 		self.scroll.setWidgetResizable(True)
 
 		self.summaryMainLayout.addWidget(self.scroll)
@@ -307,6 +314,11 @@ class SummaryTab:
 		self.guideButton.clicked.connect(self.userGuide)
 		self.buttonLayout.addWidget(self.guideButton)
 
+		# The create filter button
+		self.createButton = QPushButton("Create filter")
+		self.createButton.clicked.connect(self.createPressed)
+		self.buttonLayout.addWidget(self.createButton)
+
 		# We make an apply button
 		self.applyButton = QPushButton("Apply")
 		self.applyButton.clicked.connect(self.applyButtonPress)
@@ -318,30 +330,23 @@ class SummaryTab:
 
 		self.scroll.setWidget(self.innerWidget)
 
-		# These variables are used to run the "All" checkboxes
-
-		# A list of the "All" checkboxes
-		self.selectAllBoxes = []
-		self.selectAllDict = {}
-
-		# A list of ints that register the current state of the checkboxes
-		self.selectAllChecks = []
-
-		# A list of references to the list of checkboxes for each row
-		self.rowRegister = []
-
-		# A bool to allow the All checkboxes to register that a state has changed.
-		# This is necessary to prevent the state-change triggering when it is changed programmatically
-		self.updateChecked = True
-
 	def addElements(self, analytes):
 		""" When the analytes are available at run time, they are populated in the table """
+
+		# If the data has already been imported we need to remove the existing elements
+		for i in range(len(self.header_items)):
+			self.header_items[i].setParent(None)
+
 		for i in range(len(analytes)):
-			self.table.addWidget(QLabel("<span style=\"color:#779999\"><strong>" +
+			new_label = QLabel("<span style=\"color:#779999\"><strong>" +
 										str(analytes[i]) +
-										"< / strong > < / span > "), 0, i + 1)
-		self.table.addWidget(QLabel("<span style=\"color:#888888\"><strong>ALL</strong></span>"),
-							 0, self.table.columnCount())
+										"< / strong > < / span > ")
+			self.header_items.append(new_label)
+			self.table.addWidget(new_label, 0, i + 1)
+
+		new_label = QLabel("<span style=\"color:#888888\"><strong>ALL</strong></span>")
+		self.header_items.append(new_label)
+		self.table.addWidget(new_label, 0, len(analytes) + 1)
 
 	def applyButtonPress(self):
 		""" Called when the 'Apply' button in the summary tab is pressed """
@@ -353,10 +358,14 @@ class SummaryTab:
 		url = QUrl(self.guideDomain + "LAtoolsGUIUserGuide/users/09-filtering.html")
 		QDesktopServices.openUrl(url)
 
+	def createPressed(self):
+		self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
+
+
 class FilterTab:
 	""" Creates the controls tab for a filter """
 
-	def __init__(self, name, filterName, summaryTab, filterInfo, project, graphPaneObj, tabsArea):
+	def __init__(self, name, filterName, summaryTab, filterInfo, project, graphPaneObj, tabsArea, tabsList):
 
 		# The name given by the user
 		self.name = name
@@ -380,6 +389,7 @@ class FilterTab:
 		self.graphPaneObj = graphPaneObj
 
 		self.tabsArea = tabsArea
+		self.tabsList = tabsList
 
 		# A list that will contain an AnalyteCheckBoxes object for each row in the filter
 		self.checkBoxes = []
@@ -403,7 +413,7 @@ class FilterTab:
 
 		self.infoBox.setReadOnly(True)
 		self.infoBox.setFixedWidth(300)
-		self.infoBox.setFixedHeight(100)
+		self.infoBox.setFixedHeight(120)
 
 		# The area for the filter options. This will be populated by the specific filter type
 		self.optionsWidget = QWidget()
@@ -427,6 +437,10 @@ class FilterTab:
 		self.plotButton = QPushButton("Plot")
 		self.plotButton.clicked.connect(self.plotClick)
 		self.controlButtonsLayout.addWidget(self.plotButton)
+
+		self.deleteButton = QPushButton("Delete filter")
+		self.deleteButton.clicked.connect(self.deleteClick)
+		self.controlButtonsLayout.addWidget(self.deleteButton)
 
 		# The area for the table of analytes.
 
@@ -480,9 +494,9 @@ class FilterTab:
 		# Stops the checkboxes from registering programmatic changes
 		self.updatingCheckboxes = False
 
-	def updateName(self):
+	def updateName(self, index):
 
-		self.tabsArea.setTabText(self.tabsArea.currentIndex(), self.name)
+		self.tabsArea.setTabText(index, self.name)
 
 		# We also take the opportunity of changing back to the Summary tab
 		self.tabsArea.setCurrentIndex(0)
@@ -501,6 +515,22 @@ class FilterTab:
 
 	def createFilter(self, name):
 		self.checkBoxes.append(AnalyteCheckBoxes(name, self, self.summaryTab))
+
+	def deleteClick(self):
+
+		# A popup message is created to ask to save the project
+		reply = QMessageBox.question(self.filter, 'Message',
+									 "Are you sure you want to delete this filter?", QMessageBox.Yes |
+									 QMessageBox.No, QMessageBox.No)
+
+		if reply == QMessageBox.Yes:
+			# If yes
+			self.tabsArea.setCurrentIndex(0)
+
+			for row in self.checkBoxes:
+				row.deleteRow()
+
+			self.filter.setParent(None)
 
 	def crossPlotClick(self):
 		""" Activates when the Cross-plot button is pressed """
@@ -527,6 +557,7 @@ class AnalyteCheckBoxes:
 		# Lists that contain the checkbox objects for the filter's tab and the summary tab
 		self.controlsBoxes = []
 		self.summaryBoxes = []
+		self.nameLabel = QLabel(self.name)
 
 		# A variable that we use to determine when we are programmatically updating checkboxes, so that
 		# these updates will not trigger the program to think that the user has made that update
@@ -554,7 +585,7 @@ class AnalyteCheckBoxes:
 		row = self.summaryTab.table.rowCount()
 
 		# We create a row in the analytes table in the Summary tab for the filter
-		self.summaryTab.table.addWidget(QLabel(self.name), row, 0)
+		self.summaryTab.table.addWidget(self.nameLabel, row, 0)
 
 		# We populate the row with checkboxes
 		for i in range(self.filterTab.summaryTab.table.columnCount() - 2):
@@ -656,3 +687,11 @@ class AnalyteCheckBoxes:
 			# The filt_on or filt_off applies to a select all call
 			else:
 				self.selectAllCheckBox.setChecked(not self.selectAllCheckBox.isChecked())
+
+	def deleteRow(self):
+		""" Deletes this filter and removes it from the summary tab """
+		self.filterTab.project.eg.filter_off(self.name)
+		for box in self.summaryBoxes:
+			box.setParent(None)
+		self.selectAllCheckBox.setParent(None)
+		self.nameLabel.setParent(None)

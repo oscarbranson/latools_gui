@@ -106,6 +106,9 @@ class ThresholdFilter:
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
 
+		# We record the current tab index so that we know which tab to update the name of
+		tabIndex = self.filterTab.tabsArea.currentIndex()
+
 		# We take a reading of the current number of filters so that we can determine how many new
 		# ones this will create
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
@@ -138,7 +141,7 @@ class ThresholdFilter:
 				return
 
 			# We update the name of the filter
-			self.createName("threshold", self.analyteCombo.currentText(), localThreshold)
+			self.createName(tabIndex, "threshold", self.analyteCombo.currentText(), localThreshold)
 
 		# Threshold Percentile filter selected:
 		elif self.typeCombo.currentText() == self.thresholdTypes[1]:
@@ -161,7 +164,7 @@ class ThresholdFilter:
 				return
 
 			# We update the name of the filter
-			self.createName("threshold_percentile", self.analyteCombo.currentText(), localPercent)
+			self.createName(tabIndex, "threshold_percentile", self.analyteCombo.currentText(), localPercent)
 
 		# Gradient Threshold filter selected:
 		elif self.typeCombo.currentText() == self.thresholdTypes[2]:
@@ -190,7 +193,7 @@ class ThresholdFilter:
 				return
 
 			# We update the name of the filter
-			self.createName("gradient_threshold", self.analyteCombo.currentText(), localThreshold)
+			self.createName(tabIndex, "gradient_threshold", self.analyteCombo.currentText(), localThreshold)
 
 		# Gradient Threshold Percentile filter selected:
 		elif self.typeCombo.currentText() == self.thresholdTypes[2]:
@@ -220,7 +223,7 @@ class ThresholdFilter:
 				return
 
 			# We update the name of the filter
-			self.createName("gradient_threshold_percentile", self.analyteCombo.currentText(), localPercent)
+			self.createName(tabIndex, "gradient_threshold_percentile", self.analyteCombo.currentText(), localPercent)
 
 		# We determine how many filters have been created
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
@@ -267,10 +270,10 @@ class ThresholdFilter:
 			self.winEdit.setEnabled(True)
 			self.levelCombo.setEnabled(True)
 
-	def createName(self, type, analyte, thresh):
+	def createName(self, index, type, analyte, thresh):
 		""" We create a more descriptive name to display on the tab """
 		self.filterTab.name = type + " " + analyte + " " + str(thresh)
-		self.filterTab.updateName()
+		self.filterTab.updateName(index)
 
 	def loadFilter(self, params, typeIndex):
 		self.typeCombo.setCurrentIndex(typeIndex)

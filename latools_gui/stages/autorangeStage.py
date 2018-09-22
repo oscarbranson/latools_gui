@@ -250,6 +250,8 @@ class AutorangeStage():
 	#@logged
 	def updateStageInfo(self):
 		""" The analyte dropdown can only be built once data is imported at runtime """
+		self.analyteBox.clear()
+		self.analyteBox.addItem("total_counts")
 		for analyte in self.project.eg.analytes:
 			self.analyteBox.addItem(str(analyte))
 

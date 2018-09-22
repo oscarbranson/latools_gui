@@ -31,6 +31,7 @@ class ProgressPane:
 		self.progressWidget = QWidget()
 		self.progressLayout = QHBoxLayout(self.progressWidget)
 		self.stageTabs = stageTabs
+		self.filter_stage_available = False
 
 		self.stageTabs.addProgressPane(self)
 
@@ -98,8 +99,17 @@ class ProgressPane:
 		self.setRightEnabled()
 		self.stageTabs.completedStage(index)
 
+		# Importing new data after running analysis causes problems.
+		# This prevents the user from re-importing data within this run of the software
+		if index == 2:
+			self.project.importListener.blockReImport()
+
 		# We need to update the export stage with the completed focus stage
-		self.project.importListener.updateExport()
+		stage = ""
+		if index == 5:
+			stage = "filtered"
+		self.project.importListener.updateExport(stage)
+
 
 	def tabChanged(self, index):
 		"""
@@ -116,7 +126,20 @@ class ProgressPane:
 			self.progressUpdater.reset()
 			self.rightButton.setEnabled(False)
 			self.leftButton.setEnabled(False)
+			if self.filter_stage_available:
+				self.leftButton.setEnabled(True)
 			return
+
+		# If we're on the Background stage, we add a tooltip to the right button to explain what
+		# The user needs to do to move forward
+		if index == 3:
+			self.rightButton.setToolTip(
+				"<qt/>To continue on you must first Calculate background, then Subtract background.")
+		elif index == 5:
+			self.rightButton.setToolTip(
+				"<qt/>To continue on you must apply the calibration.")
+		else:
+			self.rightButton.setToolTip("")
 
 		currentStage = list(self.focusStages.keys())[index]
 
@@ -136,6 +159,9 @@ class ProgressPane:
 		self.graphPane.updateGraph(showRanges=ranges)
 
 		if currentStage == "filtering":
+			self.rightButton.setEnabled(True)
+			self.leftButton.setEnabled(True)
+			self.filter_stage_available = True
 			self.graphPane.graph.filtering = True
 			self.graphPane.graph.applyFilters()
 		else:

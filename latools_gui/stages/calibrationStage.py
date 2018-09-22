@@ -45,6 +45,7 @@ class CalibrationStage():
 		self.calibrationWidget = calibrationWidget
 		self.project = project
 		self.guideDomain = guideDomain
+		self.imported_srms = False
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 		self.srmfile = None
@@ -103,12 +104,13 @@ class CalibrationStage():
 		self.optionsLeft.addWidget(self.drift_correctOption, 0, 0, 1, 2)
 		self.drift_correctOption.setToolTip(self.stageInfo["drift_correct_description"])
 
-		self.optionsRight.addWidget(QLabel(self.stageInfo["standard_label"]))
+		self.optionsRight.addWidget(QLabel("<span style=\"color:#779999; font-weight:bold\">" +
+									self.stageInfo["standard_label"] + "</span>"))
 
-		self.zero_interceptOption = QCheckBox(self.stageInfo["zero_intercept_label"])
-		self.zero_interceptOption.setChecked(self.defaultParams['zero_intercept'] == 'True')
-		self.optionsLeft.addWidget(self.zero_interceptOption, 1, 0)
-		self.zero_interceptOption.setToolTip(self.stageInfo["zero_intercept_description"])
+		#self.zero_interceptOption = QCheckBox(self.stageInfo["zero_intercept_label"])
+		#self.zero_interceptOption.setChecked(self.defaultParams['zero_intercept'] == 'True')
+		#self.optionsLeft.addWidget(self.zero_interceptOption, 1, 0)
+		#self.zero_interceptOption.setToolTip(self.stageInfo["zero_intercept_description"])
 
 		self.n_minLabel = QLabel(self.stageInfo["n_min_label"])
 		self.n_minOption = QLineEdit(self.defaultParams['n_min'])
@@ -123,10 +125,6 @@ class CalibrationStage():
 		self.reloadButton.setToolTip(self.stageInfo["srm_button_description"])
 
 		# We create the buttons for the top of the right-most section of the Controls Pane.
-
-		self.ChooseCalibrationButton = QPushButton("Choose Calibration")
-		self.ChooseCalibrationButton.clicked.connect(self.ChooseCalibrationButtonPress)
-		self.stageControls.addDefaultButton(self.ChooseCalibrationButton)
 
 		self.defaultButton = QPushButton("Defaults")
 		self.defaultButton.clicked.connect(self.defaultButtonPress)
@@ -183,14 +181,14 @@ class CalibrationStage():
 			#Logging
 			
 			self.logger.info('Executing stage Import with stage variables: [drift_correct]:{}\n[srms_used]:{}\n'
-							 '[zero_intercept]:{}\n[n_min]:{}\n'.format( self.drift_correctOption.isChecked(),
+							 '[n_min]:{}\n'.format( self.drift_correctOption.isChecked(),
 																				 srmParam,
-																				 self.zero_interceptOption.isChecked(),
+																				 #self.zero_interceptOption.isChecked(),
 																				 myn_min))
 			self.project.eg.calibrate(analytes=None,
 								drift_correct=self.drift_correctOption.isChecked(),
 								srms_used=srmParam,
-								zero_intercept=self.zero_interceptOption.isChecked(),
+								#zero_intercept=self.zero_interceptOption.isChecked(),
 								n_min=myn_min)
 		except:
 			self.logger.exception("Exception occured in calibration stage:")
@@ -221,19 +219,23 @@ class CalibrationStage():
 
 		print(self.srmfile)
 
-
 	#@logged
 	def updateStageInfo(self):
 		""" Updates the stage after data is imported at runtime """
-		self.srmfile = self.project.eg.srmfile
 
-		srms = la.helpers.srm.get_defined_srms(self.project.eg.srmfile)
+		if not self.imported_srms:
 
-		for i in range(len(srms)):
-			self.srmList.append((QCheckBox(srms[i]), srms[i]))
-			self.srmList[i][0].setChecked(True)
-			self.optionsRight.addWidget(self.srmList[i][0])
-		self.optionsRight.addStretch(1)
+			self.srmfile = self.project.eg.srmfile
+
+			srms = la.helpers.srm.get_defined_srms(self.project.eg.srmfile)
+
+			for i in range(len(srms)):
+				self.srmList.append((QCheckBox(srms[i]), srms[i]))
+				self.srmList[i][0].setChecked(True)
+				self.optionsRight.addWidget(self.srmList[i][0])
+			self.optionsRight.addStretch(1)
+
+			self.imported_srms = True
 
 	#@logged
 	def raiseError(self, message):
@@ -273,9 +275,8 @@ class CalibrationStage():
 
 		if params is not None:
 			self.drift_correctOption.setChecked(params.get("drift_correct", True))
-			self.zero_interceptOption.setChecked(params.get("zero_intercept", True))
+			#self.zero_interceptOption.setChecked(params.get("zero_intercept", True))
 			self.n_minOption.setText(str(params.get("n_min", 10)))
-
 
 	#@logged
 	def enterPressed(self):

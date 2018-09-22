@@ -26,7 +26,7 @@ class ClusteringFilter:
 		self.innerWidget = QWidget()
 		self.innerWidget.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
 		self.analytesLayout = QVBoxLayout(self.innerWidget)
-		self.optionsLayout.addWidget(self.scroll, 0, 0, 3, 1)
+		self.optionsLayout.addWidget(self.scroll, 1, 0, 2, 1)
 		self.analytesWidget.scroll = self.scroll
 		self.scroll.setWidget(self.innerWidget)
 
@@ -34,7 +34,10 @@ class ClusteringFilter:
 		self.analyteList = []
 
 		# We add a label to the top of the scrollable area
-		self.analytesLayout.addWidget(QLabel(self.filterTab.filterInfo["analyte_label"]))
+		self.analytesLabel = QLabel("<span style=\"color:#779999; font-weight:bold\">" +
+									self.filterTab.filterInfo["analyte_label"] + "</span>")
+		self.analytesLabel.setToolTip(self.filterTab.filterInfo["analyte_description"])
+		self.optionsLayout.addWidget(self.analytesLabel, 0, 0)
 
 		# We create a checkbox for each analyte, add it to out internal list, and to the scrollable area
 		for i in range(len(self.filterTab.project.eg.analytes)):
@@ -104,6 +107,7 @@ class ClusteringFilter:
 
 		# We add a stretch that will fill any extra space on the right-most column
 		self.optionsLayout.setColumnStretch(5, 1)
+		self.optionsLayout.setRowStretch(2, 1)
 
 		# We create the control buttons
 		self.createButton = QPushButton("Create filter")
@@ -119,6 +123,9 @@ class ClusteringFilter:
 
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
+
+		# We record the current tab index so that we know which tab to update the name of
+		tabIndex = self.filterTab.tabsArea.currentIndex()
 
 		# We take a reading of the current number of filters so that we can determine how many new
 		# ones this will create
@@ -177,7 +184,7 @@ class ClusteringFilter:
 				return
 
 
-		self.createName("Clustering", self.methodCombo.currentText(), str(selectedAnalytes))
+		self.createName(tabIndex, "Clustering", self.methodCombo.currentText(), str(selectedAnalytes))
 
 		# We determine how many filters have been created
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
@@ -193,10 +200,10 @@ class ClusteringFilter:
 		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.filterTab.filter, "Error", message, QMessageBox.Ok)
 
-	def createName(self, name, method, analyte):
+	def createName(self, tabIndex, name, method, analyte):
 		""" We create a more descriptive name to display on the tab """
 		self.filterTab.name = name + " " + method + " " + analyte
-		self.filterTab.updateName()
+		self.filterTab.updateName(tabIndex)
 
 	def loadFilter(self, params):
 

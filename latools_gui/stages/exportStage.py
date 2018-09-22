@@ -44,6 +44,8 @@ class ExportStage():
 		self.guideDomain = guideDomain
 		self.defaultDataFolder = ""
 		self.statsExportCount = 1
+		self.focus_stages = []
+		self.focusSet = set()
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
@@ -106,9 +108,14 @@ class ExportStage():
 		self.pane1Frame.setFrameShadow(QFrame.Raised)
 
 		self.pane1Layout = QGridLayout(self.pane1Frame)
-		self.optionsGrid.addWidget(self.pane1Frame, 1, 1, 1, 3)
+		self.optionsGrid.addWidget(self.pane1Frame, 1, 1, 2, 3)
 
-		self.pane1Layout.addWidget(QLabel("<span style=\"color:#779999; font-weight:bold\">Full export</span>"), 0, 0)
+		self.analysisLabel = QLabel("<span style=\"color:#779999; font-weight:bold\">" +
+									self.stageInfo["focus_label"] + "</span>")
+		self.pane1Layout.addWidget(self.analysisLabel, 0, 0)
+		self.analysisLabel.setToolTip(self.stageInfo["focus_description"])
+
+		self.updateFocus("rawdata")
 
 		# A pane for the Sample statistics option
 		self.pane2Frame = QFrame()
@@ -116,13 +123,16 @@ class ExportStage():
 		self.pane2Frame.setFrameShadow(QFrame.Raised)
 
 		self.pane2Layout = QGridLayout(self.pane2Frame)
-		#self.optionsGrid.addWidget(self.pane2Frame, 1, 1, 1, 3)
+		#self.optionsGrid.addWidget(self.pane2Frame, 1, 1, 2, 3)
 
 
 		# Analytes combo
-		self.analyteBoxes = []
 
+		self.analyteBoxes = []
 		self.analytesWidget = QWidget()
+
+		self.analytesLabel = QLabel("<span style=\"color:#779999; font-weight:bold\">Analytes</span>")
+		self.optionsGrid.addWidget(self.analytesLabel, 1, 0)
 
 		self.scroll = QScrollArea()
 		self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -134,8 +144,7 @@ class ExportStage():
 		self.innerWidget.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
 
 		self.analyteLayout = QVBoxLayout(self.innerWidget)
-		self.analyteLayout.addWidget(QLabel("Analytes:"))
-		self.optionsGrid.addWidget(self.scroll, 1, 0)
+		self.optionsGrid.addWidget(self.scroll, 2, 0)
 		self.innerWidget.setToolTip(self.stageInfo["analyte_description"])
 
 		self.analytesWidget.scroll = self.scroll
@@ -143,39 +152,42 @@ class ExportStage():
 		self.scroll.setWidget(self.innerWidget)
 
 		# Focus stage
-		self.focusSet = set()
-		self.focusSet.add("rawdata")
+
+		#self.focusSet.add("rawdata")
 
 		# A combobox for the focus stage
-		self.focusLabel = QLabel(self.stageInfo["focus_label"])
-		self.focusCombo = QComboBox()
-		self.pane1Layout.addWidget(self.focusLabel, 1, 0)
-		self.pane1Layout.addWidget(self.focusCombo, 1, 1)
+		#self.focusLabel = QLabel(self.stageInfo["focus_label"])
+		#self.focusCombo = QComboBox()
+		#self.pane1Layout.addWidget(self.focusLabel, 1, 0)
+		#self.pane1Layout.addWidget(self.focusCombo, 1, 1)
 
-		self.focusCombo.addItem("rawdata")
+		#self.focusCombo.addItem("rawdata")
 
 		# Set the tooltips
-		self.focusLabel.setToolTip(self.stageInfo["focus_description"])
-		self.focusCombo.setToolTip(self.stageInfo["focus_description"])
+		#self.focusLabel.setToolTip(self.stageInfo["focus_description"])
+		#self.focusCombo.setToolTip(self.stageInfo["focus_description"])
 
 		# To Filt label for Full export
-		self.filtExport = QCheckBox(self.stageInfo["filt_label"])
-		self.filtExport.setToolTip(self.stageInfo["filt_description"])
-		self.pane1Layout.addWidget(self.filtExport, 2, 0, 1, 2)
+		#self.filtExport = QCheckBox(self.stageInfo["filt_label"])
+		#self.filtExport.setToolTip(self.stageInfo["filt_description"])
+		#self.pane1Layout.addWidget(self.filtExport, 2, 0, 1, 2)
 
-		self.pane1Layout.setColumnStretch(3, 1)
-		self.pane1Layout.setRowStretch(4, 1)
+		self.pane1Layout.setColumnStretch(2, 1)
 
 		self.optionsGrid.setColumnStretch(3, 1)
-		self.optionsGrid.setRowStretch(1, 1)
+		self.optionsGrid.setRowStretch(2, 1)
 
 		# Stats list area
 		self.statsTypes = ["mean", "std", "se", "H15_mean", "H15_std", "H15_se"]
 
-		# Analytes combo
+		# Stats Pane
 		self.statsBoxes = []
-
 		self.statsWidget = QWidget()
+
+		self.statsLabel = QLabel("<span style=\"color:#779999; font-weight:bold\">" +
+									self.stageInfo["stats_label"] + "</span>")
+		self.pane2Layout.addWidget(self.statsLabel, 0, 0)
+		self.statsLabel.setToolTip(self.stageInfo["stats_description"])
 
 		self.statsScroll = QScrollArea()
 		self.statsScroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -187,9 +199,7 @@ class ExportStage():
 		self.statsInnerWidget.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
 
 		self.statsLayout = QVBoxLayout(self.statsInnerWidget)
-		self.statsLayout.addWidget(QLabel("Stat functions:"))
-		self.pane2Layout.addWidget(self.statsScroll, 0, 0, 3, 1)
-		self.statsInnerWidget.setToolTip(self.stageInfo["analyte_description"])
+		self.pane2Layout.addWidget(self.statsScroll, 1, 0, 2, 1)
 
 		self.statsWidget.scroll = self.statsScroll
 
@@ -206,15 +216,12 @@ class ExportStage():
 		self.statsBoxes[0].setChecked(True)
 		self.statsBoxes[1].setChecked(True)
 
-		# We add a label for the stats section
-		self.pane2Layout.addWidget(QLabel("<span style=\"color:#779999; font-weight:bold\">Sample statistics</span>"), 0, 1)
-
 		# To Filt label for Sample statistics
 		self.filtStats = QCheckBox(self.stageInfo["filt_label"])
 		self.filtStats.setToolTip(self.stageInfo["filt_description"])
 		self.pane2Layout.addWidget(self.filtStats, 1, 1)
 
-		self.pane2Layout.setColumnStretch(2, 1)
+		self.pane2Layout.setColumnStretch(3, 1)
 		self.pane2Layout.setRowStretch(3, 1)
 
 		# We create the export button for the right-most section of the Controls Pane.
@@ -227,23 +234,42 @@ class ExportStage():
 
 		if self.typeCombo.currentText() == "Full export":
 			self.pane2Frame.setParent(None)
-			self.optionsGrid.addWidget(self.pane1Frame, 1, 1, 1, 3)
+			self.optionsGrid.addWidget(self.pane1Frame, 1, 1, 2, 3)
 		else:
 			self.pane1Frame.setParent(None)
-			self.optionsGrid.addWidget(self.pane2Frame, 1, 1, 1, 3)
+			self.optionsGrid.addWidget(self.pane2Frame, 1, 1, 2, 3)
 
-
-	def updateFocus(self):
+	def updateFocus(self, stage=""):
 		""" Updates the list of focus stages when an apply button is pressed """
 
 		# We check the current focus stage, and if it's not in our list we add it.
-		stage = self.project.eg.focus_stage
+		if stage == "":
+			stage = self.project.eg.focus_stage
+
 		if stage not in self.focusSet:
-			self.focusCombo.addItem(stage)
+
+			new = QCheckBox(stage)
+
+			# There is a different tooltip for the 'filtered' checkbox
+			if stage == "filtered":
+				new.setToolTip(self.stageInfo["focus_filtered"])
+			else:
+				new.setToolTip(self.stageInfo["focus_description"])
+
+			self.focus_stages.append(new)
+			self.pane1Layout.addWidget(new, len(self.focus_stages), 0)
 			self.focusSet.add(stage)
-			self.focusCombo.setCurrentText(stage)
+
+			# We want to stretch the space below the last focus stage checkbox
+			self.pane1Layout.setRowStretch(len(self.focus_stages), 0)
+			self.pane1Layout.setRowStretch(len(self.focus_stages) + 1, 1)
+
+
 			if stage == "bkgsub":
 				self.typeCombo.addItem("Sample statistics")
+				self.typeCombo.setCurrentText("Sample statistics")
+				self.typeChange()
+
 		if stage == "rawdata" and self.typeCombo.count() == 2:
 			self.typeCombo.removeItem(1)
 			self.typeChange()
@@ -252,11 +278,13 @@ class ExportStage():
 		""" Opens a file dialog to find a file directory for data export when the button is pressed. """
 
 		self.fileLocation = QFileDialog.getExistingDirectory(self.exportStageWidget, 'Open file', '/home')
-		self.fileLocationLine.setText(self.fileLocation)
+		if self.fileLocation != "":
+			self.fileLocationLine.setText(self.fileLocation)
 
 	def enterPressed(self):
 		""" When enter is pressed on this stage """
-		pass
+		if self.exportButton.isEnabled():
+			self.pressedExportButton()
 
 	def updateStageInfo(self):
 		""" When the data is imported, we set the default export location to the imported data folder """
@@ -266,6 +294,11 @@ class ExportStage():
 		else:
 			self.defaultDataFolder = self.project.dataLocation + "_export/"
 		self.fileLocationLine.setText(self.defaultDataFolder)
+
+		# If we have already imported we need to remove the existing analytes
+		for i in range(len(self.analyteBoxes)):
+			self.analyteBoxes[i].setParent(None)
+		self.analyteBoxes.clear()
 
 		# We create the list of analyte checkboxes
 		for analyte in self.project.eg.analytes:
@@ -287,13 +320,27 @@ class ExportStage():
 
 		if self.typeCombo.currentText() == "Full export":
 
-			self.project.eg.export_traces(outdir=self.fileLocationLine.text(),
-										  focus_stage=self.focusCombo.currentText(),
-										  analytes=analytes,
-										  filt=self.filtExport.isChecked())
+			stages = []
+			filtered = False
+			for s in self.focus_stages:
+				if s.isChecked():
+					if s.text() == "filtered":
+						filtered = True
+					else:
+						stages.append(s.text())
+
+			if len(stages) == 0:
+				self.raiseError("You must select at least one analysis stage to include.")
+				return
+
+			for stage in stages:
+				self.project.eg.export_traces(outdir=self.fileLocationLine.text(),
+											  focus_stage=stage,
+											  analytes=analytes,
+											  filt=filtered)
 
 			infoBox = QMessageBox.information(self.exportStageWidget, "Export",
-											  "The reports have been saved.",
+											  "The data has been exported.",
 											  QMessageBox.Ok)
 
 		else:

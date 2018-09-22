@@ -49,6 +49,9 @@ class TrimFilter:
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
 
+		# We record the current tab index so that we know which tab to update the name of
+		tabIndex = self.filterTab.tabsArea.currentIndex()
+
 		# We take a reading of the current number of filters so that we can determine how many new
 		# ones this will create
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
@@ -75,7 +78,7 @@ class TrimFilter:
 							"the input values.")
 			return
 
-		self.createName("Trim", str(start), str(end))
+		self.createName(tabIndex, "Trim", str(start), str(end))
 
 		# We determine how many filters have been created
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
@@ -91,10 +94,10 @@ class TrimFilter:
 		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.filterTab.filter, "Error", message, QMessageBox.Ok)
 
-	def createName(self, name, start, stop):
+	def createName(self, index, name, start, stop):
 		""" We create a more descriptive name to display on the tab """
 		self.filterTab.name = name + " start: " + start + " stop: " + stop
-		self.filterTab.updateName()
+		self.filterTab.updateName(index)
 
 	def loadFilter(self, params):
 		self.startEdit.setText(str(params.get("start", "")))

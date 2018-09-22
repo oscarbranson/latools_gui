@@ -198,7 +198,8 @@ class ImportStage():
 		""" Opens a file dialog to find a file directory for data import when a button is pressed. """
 
 		self.fileLocation = QFileDialog.getExistingDirectory(self.importStageWidget, 'Open file', '/home')
-		self.fileLocationLine.setText(self.fileLocation)
+		if self.fileLocation != "":
+			self.fileLocationLine.setText(self.fileLocation)
 	
 	#@logged
 	def setImportListener(self, importListener):
@@ -264,3 +265,10 @@ class ImportStage():
 		""" Opens the online user guide to a particular page for the current stage """
 		self.stageControls.userGuide(self.guideDomain + "LAtoolsGUIUserGuide/users/03-data-import.html")
 
+	def blockReImport(self):
+		""" Importing new data after analysis is in progress causes problems.
+			The workaround for now is to prevent importing of new data after the Autorange stage, and
+			instead instructing the user to start the program over.
+		"""
+		self.applyButton.setEnabled(False)
+		self.applyButton.setToolTip("<qt/>To start your analysis over with new data, please restart the program.")

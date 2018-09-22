@@ -207,6 +207,7 @@ class BackgroundStage():
 		self.subtractButton.clicked.connect(self.pressedSubtractButton)
 		self.stageControls.addApplyButton(self.subtractButton)
 		self.subtractButton.setEnabled(False)
+		self.subtractButton.setToolTip(self.stageInfo["subtract_button_description"])
 
 		#Logging
 		self.logger = logging.getLogger(__name__)

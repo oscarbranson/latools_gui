@@ -27,5 +27,7 @@
 	"f_win_description": "<qt/>The size of the rolling window.",
 
 	"f_n_lim_label": "f_n_lim",
-	"f_n_lim_description": "<qt/>The number of standard deviations above the rolling mean to set the threshold."
+	"f_n_lim_description": "<qt/>The number of standard deviations above the rolling mean to set the threshold.",
+
+	"subtract_button_description": "<qt/>To continue on you must first Calculate background, then Subtract background."
 }

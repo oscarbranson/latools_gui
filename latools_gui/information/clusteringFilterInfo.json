@@ -1,7 +1,7 @@
 {
 	"filter_name": "Clustering",
 	"filter_description": "Applies an n - dimensional clustering filter to the data.<br><br><strong>Clustering Algorithms</strong><ul><li>’meanshift’: The sklearn.cluster.MeanShift algorithm. Automatically determines number of clusters in data based on the bandwidth of expected variation.</li><li>’kmeans’: The sklearn.cluster.KMeans algorithm. Determines the characteristics of a known number of clusters within the data. Must provide n_clusters to specify the expected number of clusters.</li><li>’DBSCAN’: The sklearn.cluster.DBSCAN algorithm. Automatically determines the number and characteristics of clusters within the data based on the ‘connectivity’ of the data (i.e. how far apart each data point is in a multi - dimensional parameter space). Requires you to set eps, the minimum distance point must be from another point to be considered in the same cluster, and min_samples, the minimum number of points that must be within the minimum distance for it to be considered a cluster. It may also be run in automatic mode by specifying n_clusters alongside min_samples, where eps is decreased until the desired number of clusters is obtained.</li></ul>",
-	"analyte_label": "Analyte",
+	"analyte_label": "Analytes",
 	"analyte_description": "<qt/>Which analytes to consider.",
 	"filt_label": "To filtered",
 	"filt_description": "<qt/>Whether or not to apply existing filters to the data before calculating this filter.",
