@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 import latools as la
 import inspect
 import templates.controlsPane as controlsPane
+import templates.converterWindow as converterWindow
 import json
 import ast
 import os
@@ -117,6 +118,11 @@ class ImportStage():
 		self.optionsGrid.addWidget(self.file_extensionOption, 3, 1)
 		self.file_extensionOption.setToolTip(self.stageInfo["file_extension_description"])
 		self.file_extensionLabel.setToolTip(self.stageInfo["file_extension_description"])
+
+		# We create a button for the converter window
+		self.converterButton = QPushButton("Data converter")
+		self.converterButton.clicked.connect(self.converterPressed)
+		self.stageControls.addDefaultButton(self.converterButton)
 
 		# We create a button to open the Make a New Configuration popup window
 		self.makeConfigButton = QPushButton("Make configuration")
@@ -272,3 +278,7 @@ class ImportStage():
 		"""
 		self.applyButton.setEnabled(False)
 		self.applyButton.setToolTip("<qt/>To start your analysis over with new data, please restart the program.")
+
+	def converterPressed(self):
+		self.converter = converterWindow.ConverterWindow()
+		self.converter.show()

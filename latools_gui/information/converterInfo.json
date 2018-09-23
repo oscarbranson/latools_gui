@@ -1,0 +1,7 @@
+{
+	"main_info": "If you're not able to import your data with the available configurations, you can attempt to convert your data to a format that will use the DEFAULT configuration. <br>The below converter takes a data file and will run a conversion parser. It may ask you questions about your data file.",
+	"find_data_label": "Find data file",
+	"find_data_description": "<qt/>The data file to convert.",
+	"location_label": "Export location",
+	"location_description": "<qt/>Where you would like to save the converted data file. Be careful not to overwrite the original file."
+}
