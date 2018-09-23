@@ -762,3 +762,4 @@ class Parser_txt:
 		out = open(self.outPath, "w")
 		out.writelines(new_lines)
 		out.close()
+

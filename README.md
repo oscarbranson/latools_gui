@@ -103,3 +103,7 @@ def f(x, y)::
 ```
 
 For autodoc to work, you need to [set it up](http://www.sphinx-doc.org/en/stable/ext/autodoc.html) - probably the best way to do this is create a separate `.rst` file in docs/source that calls autodoc, and then add that to the `index.rst` file.
+
+## Tests
+To run the converter tests, from the latools_gui directory run the following command:
+python -m unittest tests.test_converterWindow
