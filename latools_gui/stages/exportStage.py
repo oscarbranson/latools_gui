@@ -52,7 +52,7 @@ class ExportStage():
 		# We import the stage information from a json file and set the default data folder
 		if getattr(sys, 'frozen', False):
 			# If the program is running as a bundle, then get the relative directory
-			infoFile = os.path.join(os.path.dirname(sys.executable), 'information/importStageInfo.json')
+			infoFile = os.path.join(os.path.dirname(sys.executable), 'information/exportStageInfo.json')
 			infoFile = infoFile.replace('\\', '/')
 
 			#self.defaultDataFolder = os.path.join(os.path.dirname(sys.executable), "./data/")

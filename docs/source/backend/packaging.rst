@@ -54,6 +54,14 @@ required to manually import these modules. Hidden imports is a list of strings "
 various modules that need to be manually included in the build.
 
 
+TODO
+============================
+
+If Oscar changes anything latools.cfg or anything in the latools/resources folder, he needs to update it
+in our code as well.
+
+MAC. jedi-hook.
+
 
 Common Issues
 =============================
