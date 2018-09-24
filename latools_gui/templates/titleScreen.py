@@ -45,10 +45,19 @@ class TitleScreen():
 		self.topSpacer = QSpacerItem(0, 75, QSizePolicy.Minimum, QSizePolicy.Expanding)
 		self.mainLayout.addItem(self.topSpacer)
 
+		# We set the file location of the logo graphic depending on whether this is a dev or dist build
+		if getattr(sys, 'frozen', False):
+			# If the program is running as a bundle, then get the relative directory
+			logoFile = os.path.join(os.path.dirname(sys.executable), 'graphics/latools-logo-small-transparent.png')
+			logoFile = logoFile.replace('\\', '/')
+		else:
+			# Otherwise the program is running in a normal python environment
+			logoFile = "graphics/latools-logo-small-transparent.png"
+
 		# We display the logo using a label
 		self.logoImage = QLabel()
 		# This is then set with a QPixmap of the image, found in the graphics folder
-		self.logoImage.setPixmap(QPixmap("graphics/latools-logo-small-transparent.png"))
+		self.logoImage.setPixmap(QPixmap(logoFile))
 		# The logo is then added to the layout
 		self.mainLayout.addWidget(self.logoImage)
 		
