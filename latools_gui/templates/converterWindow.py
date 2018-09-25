@@ -224,14 +224,24 @@ class Parser_csv:
 
 		# We attempt to load the input data file
 		try:
-			self.file = open(inFile, "r")
+
+			# We import the stage information from a json file and set the default data folder
+			if getattr(sys, 'frozen', False):
+				# If the program is running as a bundle, then get the relative directory
+				infoFile = os.path.join(os.path.dirname(sys.executable), inFile)
+				infoFile = infoFile.replace('\\', '/')
+
+			else:
+				# Otherwise the program is running in a normal python environment
+				infoFile = inFile
+
+			with open(infoFile, "r") as file:
+				self.lines = file.read().splitlines()
+				file.close()
+
 		except:
 			self.converterWindow.raiseError("Unable to open " + inFile)
 			return
-
-		# We break the input file up into lines (not including \n)
-		self.lines = self.file.read().splitlines()
-		self.file.close()
 
 		# Pre-processing of the lines. Currently this just removes trailing commas
 		self.clean_lines()
@@ -516,11 +526,21 @@ class Parser_csv:
 	def output(self):
 		""" Saves the new file content to a csv file """
 
-		outPath = self.outLocation + "/" + self.outName + ".csv"
+		outPath = os.path.join(self.outLocation, self.outName + ".csv")
 
-		out = open(outPath, "w")
-		out.writelines(self.out_lines)
-		out.close()
+		# We import the stage information from a json file and set the default data folder
+		if getattr(sys, 'frozen', False):
+			# If the program is running as a bundle, then get the relative directory
+			infoFile = os.path.join(os.path.dirname(sys.executable), outPath)
+			infoFile = infoFile.replace('\\', '/')
+
+		else:
+			# Otherwise the program is running in a normal python environment
+			infoFile = outPath
+
+		with open(infoFile, "w") as out:
+			out.writelines(self.out_lines)
+			out.close()
 
 
 class Parser_txt:
@@ -548,17 +568,27 @@ class Parser_txt:
 		self.outName = outName
 
 		# The parser produces a temporary csv file that will be sent to Parser_csv, and deleted afterwards.
-		self.outPath = self.outLocation + "/latools_temp_data.csv"
+		self.outPath = os.path.join(self.outLocation, "latools_temp_data.csv")
 
 		try:
-			self.file = open(inFile, "r")
+
+			# We import the stage information from a json file and set the default data folder
+			if getattr(sys, 'frozen', False):
+				# If the program is running as a bundle, then get the relative directory
+				infoFile = os.path.join(os.path.dirname(sys.executable), inFile)
+				infoFile = infoFile.replace('\\', '/')
+
+			else:
+				# Otherwise the program is running in a normal python environment
+				infoFile = inFile
+
+			with open(infoFile, "r") as file:
+				self.lines = file.read().splitlines()
+				file.close()
+
 		except:
 			self.converterWindow.raiseError("Unable to open " + inFile)
 			return
-
-		# We read the input as a list of lines
-		self.lines = self.file.read().splitlines()
-		self.file.close()
 
 		# We split the file contents into comma-separated cells
 		self.commas = self.clean_lines()
@@ -758,8 +788,17 @@ class Parser_txt:
 		for line in self.commas:
 			new_lines.append(line + "\n")
 
-		# The file is saved
-		out = open(self.outPath, "w")
-		out.writelines(new_lines)
-		out.close()
+		# We import the stage information from a json file and set the default data folder
+		if getattr(sys, 'frozen', False):
+			# If the program is running as a bundle, then get the relative directory
+			infoFile = os.path.join(os.path.dirname(sys.executable), self.outPath)
+			infoFile = infoFile.replace('\\', '/')
+
+		else:
+			# Otherwise the program is running in a normal python environment
+			infoFile = self.outPath
+
+		with open(infoFile, "w") as out:
+			out.writelines(new_lines)
+			out.close()
 

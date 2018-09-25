@@ -289,10 +289,10 @@ class ExportStage():
 	def updateStageInfo(self):
 		""" When the data is imported, we set the default export location to the imported data folder """
 
-		if self.project.dataLocation[-1] == "/":
-			self.defaultDataFolder = self.project.dataLocation[0:-1] + "_export/"
+		if self.project.dataLocation[-1] == "/" or self.project.dataLocation[-1] == "\\":
+			self.defaultDataFolder = self.project.dataLocation[0:-1] + "_export"
 		else:
-			self.defaultDataFolder = self.project.dataLocation + "_export/"
+			self.defaultDataFolder = self.project.dataLocation + "_export"
 		self.fileLocationLine.setText(self.defaultDataFolder)
 
 		# If we have already imported we need to remove the existing analytes
@@ -358,7 +358,7 @@ class ExportStage():
 										 stats=stats)
 
 			df = self.project.eg.getstats(save=False)
-			df.to_csv(self.fileLocationLine.text() + "/Sample_stats" + str(self.statsExportCount) + ".csv")
+			df.to_csv(os.path.join(self.fileLocationLine.text(), "Sample_stats" + str(self.statsExportCount) + ".csv"))
 			self.statsExportCount += 1
 
 			infoBox = QMessageBox.information(self.exportStageWidget, "Export",

@@ -190,7 +190,7 @@ class GraphWindow(QWidget):
 	def initialiseLegend(self):
 		# Add setting to the layout
 		setting = QWidget()
-		settingLayout = QVBoxLayout()
+		settingLayout = QGridLayout()
 		setting.setLayout(settingLayout)
 
 		# Add legend widget to the settings
@@ -211,15 +211,56 @@ class GraphWindow(QWidget):
 		self.legend = legend
 		self.legendLayout = legendLayout
 
-		settingLayout.addWidget(scroll)
+		settingLayout.addWidget(scroll, 0, 0, 1, 2)
 
 		toggleButton = QPushButton('Toggle Legend Items')
 		toggleButton.clicked.connect(self.toggleLegendItems)
-		settingLayout.addWidget(toggleButton)
+		settingLayout.addWidget(toggleButton, 1, 0, 1, 2)
+
+		self.save_current = QPushButton("Save plot")
+		self.save_all = QPushButton("Save all plots")
+
+		self.save_current.clicked.connect(self.save_current_button)
+		self.save_all.clicked.connect(self.save_all_button)
+
+		settingLayout.addWidget(self.save_current, 2, 0)
+		settingLayout.addWidget(self.save_all, 2, 1)
+		settingLayout.setRowStretch(1, 1)
 
 		self.setting = settingLayout
 
 		self.layout.addWidget(setting)
+
+	def save_all_button(self):
+		""" When the 'Save all' button is pressed we export all plots """
+		if self.project.eg is not None:
+			self.project.eg.trace_plots()
+			infoBox = QMessageBox.information(self.legend, "Export",
+											   "Your data plots have been saved as pdfs in the reports folder " +
+											   "created on import",
+											   QMessageBox.Ok)
+
+	def save_current_button(self):
+		""" When the 'save plot' button is pressed we export the current plot """
+		if self.project.eg is not None:
+
+			# We make a list of analytes to include based on the checkboxes
+			analyte_list = []
+			for item in range(self.legendLayout.count()):
+				if self.legendLayout.itemAt(item).widget().isChecked():
+					analyte_list.append(self.legendLayout.itemAt(item).widget().text())
+
+			print(analyte_list)
+
+			try:
+				self.project.eg.trace_plots(analytes=analyte_list, focus=self.project.eg.focus_stage)
+				infoBox = QMessageBox.information(self.legend, "Export",
+												  "The current data plot has been saved as a pdf in the reports folder " +
+												  "created on import",
+												  QMessageBox.Ok)
+			except:
+				pass
+
 
 	# populate sample list
 	def populateSamples(self):
