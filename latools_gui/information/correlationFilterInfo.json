@@ -1,15 +1,16 @@
 {
 	"filter_name": "Correlation",
-	"filter_description": "Applies a correlation filter to the data.<br><br>Calculates a rolling correlation between every <em>window</em> points of two analytes, and excludes data where their Pearson’s R value is above <em>r_threshold</em> and statistically significant.<br><br>Data will be excluded where their absolute R value is greater than <em>r_threshold</em> AND the p - value associated with the correlation is less than <em>p_threshold</em>. i.e. only correlations that are statistically significant are considered.",
+	"filter_description": "The correlation filter can be used to exclude data where two analytes correlate. The filter calculates the Pearson correlation coefficient (r) and associated significance statistic (p) across the ablation, and can be used to exclude regions where analytes co-vary significantly using r and p thresholds. For example, where an analyte associated with a secondary contaminant phase co-varies with a target analyte in the host material.",
 	"y_analyte_label": "Y analyte",
 	"x_analyte_label": "X analyte",
-	"analyte_description": "<qt/>The names of the x and y analytes to correlate.",
+	"y_analyte_description": "<qt/>The name of the &#39;y&#39; analyte in the correlation.",
+	"x_analyte_description": "<qt/>The name of the &#39;x&#39; analyte in the correlation.",
 	"window_label": "Window",
-	"window_description": "<qt/>The rolling window used when calculating the correlation.",
+	"window_description": "<qt/>The size of the moving window (number of points) used to calculate the correlation.",
 	"r_threshold_label": "r threshold",
-	"r_threshold_description": "<qt/>The correlation index above which to exclude data. Note: the absolute pearson R value is considered, so negative correlations below -r_threshold will also be excluded.",
+	"r_threshold_description": "<qt/>The Pearson R value above which data are excluded. Note: the absolute R value is considered, so negative correlations will also be excluded.",
 	"p_threshold_label": "p threshold",
-	"p_threshold_description": "<qt/>The significant level below which data are excluded.",
+	"p_threshold_description": "<qt/>The significance level below which data are excluded.",
 	"filt_label": "To filtered",
 	"filt_description": "<qt/>Whether or not to apply existing filters to the data before calculating this filter."
 }

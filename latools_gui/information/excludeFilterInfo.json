@@ -1,6 +1,6 @@
 {
 	"filter_name": "Exclude Downhole",
-	"filter_description": "Exclude all points down-hole (after) the first excluded data.",
+	"filter_description": "Removes all selected data regions after the first region excluded by the current filters. This can be useful in spot analyses, where any contaminant present at the start of the ablation will influence the subsequent composition due to down-hole effects.",
 	"threshold_label": "Threshold",
 	"threshold_description": "<qt/>The minimum number of contiguous excluded data points that must exist before downhole exclusion occurs.",
 	"filt_label": "To filtered",
