@@ -1,10 +1,10 @@
 {
 	"filter_name": "Trim",
-	"filter_description": "Remove points from the start and end of filter regions.",
+	"filter_description": "Remove points from the start and end of currently selected filter regions. This can be used to make your filter selections more conservative.",
 	"start_label": "Start",
-	"start_description": "<qt/>The number of points to remove from the start and end of the specified filter.",
+	"start_description": "<qt/>The number of points to remove from the start of currently active filters.",
 	"end_label": "End",
-	"end_description": "<qt/>The number of points to remove from the start and end of the specified filter.",
+	"end_description": "<qt/>The number of points to remove from the end of currently active filters.",
 	"filt_label": "To filtered",
 	"filt_description": "<qt/>Whether or not to apply existing filters to the data before calculating this filter."
 }

@@ -23,8 +23,8 @@ class CorrelationFilter:
 		self.y_analyteCombo.addItem(" ")
 		for i in range(len(self.filterTab.project.eg.analytes)):
 			self.y_analyteCombo.addItem(str(self.filterTab.project.eg.analytes[i]))
-		self.y_analyteLabel.setToolTip(self.filterTab.filterInfo["analyte_description"])
-		self.y_analyteCombo.setToolTip(self.filterTab.filterInfo["analyte_description"])
+		self.y_analyteLabel.setToolTip(self.filterTab.filterInfo["y_analyte_description"])
+		self.y_analyteCombo.setToolTip(self.filterTab.filterInfo["y_analyte_description"])
 
 		# An option to select the second analyte
 		self.x_analyteLabel = QLabel(self.filterTab.filterInfo["x_analyte_label"])
@@ -34,8 +34,8 @@ class CorrelationFilter:
 		self.x_analyteCombo.addItem(" ")
 		for i in range(len(self.filterTab.project.eg.analytes)):
 			self.x_analyteCombo.addItem(str(self.filterTab.project.eg.analytes[i]))
-		self.x_analyteLabel.setToolTip(self.filterTab.filterInfo["analyte_description"])
-		self.x_analyteCombo.setToolTip(self.filterTab.filterInfo["analyte_description"])
+		self.x_analyteLabel.setToolTip(self.filterTab.filterInfo["x_analyte_description"])
+		self.x_analyteCombo.setToolTip(self.filterTab.filterInfo["x_analyte_description"])
 
 		# The window option
 		self.windowLabel = QLabel(self.filterTab.filterInfo["window_label"])

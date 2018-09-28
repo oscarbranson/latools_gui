@@ -1,16 +1,16 @@
 {
 	"filter_name": "Threshold",
-	"filter_description": "Applies a threshold filter to the data. <br>Generates two filters above and below the threshold value for a given analyte. <br><br>Threshold types:<br> - Threshold<br> - Threshold Percentile<br> - Gradient Threshold<br> - Gradient Threshold Percentile",
+	"filter_description": "The threshold filter identifies regions in the data where a specific analyte is above or below a given threshold. Two sub-filters are created - &#39;above&#39;, which selects all regions where the target analyte is above the threshold value, and &#39;below&#39;, which selects all regions where the target analyte is below the threshold value. To use this filter, you will need select either the &#39;above&#39; or &#39;below&#39; component for each analyte, either below or in the filter summary table.<br><br>There are four different types of threshold filter:<ul><li><b>Threshold</b> - selects data based on the absolute concentration of a target analyte.</li><li><b>Threshold Percentile</b> - similar to &#39;threshold&#39;, but instead of specifying the absolute concentration of the analyte, a percentile can be selected to exclude the lowest/highest X% of data points.</li><li><b>Gradient Threshold</b> - a running gradient is calculated for the data, and regions can be excluded where the slope is steeper than a specified threshold.</li><li><b>Gradient Threshold Percentile</b> - similar to Threshold Percentile, but operates on the running gradient instead of concentration data.</li></ul>",
 	"type_label": "Type",
-	"type_description": "<qt/>The type of threshold filter to use",
+	"type_description": "<qt/>The type of threshold filter to use.",
 	"threshold_value_label": "Threshold",
-	"threshold_value_description": "<qt/>The threshold value",
+	"threshold_value_description": "<qt/>The analyte concentration to use when creating the filter.",
 	"analyte_label": "Analyte",
-	"analyte_description": "<qt/>The analyte that the filter applies to.",
+	"analyte_description": "<qt/>The analyte that the filter is calculated from.",
 	"percentile_label": "Percentile",
-	"percentile_description": "<qt/>The percentile value.",
+	"percentile_description": "<qt/>The percentile of the analyte to use when creating the threshold.",
 	"win_label": "Window",
-	"win_description": "<qt/>The window over which to calculate the moving gradient.",
+	"win_description": "<qt/>For gradient filters, the width of the window (number of points) over which to calculate the gradient.",
 	"level_label": "Level",
-	"level_description": "<qt/>Whether to calculate percentiles from the entire dataset (‘population’) or for each individual sample (‘individual’)."
+	"level_description": "<qt/>Whether to calculate percentiles from the entire dataset (&#39;population&#39;) or for each individual sample (&#39;individual&#39;)."
 }
