@@ -89,6 +89,7 @@ class GraphPane():
 			self.crossPlot.initialiseGraph()
 		self.graph.updateFocus(showRanges)
 		self.graph.hideInternalStandard()
+		self.graph.autorange()
 
 	def updateBkg(self):
 		if self.bkgGraph.populated:
@@ -121,8 +122,10 @@ class GraphWindow(QWidget):
 		"""
 		super().__init__()
 		self.project = project
+		self.sampleName = ""
 		self.graphs = {}
 		self.graphWins = []
+		self.graph = None
 		self.graphLines = {}
 		self.highlightedAnalytes = []
 		self.currentInternalStandard = None
@@ -183,6 +186,18 @@ class GraphWindow(QWidget):
 		samplesLayout.addWidget(yLogCheckBox)
 
 		self.yLogCheckBox = yLogCheckBox
+
+		autorangeButton = QPushButton('Centre Graph')
+		autorangeButton.clicked.connect(self.autorange)
+		samplesLayout.addWidget(autorangeButton)
+
+		self.autorangeButton = autorangeButton
+
+	def autorange(self):
+		for graph in self.graphWins:
+			graph.autoRange()
+		if self.graph != None:
+			self.graph.autoRange()
 
 	def updateLogScale(self):
 		pass
@@ -349,6 +364,7 @@ class MainGraph(GraphWindow):
 		pg.setConfigOption('background', self.backgroundColour)
 		pg.setConfigOption('foreground', 'k')
 		graph = pg.PlotWidget()
+		graph.hideButtons()
 
 		self.graphWins.append(graph)
 
@@ -578,6 +594,7 @@ class BkgGraph(GraphWindow):
 		# Create graph
 		graph = pg.PlotWidget()
 		graph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
+		graph.hideButtons()
 
 		self.graph = graph
 
@@ -1054,6 +1071,7 @@ class Crossplot(GraphWindow):
 		# Initialise samples menu
 		self.initialiseSamples()
 		self.yLogCheckBox.hide()
+		self.autorangeButton.hide()
 
 		filtCheckBox = QCheckBox()
 		filtCheckBox.setMaximumWidth(100)
