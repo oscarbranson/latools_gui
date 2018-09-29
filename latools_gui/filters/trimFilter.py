@@ -115,3 +115,10 @@ class TrimFilter:
 		self.filtCheckBox.setEnabled(False)
 		self.createButton.setEnabled(False)
 
+	def updateOptions(self):
+
+		return {
+			"start": self.startEdit.text(),
+			"end": self.endEdit.text(),
+			"filt": self.filtCheckBox.isChecked()
+		}

@@ -176,3 +176,14 @@ class CorrelationFilter:
 		self.p_thresholdEdit.setEnabled(False)
 		self.filtCheckBox.setEnabled(False)
 		self.createButton.setEnabled(False)
+
+	def updateOptions(self):
+
+		return {
+			"y_analyte": self.y_analyteCombo.currentText(),
+			"x_analyte": self.x_analyteCombo.currentText(),
+			"window": self.windowEdit.text(),
+			"r_threshold": self.r_thresholdEdit.text(),
+			"p_threshold": self.p_thresholdEdit.text(),
+			"filt": self.filtCheckBox.isChecked()
+		}

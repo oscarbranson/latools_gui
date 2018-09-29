@@ -100,3 +100,10 @@ class ExcludeFilter:
 		self.thresholdEdit.setEnabled(False)
 		self.filtCheckBox.setEnabled(False)
 		self.createButton.setEnabled(False)
+
+	def updateOptions(self):
+
+		return {
+			"threshold": self.thresholdEdit.text(),
+			"filt": self.filtCheckBox.isChecked()
+		}

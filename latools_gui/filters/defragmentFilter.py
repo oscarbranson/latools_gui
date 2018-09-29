@@ -112,3 +112,11 @@ class DefragmentFilter:
 		self.modeCombo.setEnabled(False)
 		self.filtCheckBox.setEnabled(False)
 		self.createButton.setEnabled(False)
+
+	def updateOptions(self):
+
+		return {
+			"threshold": self.thresholdEdit.text(),
+			"mode": self.modeCombo.currentText(),
+			"filt": self.filtCheckBox.isChecked()
+		}

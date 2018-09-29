@@ -17,6 +17,8 @@ from filters.excludeFilter import ExcludeFilter
 from filters.trimFilter import TrimFilter
 from filters.signalFilter import SignalFilter
 
+import templates.filterPlot as filterPlot
+
 
 class FilterControls:
 	"""
@@ -431,9 +433,9 @@ class FilterTab:
 		self.crossPlotButton.clicked.connect(self.crossPlotClick)
 		self.controlButtonsLayout.addWidget(self.crossPlotButton)
 
-		# self.plotButton = QPushButton("Plot")
-		# self.plotButton.clicked.connect(self.plotClick)
-		# self.controlButtonsLayout.addWidget(self.plotButton)
+		#self.plotButton = QPushButton("Plot")
+		#self.plotButton.clicked.connect(self.plotClick)
+		#self.controlButtonsLayout.addWidget(self.plotButton)
 
 		# We add a stretch to push down the buttons
 		self.controlButtonsLayout.addStretch(1)
@@ -532,13 +534,18 @@ class FilterTab:
 
 			self.filter.setParent(None)
 
+	def updateOptions(self):
+		""" Gets a dictionary of the current filter options and passes them to the plot window """
+		return self.filterType.updateOptions()
+
 	def crossPlotClick(self):
 		""" Activates when the Cross-plot button is pressed """
 		self.graphPaneObj.showAuxGraph(cross=True)
 
 	def plotClick(self):
-		""" Activates when the Plot button is pressed """
-		pass
+		""" Activates when the Plot button is pressed. Creates the filter plot window """
+		self.plot = filterPlot.FilterPlot(self, self.project)
+		self.plot.show()
 
 
 class AnalyteCheckBoxes:

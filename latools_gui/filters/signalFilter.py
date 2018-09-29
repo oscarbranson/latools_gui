@@ -191,3 +191,18 @@ class SignalFilter:
 		self.x_biasEdit.setEnabled(False)
 		self.filtCheckBox.setEnabled(False)
 		self.createButton.setEnabled(False)
+
+	def updateOptions(self):
+
+		analytes = []
+		for box in self.analyteList:
+			if box.isChecked():
+				analytes.append(box.text())
+
+		return {
+			"analytes": analytes,
+			"min": self.minEdit.text(),
+			"mode": self.modeCombo.currentText(),
+			"x_bias": self.x_biasEdit.text(),
+			"filt": self.filtCheckBox.isChecked()
+		}

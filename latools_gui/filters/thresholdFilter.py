@@ -296,3 +296,14 @@ class ThresholdFilter:
 		self.winEdit.setEnabled(False)
 		self.levelCombo.setEnabled(False)
 		self.createButton.setEnabled(False)
+
+	def updateOptions(self):
+
+		return {
+			"type": self.typeCombo.currentText(),
+			"threshold": self.threshValueEdit.text(),
+			"analyte": self.analyteCombo.currentText(),
+			"percent": self.percentEdit.text(),
+			"win": self.winEdit.text(),
+			"level": self.levelCombo.currentText()
+		}

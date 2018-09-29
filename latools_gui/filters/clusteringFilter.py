@@ -243,3 +243,21 @@ class ClusteringFilter:
 		self.minEdit.setEnabled(False)
 		self.n_clustersEdit.setEnabled(False)
 		self.createButton.setEnabled(False)
+
+	def updateOptions(self):
+
+		analytes = []
+		for box in self.analyteList:
+			if box.isChecked():
+				analytes.append(box.text())
+
+		return {
+			"analytes": analytes,
+			"filt": self.filtCheckBox.isChecked(),
+			"method": self.methodCombo.currentText(),
+			"normalise": self.normaliseCheckBox.isChecked(),
+			"time": self.timeCheckBox.isChecked(),
+			"sort": self.sortCheckBox.isChecked(),
+			"min": self.minEdit.text(),
+			"n_clusters": self.n_clustersEdit.text()
+		}
