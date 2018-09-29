@@ -426,17 +426,17 @@ class FilterTab:
 		self.controlsLayout.addLayout(self.controlButtonsLayout)
 		self.controlButtonsLayout.setAlignment(Qt.AlignTop)
 
-		# We add a stretch to push down the buttons
-		self.controlButtonsLayout.addStretch(1)
-
 		# We create the control buttons
 		self.crossPlotButton = QPushButton("Cross-plot")
 		self.crossPlotButton.clicked.connect(self.crossPlotClick)
 		self.controlButtonsLayout.addWidget(self.crossPlotButton)
 
-		self.plotButton = QPushButton("Plot")
-		self.plotButton.clicked.connect(self.plotClick)
-		self.controlButtonsLayout.addWidget(self.plotButton)
+		# self.plotButton = QPushButton("Plot")
+		# self.plotButton.clicked.connect(self.plotClick)
+		# self.controlButtonsLayout.addWidget(self.plotButton)
+
+		# We add a stretch to push down the buttons
+		self.controlButtonsLayout.addStretch(1)
 
 		self.deleteButton = QPushButton("Delete filter")
 		self.deleteButton.clicked.connect(self.deleteClick)

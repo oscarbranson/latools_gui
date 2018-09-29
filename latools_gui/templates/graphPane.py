@@ -246,16 +246,32 @@ class GraphWindow(QWidget):
 
 		self.layout.addWidget(setting)
 
-	def save_all_button(self):
+	def save_current_button(self):
 		""" When the 'Save all' button is pressed we export all plots """
 		if self.project.eg is not None:
-			self.project.eg.trace_plots()
-			infoBox = QMessageBox.information(self.legend, "Export",
-											   "Your data plots have been saved as pdfs in the reports folder " +
-											   "created on import",
-											   QMessageBox.Ok)
 
-	def save_current_button(self):
+			# We make a list of analytes to include based on the checkboxes
+			analyte_list = []
+			for item in range(self.legendLayout.count()):
+				if self.legendLayout.itemAt(item).widget().isChecked():
+					analyte_list.append(self.legendLayout.itemAt(item).widget().text())
+
+			try:
+				self.project.eg.trace_plots(analytes=analyte_list,
+											samples=self.sampleList.currentItem().text(),
+											focus=self.project.eg.focus_stage,
+											subset=None)
+				infoBox = QMessageBox.information(self.legend, "Export",
+												  "The current data plot has been saved as a pdf in the reports folder " +
+												  "created on import",
+												  QMessageBox.Ok)
+			except:
+				infoBox = QMessageBox.information(self.legend, "Export",
+												  "Encountered an error when attempting to export the plot.",
+												  QMessageBox.Ok)
+
+
+	def save_all_button(self):
 		""" When the 'save plot' button is pressed we export the current plot """
 		if self.project.eg is not None:
 
@@ -265,8 +281,6 @@ class GraphWindow(QWidget):
 				if self.legendLayout.itemAt(item).widget().isChecked():
 					analyte_list.append(self.legendLayout.itemAt(item).widget().text())
 
-			print(analyte_list)
-
 			try:
 				self.project.eg.trace_plots(analytes=analyte_list, focus=self.project.eg.focus_stage)
 				infoBox = QMessageBox.information(self.legend, "Export",
@@ -274,7 +288,9 @@ class GraphWindow(QWidget):
 												  "created on import",
 												  QMessageBox.Ok)
 			except:
-				pass
+				infoBox = QMessageBox.information(self.legend, "Export",
+												  "Encountered an error when attempting to export the plots.",
+												  QMessageBox.Ok)
 
 
 	# populate sample list
