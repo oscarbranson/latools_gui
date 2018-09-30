@@ -15,9 +15,14 @@ class ConverterWindow(QWidget):
 		QWidget.__init__(self)
 		self.setWindowTitle("Convert data files for import")
 
-		# When the parser needs to ask the user a question about the data, the response will be stored here.
-		self.questionResult = ""
+		# The parser that is currently running
 		self.parser = None
+
+		# A value to record where in the data the converter expects to find the date, based on previous file in the folder
+		self.expectedDateLine = None
+
+		# If we're running an integration test, we need to prevent the program from asking for date confirmation
+		self.runningTest = False
 
 		# We use a grid layout
 		self.mainGrid = QGridLayout(self)
@@ -44,41 +49,61 @@ class ConverterWindow(QWidget):
 
 		self.mainGrid.addWidget(self.intro_text, 0, 0, 1, 4)
 
+		# A type option for choosing between running on a file or a directory
+		self.type_label = QLabel("Run conversion on a")
+		self.mainGrid.addWidget(self.type_label, 1, 0)
+
+		self.type_combo = QComboBox()
+		self.type_combo.activated.connect(self.changed_type)
+		self.mainGrid.addWidget(self.type_combo, 1, 1, 1, 2)
+
+		self.type_combo.addItem("file")
+		self.type_combo.addItem("folder of files")
+
 		# An option for finding the file to convert
 		self.findDataButton = QPushButton(self.stageInfo["find_data_label"])
 		self.findDataButton.clicked.connect(self.findDataButtonClicked)
-		self.mainGrid.addWidget(self.findDataButton, 1, 0)
+		self.mainGrid.addWidget(self.findDataButton, 2, 0)
 		self.findDataButton.setToolTip(self.stageInfo["find_data_description"])
 
 		self.fileLocationLine = QLineEdit()
-		self.mainGrid.addWidget(self.fileLocationLine, 1, 1, 1, 3)
+		self.mainGrid.addWidget(self.fileLocationLine, 2, 1, 1, 3)
 		self.fileLocationLine.setReadOnly(True)
 		self.fileLocationLine.setToolTip(self.stageInfo["find_data_description"])
+
+		# An option for finding the folder of files to convert
+		self.findDirectoryButton = QPushButton(self.stageInfo["find_directory_label"])
+		self.findDirectoryButton.clicked.connect(self.findDirectoryButtonClicked)
+		self.findDirectoryButton.setToolTip(self.stageInfo["find_directory_description"])
+
+		self.directoryLocationLine = QLineEdit()
+		self.directoryLocationLine.setReadOnly(True)
+		self.directoryLocationLine.setToolTip(self.stageInfo["find_directory_description"])
 
 		# An option for the converted file's location
 		self.exportLocationButton = QPushButton(self.stageInfo["location_label"])
 		self.exportLocationButton.clicked.connect(self.exportLocationButtonClicked)
-		self.mainGrid.addWidget(self.exportLocationButton, 2, 0)
+		self.mainGrid.addWidget(self.exportLocationButton, 3, 0)
 		self.exportLocationButton.setToolTip(self.stageInfo["location_description"])
 
 		self.exportLocationLine = QLineEdit()
-		self.mainGrid.addWidget(self.exportLocationLine, 2, 1, 1, 3)
+		self.mainGrid.addWidget(self.exportLocationLine, 3, 1, 1, 3)
 		self.exportLocationLine.setReadOnly(True)
 		self.exportLocationLine.setToolTip(self.stageInfo["location_description"])
 
 		# An option to name the converted file
 		self.nameLabel = QLabel("New file name")
-		self.mainGrid.addWidget(self.nameLabel, 3, 0)
+		self.mainGrid.addWidget(self.nameLabel, 4, 0)
 
 		self.nameEdit = QLineEdit()
-		self.mainGrid.addWidget(self.nameEdit, 3, 1)
+		self.mainGrid.addWidget(self.nameEdit, 4, 1)
 
 		self.nameCSV = QLabel(".csv")
-		self.mainGrid.addWidget(self.nameCSV, 3, 2)
+		self.mainGrid.addWidget(self.nameCSV, 4, 2)
 
 		# A button to run the converter
 		self.runButton = QPushButton("Convert")
-		self.mainGrid.addWidget(self.runButton, 3, 3)
+		self.mainGrid.addWidget(self.runButton, 4, 3)
 		self.runButton.clicked.connect(self.runConverter)
 
 		# A space to display converter questions
@@ -86,19 +111,28 @@ class ConverterWindow(QWidget):
 		self.status_text.setFixedHeight(100)
 		self.status_text.setReadOnly(True)
 
-		self.mainGrid.addWidget(self.status_text, 4, 0, 1, 4)
+		self.mainGrid.addWidget(self.status_text, 5, 0, 1, 4)
 
+		# A checkbox to infer the date from other processed files
+		self.infer_date_checkbox = QCheckBox(self.stageInfo["date_label"])
+		self.infer_date_checkbox.setToolTip(self.stageInfo["date_description"])
+		self.mainGrid.addWidget(self.infer_date_checkbox, 6, 0, 1, 2)
+		self.infer_date_checkbox.setEnabled(False)
+		self.infer_date_checkbox.setChecked(True)
+
+		"""
 		# A Yes button to respond to the display text
 		self.yesButton = QPushButton("Yes")
-		self.mainGrid.addWidget(self.yesButton, 5, 3)
+		self.mainGrid.addWidget(self.yesButton, 6, 3)
 		self.yesButton.clicked.connect(self.yesClicked)
 		self.yesButton.setEnabled(False)
 
 		# A No button to respond to the display text
 		self.noButton = QPushButton("No")
-		self.mainGrid.addWidget(self.noButton, 5, 2)
+		self.mainGrid.addWidget(self.noButton, 6, 2)
 		self.noButton.clicked.connect(self.noClicked)
 		self.noButton.setEnabled(False)
+		"""
 
 	def findDataButtonClicked(self):
 		""" Opens a dialog to save a file path to the file location text box """
@@ -116,9 +150,15 @@ class ConverterWindow(QWidget):
 		""" Begins the conversion process """
 
 		# If the file location line is empty we throw an error
-		if self.fileLocationLine.text() == "":
+		if self.fileLocationLine.text() == "" and self.type_combo.currentText() == "file":
 			self.raiseError(
 				"You must select a data file to convert")
+			return
+
+		# If the file location line is empty we throw an error
+		if self.directoryLocationLine.text() == "" and self.type_combo.currentText() != "file":
+			self.raiseError(
+				"You must select a directory of files to convert")
 			return
 
 		# If the export location line is empty we throw an error
@@ -128,47 +168,77 @@ class ConverterWindow(QWidget):
 			return
 
 		# If the new name line is empty we throw an error
-		if self.nameEdit.text() == "":
+		if self.nameEdit.text() == "" and self.type_combo.currentText() == "file":
 			self.raiseError(
 				"You must provide a name for the new file.")
 			return
 
-		# We check the last characters of the import file to see if it's a csv:
-		if self.fileLocationLine.text()[-4:] == ".csv":
+		if self.type_combo.currentText() == "file":
 
-			# We run the csv parser
-			self.parser = Parser_csv(self,
-									 self.fileLocationLine.text(),
-									 self.exportLocationLine.text(),
-									 self.nameEdit.text())
+			# We check the last characters of the import file to see if it's a csv:
+			if self.fileLocationLine.text()[-4:] == ".csv":
 
-		# If the last characters are txt
-		elif self.fileLocationLine.text()[-4:] == ".txt":
+				# We run the csv parser
+				self.run_csv(self.fileLocationLine.text())
 
-			# We run the txt parser, which saves a new csv called latools_temp_data.csv"
-			self.parser_txt = Parser_txt(self,
-									 	 self.fileLocationLine.text(),
-									 	 self.exportLocationLine.text(),
-									 	 self.nameEdit.text())
+			# If the last characters are txt
+			elif self.fileLocationLine.text()[-4:] == ".txt":
 
-			# This new csv is then sent to the csv parser
-			self.parser = Parser_csv(self,
-									 self.parser_txt.outPath,
-									 self.exportLocationLine.text(),
-									 self.nameEdit.text())
+				# We run the txt parser, which saves a new csv called latools_temp_data.csv"
+				self.run_txt()
 
-			# The interim csv file is then deleted
-			os.remove(self.parser_txt.outPath)
-
-		# If the input file is not a csv or txt we don't handle it for now.
+			# If the input file is not a csv or txt we don't handle it for now.
+			else:
+				self.raiseError(
+					"Currently only csv and txt files are supported.")
+				return
 		else:
-			self.raiseError(
-				"Currently only csv and txt files are supported.")
-			return
+			# We are now running on a folder of files
+
+			# We attempt to load the input data folder
+			try:
+
+				inFile = self.directoryLocationLine.text()
+
+				# We import the stage information from a json file and set the default data folder
+				if getattr(sys, 'frozen', False):
+					# If the program is running as a bundle, then get the relative directory
+					infoFile = os.path.join(os.path.dirname(sys.executable), inFile)
+					infoFile = infoFile.replace('\\', '/')
+
+				else:
+					# Otherwise the program is running in a normal python environment
+					infoFile = inFile
+
+				file_list = os.listdir(inFile)
+
+			except:
+				self.converterWindow.raiseError("Unable to open " + self.directoryLocationLine.text())
+				return
+
+			for file in file_list:
+
+				if file[-4:] == ".csv":
+					self.fileLocationLine.setText(os.path.join(inFile, file))
+					self.nameEdit.setText(file[:-4])
+					self.run_csv(self.fileLocationLine.text())
+					self.nameEdit.setText("")
+					self.fileLocationLine.setText("")
+
+				elif file[-4:] == ".txt":
+					self.fileLocationLine.setText(os.path.join(inFile, file))
+					self.nameEdit.setText(file[:-4])
+					self.run_txt()
+					self.nameEdit.setText("")
+					self.fileLocationLine.setText("")
+
+		# We remove info about where the converter expects to find the date line so that it can be reinitialised
+		self.expectedDateLine = None
+
 
 	def raiseError(self, message):
 		""" Creates an error box with the given message """
-		errorBox = QMessageBox.critical(self.filterTab.filter, "Error", message, QMessageBox.Ok)
+		errorBox = QMessageBox.critical(self, "Error", message, QMessageBox.Ok)
 
 	def yesClicked(self):
 		""" When the user is asked a question this button can be used to respond. """
@@ -188,7 +258,53 @@ class ConverterWindow(QWidget):
 		# We tell the parser to continue
 		self.parser.run()
 
+	def changed_type(self):
+		""" Toggles between running on a file or a folder of files. """
 
+		if self.type_combo.currentText() == "file":
+			# If running on a file, it hides the folder options and displays the file options
+			self.nameEdit.setEnabled(True)
+			self.nameLabel.setEnabled(True)
+			self.infer_date_checkbox.setEnabled(False)
+			self.findDirectoryButton.setParent(None)
+			self.directoryLocationLine.setParent(None)
+			self.mainGrid.addWidget(self.findDataButton, 2, 0)
+			self.mainGrid.addWidget(self.fileLocationLine, 2, 1, 1, 3)
+
+		else:
+			# Otherwise it hides the file options and displays the folder options
+			self.nameEdit.setEnabled(False)
+			self.nameLabel.setEnabled(False)
+			self.infer_date_checkbox.setEnabled(True)
+			self.findDataButton.setParent(None)
+			self.fileLocationLine.setParent(None)
+			self.mainGrid.addWidget(self.findDirectoryButton, 2, 0)
+			self.mainGrid.addWidget(self.directoryLocationLine, 2, 1, 1, 3)
+
+	def findDirectoryButtonClicked(self):
+		""" Opens a file dialog to find a file directory for data import when a button is pressed. """
+
+		fileLocation = QFileDialog.getExistingDirectory(self, 'Open file', '/home')
+		if fileLocation != "":
+			self.directoryLocationLine.setText(fileLocation)
+
+	def run_csv(self, input):
+		""" Runs the converter on a csv file """
+		self.parser = Parser_csv(self,
+								 input,
+								 self.exportLocationLine.text(),
+								 self.nameEdit.text())
+
+	def run_txt(self):
+		""" runs the converter on a txt file """
+		self.parser_txt = Parser_txt(self,
+									 self.fileLocationLine.text(),
+									 self.exportLocationLine.text(),
+									 self.nameEdit.text())
+
+		self.run_csv(self.parser_txt.outPath)
+
+		os.remove(self.parser_txt.outPath)
 
 class Parser_csv:
 	"""
@@ -258,9 +374,6 @@ class Parser_csv:
 		# A list of possible dates to question the user about
 		self.possible_dates = []
 
-		# The confirmed date
-		self.date = None
-
 		# We run a parser to put each row of the file into table_rows or other_rows
 		self.get_table_rows()
 
@@ -268,10 +381,7 @@ class Parser_csv:
 		self.get_date()
 
 		# The user is then asked to confirm the date and time
-		self.confirm_date()
-
-	def questions_complete(self):
-		""" When the questioning process is complete we pick up here and finish the conversion. """
+		self.date = self.confirm_date()
 
 		# We use a parser to find the header row
 		self.header_row = self.get_header_row()
@@ -289,33 +399,7 @@ class Parser_csv:
 		# A success message is displayed in the window's status box.
 		self.converterWindow.status_text.setText(
 			"Data conversion completed successfully. <br> The converted file has been saved in: " +
-			self.outLocation)
-
-
-	def run(self):
-		""" Gathering question responses happens here. This is triggered by the buttons in converterWindow. """
-
-		# If we were asking about the date. Other question types could be added below.
-		if self.dateQuestioning:
-			# If the response was clicking the "yes" button
-			if self.converterWindow.questionResult == "Yes":
-				self.converterWindow.questionResult = ""
-				self.dateQuestioning = False
-
-				# The date that the user confirmed is saved
-				self.date = self.possible_dates[self.dateQuestionIndex]
-
-				# We continue the conversion process
-				self.questions_complete()
-				return
-			# else the user clicked no:
-			elif self.converterWindow.questionResult == "No":
-
-				# We increment the date questioner and ask again
-				self.converterWindow.questionResult = ""
-				self.dateQuestionIndex += 1
-				self.confirm_date()
-				return
+			self.outLocation + "<br>Please check that the date and time text is accurate.")
 
 	def get_column_count(self):
 		"""
@@ -469,14 +553,40 @@ class Parser_csv:
 
 	def confirm_date(self):
 		""" Displays a question about the date in the window's status textbox, and enables the yes/no buttons """
-		self.converterWindow.yesButton.setEnabled(True)
-		self.converterWindow.noButton.setEnabled(True)
-		self.dateQuestioning = True
-		self.converterWindow.status_text.setText(
-			str(len(self.possible_dates)) + " possible date(s) found.<br>" +
-			"Checking date option number: " + str(self.dateQuestionIndex + 1) +
-			"<br>Is the date in the data file: " + self.format_date(self.possible_dates[self.dateQuestionIndex]) +
-			" ?")
+
+		# If we're running integration tests, we don't ask for the user to confirmt the date
+		if self.converterWindow.runningTest:
+			return self.possible_dates[0]
+
+		# If we are infering the date, we check if we have a previous value
+		if self.converterWindow.expectedDateLine is not None and self.converterWindow.infer_date_checkbox.isChecked():
+
+			expected_length = self.converterWindow.expectedDateLine[0]
+			expected_value = self.converterWindow.expectedDateLine[1]
+
+			# If the length of the list of potential dates in the original is the same as this file,
+			# we use that as confirmation to go ahead and use the date index from the first file.
+			if expected_length == len(self.possible_dates):
+				return self.possible_dates[expected_value]
+
+		while True:
+			# We ask the user about each potential date that was found by the fuzzy-matcher
+			reply = QMessageBox.question(self.converterWindow, 'Message',
+										 str(len(self.possible_dates)) + " possible date(s) found<br>" +
+										 "in file: " + self.outName + "<br>"
+										"Checking date option number: " + str(self.dateQuestionIndex + 1) +
+										"<br>Is the date in the data file: <br>" +
+										 self.format_date(self.possible_dates[self.dateQuestionIndex]) + " ?",
+										 QMessageBox.Yes | QMessageBox.No,
+										 QMessageBox.Yes)
+
+			if reply == QMessageBox.No:
+				# If they say no we ask about the next one
+				self.dateQuestionIndex += 1
+			else:
+				# If they say yes we save that date as correct
+				self.converterWindow.expectedDateLine = (len(self.possible_dates), self.dateQuestionIndex)
+				return self.possible_dates[self.dateQuestionIndex]
 
 	def fix_analyte_names(self):
 		""" We put analyte names in the header line into "Al27" format """
@@ -801,4 +911,6 @@ class Parser_txt:
 		with open(infoFile, "w") as out:
 			out.writelines(new_lines)
 			out.close()
+
+
 
