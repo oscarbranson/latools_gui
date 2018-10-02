@@ -54,13 +54,21 @@ required to manually import these modules. Hidden imports is a list of strings "
 various modules that need to be manually included in the build.
 
 
-TODO
+Mac OS Specific Instructions
 ============================
+The Mac OS build of LAtools GUI stumbles on a Python module called Jedi. As of the writing of this documentation the
+PyInstaller hook for Jedi is not installed by default.
 
-If Oscar changes anything latools.cfg or anything in the latools/resources folder, he needs to update it
-in our code as well.
 
-MAC. jedi-hook.
+LAtools Config and Resource Files
+============================
+The original LAtools module makes use of config and resource files which are necessary for the program to run, but
+which PyInstaller does not immediately recognise and package. The fix for this is that the file "latools/latools.cfg"
+and the whole folder "latools/resources" are cloned in the LAtools GUI repository under the directory
+"latools_gui/latools", and a pointer in the SPEC file directs PyInstaller to include them.
+
+Should any changes be made to "latools/latools.cfg" or the files in "latools/resources", then their copies in the
+LAtools GUI repository should be updated as well.
 
 
 Common Issues
@@ -77,7 +85,8 @@ any of the main processes can be run. It will appear briefly in the console and 
 
     ModuleNotFoundError: No module named 'module.name'
 
-This error can be solved by copying the given module name into the list of hidden imports in the SPEC file.
+This error can be solved by copying the given module name into the list of hidden imports in the SPEC file. If this does
+not fix the issue, a more detailed hook may need to be created for the specific module as part of PyInstaller.
 
 After adding new imports to the SPEC file, it may be necessary to delete the previous build files before running
 PyInstaller again.
