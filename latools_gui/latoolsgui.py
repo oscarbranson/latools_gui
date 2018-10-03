@@ -34,55 +34,7 @@ import logging.config
 
 # List of stages
 STAGES = ["Import","De-Spiking","Autorange","Background","Ratio","Calibration","Filtering", "Export"]
-#logging.config.fileConfig('logging.conf')
 
-# Set the appropriate file paths to write logs to
-if getattr(sys, 'frozen', False):
-	# If the program is running as a bundle, then get the relative directory
-	logFile = os.path.join(os.path.dirname(sys.executable), 'logs/log.log')
-	logFile = logFile.replace('\\', '/')
-
-	errorFile = os.path.join(os.path.dirname(sys.executable), 'logs/error.log')
-	errorFile = errorFile.replace('\\', '/')
-else:
-	# Otherwise the program is running in a normal python environment
-	logFile = "logs/log.log"
-	errorFile = "logs/error.log"
-
-# Define logger configuration
-logger = logging.getLogger(__name__)
-logging.config.dictConfig({
-        'version': 1,
-        'formatters': {
-                'stdFormatter': {
-                        'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-                        },
-                },
-        'handlers': {
-                'loghandler': {
-                        'level': 'DEBUG',
-                        'class': 'logging.handlers.TimedRotatingFileHandler',
-                        'formatter': 'stdFormatter',
-                        'filename': logFile,
-                        'when': 'midnight',
-                        'backupCount': 2
-                        },
-                'errhandler': {
-                        'level': 'ERROR',
-                        'class': 'logging.FileHandler',
-                        'formatter': 'stdFormatter',
-                        'filename': errorFile
-                        },
-                },
-        'loggers': {
-                '': {
-                        'handlers': ['loghandler', 'errhandler'],
-                        'level': 'DEBUG',
-                        'propagate': True
-                        },
-                },
-        
-        })
 
 
 class MainWindow(QMainWindow):
@@ -602,6 +554,56 @@ class ImportListener():
 # Autodocs executes side effects when it imports modules to be read. Therefore the GUI must be created and
 # run in a conditional that only accepts the main routine.
 if __name__ == '__main__':
+
+	# Set the appropriate file paths to write logs to
+	if getattr(sys, 'frozen', False):
+		# If the program is running as a bundle, then get the relative directory
+		logFile = os.path.join(os.path.dirname(sys.executable), 'logs/log.log')
+		logFile = logFile.replace('\\', '/')
+
+		errorFile = os.path.join(os.path.dirname(sys.executable), 'logs/error.log')
+		errorFile = errorFile.replace('\\', '/')
+	else:
+		# Otherwise the program is running in a normal python environment
+		logFile = "logs/log.log"
+		errorFile = "logs/error.log"
+
+	# Define logger configuration
+	logger = logging.getLogger(__name__)
+	logging.config.dictConfig({
+		'version': 1,
+		'formatters': {
+			'stdFormatter': {
+				'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+			},
+		},
+		'handlers': {
+			'loghandler': {
+				'level': 'DEBUG',
+				'class': 'logging.handlers.TimedRotatingFileHandler',
+				'formatter': 'stdFormatter',
+				'filename': logFile,
+				'when': 'midnight',
+				'backupCount': 2
+			},
+			'errhandler': {
+				'level': 'ERROR',
+				'class': 'logging.FileHandler',
+				'formatter': 'stdFormatter',
+				'filename': errorFile
+			},
+		},
+		'loggers': {
+			'': {
+				'handlers': ['loghandler', 'errhandler'],
+				'level': 'DEBUG',
+				'propagate': True
+			},
+		},
+
+	})
+
+	# Actually run the application here
 	app = QApplication([])
 	main = MainWindow()
 	main.show()
