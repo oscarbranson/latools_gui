@@ -24,21 +24,29 @@ outside of the data manipulations they perform on the main data. The layout, des
 each stage can all be modified within their respective __init__ method.
 
 Stages can be removed, though this is done at the cost of losing key functionality within the LAtools process. To
-remove a stage, its instantiation in the initUI method of MainWindow should be removed. Lastly it should be removed
-from the list of stages at the top of the latoolsgui module.
+remove a stage, follow the steps below for adding a stage but instead delete the code relevant to the stage being
+removed.
 
 
 Addition
 ====================================
 
-If the existing stages are not enough, new ones can be added following the same design. A stage should have a
-class defined within a separate module which the MainWindow in latoolsgui instantiates in its initUI method.
-In order, a stage should have a QVBoxLayout made for it from a QWidget, which is added to the stagesStack. Then
-an instance of the stage class is created and passed a pointer to that layout. Lastly the stage should be
-added to the list of stages at the top of the latoolsgui module.
+If the existing stages are not enough, new ones can be added following the same design.
+
+Stages are defined as a class within a separate module which the MainWindow in latoolsgui instantiates. These stage
+modules are located in the "latools_gui/stages" folder. The layout and design of the stage should be defined within
+this class but otherwise the contents are free to be customised.
+
+Once a stage is defined, it must be instatiated and attached to the program. This is handled in the MainWindow class in
+the file "latools_gui/latoolsgui.py". The steps within the initUI method should be replicated for the new class,
+following the design of the existing stages. The title of the new stage should also be added to the list of stage names,
+STAGES, at the top of this file.
+
+Lastly, within this same file is the class ImportListener which handles the passing of information between modules during
+runtime. Steps that are taken for the existing stages within this class should be replicated for the new stage.
 
 
-Stages
+Stages List
 ===================================
 
 .. toctree::

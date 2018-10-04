@@ -4,7 +4,7 @@ Templates
 
 The term, template, describes various graphical objects which are displayed on the interface. Templates are the
 primary building blocks of the graphical interface, and they differ from stages in that each template has a unique
-structure and purpose, whereas stages are solely to house the tools at each step of the LAtools process.
+structure and purpose, whereas stages are there solely to house the tools at each step of the LAtools process.
 
 
 Structure
@@ -38,7 +38,7 @@ of the MainWindow, but should be added to the MainStack. Some form of navigation
 otherwise there are no existing methods to navigate the MainStack farther than the stageScreenLayout.
 
 
-Templates
+Templates List
 ==================================
 
 .. toctree::
