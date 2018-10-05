@@ -24,7 +24,7 @@ class FilterControls:
 	"""
 	The Filtering Stage has its own customised controls pane
 	"""
-	def __init__(self, stageLayout, project, graphPaneObj, guideDomain):
+	def __init__(self, stageLayout, project, graphPaneObj, links):
 		"""
 		Initialising builds the pane and prepares it for options to be added by the stage object.
 
@@ -50,7 +50,6 @@ class FilterControls:
 
 		self.project = project
 		self.graphPaneObj = graphPaneObj
-		self.guideDomain = guideDomain
 		self.tabsArea = QTabWidget()
 		stageLayout.addWidget(self.tabsArea)
 
@@ -58,7 +57,7 @@ class FilterControls:
 		self.tabsList = []
 
 		# The first tab is the Summary tab
-		self.summaryTab = SummaryTab(self.project, self.guideDomain, self.graphPaneObj, self.tabsArea)
+		self.summaryTab = SummaryTab(self.project, links, self.graphPaneObj, self.tabsArea)
 		self.tabsArea.addTab(self.summaryTab.summary, "Summary")
 
 		# The last tab is the "New Filter tab"
@@ -271,12 +270,13 @@ class FilterControls:
 class SummaryTab:
 	""" The tab that lists all of the created filters and can activate the filtering process """
 
-	def __init__(self, project, guideDomain, graphPaneObj, tabsArea):
+	def __init__(self, project, links, graphPaneObj, tabsArea):
 
 		# We use a special widget purely to help with resizing the scrollable area to the window width
 		self.summary = QWidget()
 		self.project = project
-		self.guideDomain = guideDomain
+		self.guideDomain = links[0]
+		self.reportIssue = links[1]
 		self.graphPaneObj = graphPaneObj
 		self.header_items = []
 		self.tabsArea = tabsArea
@@ -311,7 +311,13 @@ class SummaryTab:
 		self.buttonLayout = QVBoxLayout(self.buttonLayoutWidget)
 		self.buttonLayoutWidget.setMaximumWidth(120)
 
-		# We make an user guide button
+		# We make a button to link to the form for reporting an issue
+		self.reportButton = QPushButton("Report issue")
+		self.reportButton.clicked.connect(self.reportPressed)
+		self.buttonLayout.addWidget(self.reportButton)
+		self.reportButton.setToolTip(links[2])
+
+		# We make a user guide button
 		self.guideButton = QPushButton("User guide")
 		self.guideButton.clicked.connect(self.userGuide)
 		self.buttonLayout.addWidget(self.guideButton)
@@ -362,6 +368,10 @@ class SummaryTab:
 
 	def createPressed(self):
 		self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
+
+	def reportPressed(self):
+		""" Links to the online form for reporting an issue """
+		QDesktopServices.openUrl(QUrl(self.reportIssue))
 
 
 class FilterTab:

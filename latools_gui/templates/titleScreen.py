@@ -15,7 +15,7 @@ class TitleScreen():
 	The screen that shows up at the beginning of the program and allows a user to define a new project,
 	or continue an existing one.
 	"""
-	def __init__(self, stack, project, userGuideDomain):
+	def __init__(self, stack, project, links):
 		"""
 		Initialising builds and displays the screen.
 
@@ -34,7 +34,8 @@ class TitleScreen():
 		self.loadProjectBool = False
 		self.importListener = None
 		self.nameOK = False
-		self.userGuideDomain = userGuideDomain
+		self.userGuideDomain = links[0]
+		self.reportIssue = links[1]
 
 		# The layout is created from the mainWidget
 		self.mainLayout = QVBoxLayout(self.mainWidget)
@@ -132,6 +133,12 @@ class TitleScreen():
 		self.helpLayout.addWidget(self.helpButton)
 		self.mainLayout.addWidget(self.helpWidget)
 		self.helpButton.clicked.connect(self.helpButtonClick)
+
+		# A button for reporting issues
+		self.reportButton = QPushButton("Report an issue")
+		self.helpLayout.addWidget(self.reportButton)
+		self.reportButton.clicked.connect(self.reportButtonClick)
+		self.reportButton.setToolTip(links[2])
 
 		# A spacer at the bottom.
 		self.bottomSpacer = QSpacerItem(0, 75, QSizePolicy.Minimum, QSizePolicy.Expanding)
@@ -305,6 +312,10 @@ class TitleScreen():
 		""" Link to online user guide """
 		url = QUrl(self.userGuideDomain + "LAtoolsGUIUserGuide/index.html")
 		QDesktopServices.openUrl(url)
+
+	def reportButtonClick(self):
+		""" Links to the online form for reporting an issue """
+		QDesktopServices.openUrl(QUrl(self.reportIssue))
 
 	def enterPressed(self):
 		if self.nextButton.isEnabled():

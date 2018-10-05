@@ -22,7 +22,7 @@ class ImportStage():
 	project.
 	"""
 	#@logged
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, importStageWidget, project, guideDomain):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, importStageWidget, project, links):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -50,7 +50,8 @@ class ImportStage():
 		self.fileLocation = ""
 		self.project = project
 		self.importListener = None
-		self.guideDomain = guideDomain
+		self.guideDomain = links[0]
+		self.reportIssue = links[1]
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
@@ -138,6 +139,12 @@ class ImportStage():
 		self.guideButton = QPushButton("User guide")
 		self.guideButton.clicked.connect(self.userGuide)
 		self.stageControls.addDefaultButton(self.guideButton)
+
+		# We create a button to link to the form for reporting an issue
+		self.reportButton = QPushButton("Report an issue")
+		self.reportButton.clicked.connect(self.reportButtonClick)
+		self.stageControls.addDefaultButton(self.reportButton)
+		self.reportButton.setToolTip(links[2])
 
 		# We create the button for the right-most section of the Controls Pane.
 		self.applyButton = QPushButton("APPLY")
@@ -282,3 +289,7 @@ class ImportStage():
 	def converterPressed(self):
 		self.converter = converterWindow.ConverterWindow()
 		self.converter.show()
+
+	def reportButtonClick(self):
+		""" Links to the online form for reporting an issue """
+		self.stageControls.reportIssue(self.reportIssue)

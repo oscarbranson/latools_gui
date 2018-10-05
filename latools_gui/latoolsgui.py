@@ -9,6 +9,7 @@ import sys
 import os
 import latools as la
 import json
+import zipfile
 
 # Import the templates
 from templates import titleScreen
@@ -74,7 +75,10 @@ class MainWindow(QMainWindow):
 			self.guiInfo = json.load(read_file)
 			read_file.close()
 
-		self.userGuideDomain = self.guiInfo["user_guide_domain"]
+		self.links = (self.guiInfo["user_guide_domain"],
+					  self.guiInfo["report_issue_link"],
+					  self.guiInfo["report_issue_description"])
+		#self.userGuideDomain = self.links[0]
 
 		# principalLayout is a vertical box that runs down the entire window
 		self.principalLayout = QVBoxLayout(self.mainWidget)
@@ -93,7 +97,7 @@ class MainWindow(QMainWindow):
 		self.project = runningProject.RunningProject(self.mainWidget)
 
 		# Here we create a title screen object from the file in templates
-		self.titleScreenObj = titleScreen.TitleScreen(self.mainStack, self.project, self.userGuideDomain)
+		self.titleScreenObj = titleScreen.TitleScreen(self.mainStack, self.project, self.links)
 		self.project.addRecentProjects(self.titleScreenObj.recentProjects)
 
 		# And it is added to the mainstack in position 0.
@@ -159,54 +163,55 @@ class MainWindow(QMainWindow):
 													  self.progressPaneObj,
 													  self.importStageWidget,
 													  self.project,
-													  self.userGuideDomain)
+													  self.links)
 
 		self.despikingStageObj = despikingStage.DespikingStage(self.despikingStageLayout,
 															   self.graphPaneObj,
 															   self.progressPaneObj,
 															   self.despikingStageWidget,
 															   self.project,
-															   self.userGuideDomain)
+															   self.links)
 
 		self.autorangeStageObj = autorangeStage.AutorangeStage(self.autorangeStageLayout,
 															   self.graphPaneObj,
 															   self.progressPaneObj,
 															   self.autorangeStageWidget,
 															   self.project,
-															   self.userGuideDomain)
+															   self.links)
 
 		self.backgroundStageObj = backgroundStage.BackgroundStage(self.backgroundStageLayout,
 																  self.graphPaneObj,
 																  self.progressPaneObj,
 																  self.backgroundStageWidget,
 																  self.project,
-																  self.userGuideDomain)
+																  self.links)
 
 		self.ratioStageObj = ratioStage.RatioStage(self.ratioStageLayout,
 												   self.graphPaneObj,
 												   self.progressPaneObj,
 												   self.ratioStageWidget,
 												   self.project,
-												   self.userGuideDomain)
+												   self.links)
 
 		self.calibrationStageObj = calibrationStage.CalibrationStage(self.calibrationStageLayout,
 																	 self.graphPaneObj,
 																	 self.progressPaneObj,
 																	 self.calibrationStageWidget,
 																	 self.project,
-																	 self.userGuideDomain)
+																	 self.links)
 
 		self.filteringStageObj = filteringStage.FilteringStage(self.filteringStageLayout,
 															   self.graphPaneObj,
 															   self.project,
-															   self.userGuideDomain)
+															   self.links)
 
 		self.exportStageObj = exportStage.ExportStage(self.exportStageLayout,
 													  self.graphPaneObj,
 													  self.progressPaneObj,
 													  self.exportStageWidget,
 													  self.project,
-													  self.userGuideDomain)
+													  self.links,
+													  self)
 
 		# ImportListener handles all interaction between stages at run time.
 		self.importListener = ImportListener(self.importStageObj,
@@ -254,10 +259,10 @@ class MainWindow(QMainWindow):
 		saveFile.setStatusTip('Save your project')
 		saveFile.triggered.connect(self.saveButton)
 
-		exportFile = QAction(QIcon('export.png'), 'Export', self)
-		exportFile.setShortcut('Ctrl+E')
-		exportFile.setStatusTip('Export your data')
-		exportFile.triggered.connect(self.exportButton)
+		#exportFile = QAction(QIcon('export.png'), 'Export', self)
+		#exportFile.setShortcut('Ctrl+E')
+		#exportFile.setStatusTip('Export your data')
+		#exportFile.triggered.connect(self.exportButton)
 
 		# loadFile = QAction(QIcon('open.png'), 'Load', self)
 		# #loadFile.setShortcut('Ctrl+L')
@@ -269,11 +274,18 @@ class MainWindow(QMainWindow):
 		# exitAct.setStatusTip('Exit application')
 		# exitAct.triggered.connect(qApp.quit)
 
+		# A file option for zipping the error log
+		saveLog = QAction(QIcon('export.png'), 'Export error logs', self)
+		saveLog.setShortcut('Ctrl+E')
+		saveLog.setStatusTip("Saves a zip folder of your error logs to the LAtools directory")
+		saveLog.triggered.connect(self.zipLogs)
+
 		menubar = self.menuBar()
 		fileMenu = menubar.addMenu('&File')
 		fileMenu.addAction(saveFile)
+		fileMenu.addAction(saveLog)
 		# fileMenu.addAction(loadFile)
-		fileMenu.addAction(exportFile)
+		# fileMenu.addAction(exportFile)
 		# fileMenu.addAction(exitAct)
 
 		makeConfig = QAction(QIcon('open.png'), 'Make', self)
@@ -302,6 +314,48 @@ class MainWindow(QMainWindow):
 											   "Your data plots have been saved as pdfs in the reports folder " +
 											   "created on import",
 											   QMessageBox.Ok)
+
+	def zipLogs(self):
+		""" Runs the command to zip the error logs and save them to the LAtools directory """
+
+		try:
+			if getattr(sys, 'frozen', False):
+				# If the program is running as a bundle, then get the relative directory
+				logFolder = os.path.join(os.path.dirname(sys.executable), "logs/")
+				logFolder = logFolder.replace('\\', '/')
+
+				parentFolder = os.path.dirname(sys.executable)
+				parentFolder = parentFolder.replace('\\', '/')
+				outputZip = os.path.join(parentFolder, 'Logs.zip')
+			else:
+				# Otherwise the program is running in a normal python environment
+				logFolder = "logs/"
+				outputZip = 'Logs.zip'
+
+			# We create an empty zip folder
+			zipf = zipfile.ZipFile(outputZip, 'w', zipfile.ZIP_DEFLATED)
+
+			# The folder is filled with the files in the logs directory
+			self.zipdir(logFolder, zipf)
+
+			# The zip file is saved
+			zipf.close()
+
+			infoBox = QMessageBox.information(self.mainWidget, "Export logs",
+											  "Your error log files have been saved to 'Logs.zip' in the LAtools directory",
+											  QMessageBox.Ok)
+		except:
+			infoBox = QMessageBox.information(self.mainWidget, "Export logs",
+											  "An error was encountered when attempting to save the error log files.",
+											  QMessageBox.Ok)
+
+	def zipdir(self, path, ziph):
+		""" Takes a new zip file and fills it with the contents of the path directory """
+
+		# ziph is zipfile handle
+		for root, dirs, files in os.walk(path):
+			for file in files:
+				ziph.write(os.path.join(root, file))
 
 	#@logged
 	def closeEvent(self, event):
@@ -339,7 +393,7 @@ class MainWindow(QMainWindow):
 
 	def helpButton(self):
 		""" Opens the online user guide """
-		url = QUrl(self.userGuideDomain + "LAtoolsGUIUserGuide/index.html")
+		url = QUrl(self.links[0] + "LAtoolsGUIUserGuide/index.html")
 		QDesktopServices.openUrl(url)
 
 

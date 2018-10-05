@@ -20,7 +20,7 @@ class BackgroundStage():
 	project.
 	"""
 	#@logged
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, backgroundWidget, project, guideDomain):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, backgroundWidget, project, links):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -42,7 +42,8 @@ class BackgroundStage():
 		self.progressPaneObj = progressPaneObj
 		self.backgroundWidget = backgroundWidget
 		self.project = project
-		self.guideDomain = guideDomain
+		self.guideDomain = links[0]
+		self.reportIssue = links[1]
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
@@ -192,6 +193,12 @@ class BackgroundStage():
 		self.guideButton.clicked.connect(self.userGuide)
 		self.stageControls.addDefaultButton(self.guideButton)
 
+		# We create a button to link to the form for reporting an issue
+		self.reportButton = QPushButton("Report an issue")
+		self.reportButton.clicked.connect(self.reportButtonClick)
+		self.stageControls.addDefaultButton(self.reportButton)
+		self.reportButton.setToolTip(links[2])
+
 		# We create the buttons for the right-most section of the Controls Pane.
 
 		self.calcButton = QPushButton("Calculate background")
@@ -223,7 +230,6 @@ class BackgroundStage():
 		self.kindOption.setValidator(QIntValidator())
 		self.n_minOption2.setValidator(QIntValidator())
 		self.n_maxOption2.setValidator(QIntValidator())
-		
 
 	#@logged
 	def pressedCalcButton(self):
@@ -506,3 +512,7 @@ class BackgroundStage():
 	def userGuide(self):
 		""" Opens the online user guide to a particular page for the current stage """
 		self.stageControls.userGuide(self.guideDomain + "LAtoolsGUIUserGuide/users/06-background.html")
+
+	def reportButtonClick(self):
+		""" Links to the online form for reporting an issue """
+		self.stageControls.reportIssue(self.reportIssue)

@@ -112,3 +112,7 @@ class ControlsPane():
 		""" Opens the online user guide to a particular page for the current stage """
 		url = QUrl(url)
 		QDesktopServices.openUrl(url)
+
+	def reportIssue(self, url):
+		""" Links to the online form for reporting an issue """
+		QDesktopServices.openUrl(QUrl(url))

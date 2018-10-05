@@ -20,7 +20,7 @@ class DespikingStage():
 	project.
 	"""
 	#@logged
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, despikingWidget, project, guideDomain):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, despikingWidget, project, links):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -42,7 +42,8 @@ class DespikingStage():
 		self.progressPaneObj = progressPaneObj
 		self.despikingWidget = despikingWidget
 		self.project = project
-		self.guideDomain = guideDomain
+		self.guideDomain = links[0]
+		self.reportIssue = links[1]
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
@@ -158,6 +159,12 @@ class DespikingStage():
 		self.guideButton = QPushButton("User guide")
 		self.guideButton.clicked.connect(self.userGuide)
 		self.stageControls.addDefaultButton(self.guideButton)
+
+		# We create a button to link to the form for reporting an issue
+		self.reportButton = QPushButton("Report an issue")
+		self.reportButton.clicked.connect(self.reportButtonClick)
+		self.stageControls.addDefaultButton(self.reportButton)
+		self.reportButton.setToolTip(links[2])
 
 		# We create the button for the right-most section of the Controls Pane.
 
@@ -307,3 +314,7 @@ class DespikingStage():
 	def userGuide(self):
 		""" Opens the online user guide to a particular page for the current stage """
 		self.stageControls.userGuide(self.guideDomain + "LAtoolsGUIUserGuide/users/04-data-despiking.html")
+
+	def reportButtonClick(self):
+		""" Links to the online form for reporting an issue """
+		self.stageControls.reportIssue(self.reportIssue)

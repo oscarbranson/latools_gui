@@ -1,3 +1,5 @@
 {
-	"user_guide_domain": "https://bearisdriving.com/"
+	"user_guide_domain": "https://bearisdriving.com/",
+	"report_issue_link": "https://www.google.com.au/",
+	"report_issue_description": "<qt/>If you encounter an issue while running LAtools, please take a moment to let the developers know by filling out a quick form."
 }

@@ -15,7 +15,7 @@ class ExportStage():
 	step of the data-processing. It updates the graph pane based on the modifications that are made to the
 	project.
 	"""
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, exportStageWidget, project, guideDomain):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, exportStageWidget, project, links, mainWindow):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -41,11 +41,13 @@ class ExportStage():
 		self.progressPaneObj = progressPaneObj
 		self.exportStageWidget = exportStageWidget
 		self.project = project
-		self.guideDomain = guideDomain
+		self.guideDomain = links[0]
+		self.reportIssue = links[1]
 		self.defaultDataFolder = ""
 		self.statsExportCount = 1
 		self.focus_stages = []
 		self.focusSet = set()
+		self.mainWindow = mainWindow
 
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
@@ -224,6 +226,19 @@ class ExportStage():
 		self.pane2Layout.setColumnStretch(3, 1)
 		self.pane2Layout.setRowStretch(3, 1)
 
+		# We create a button to export the error logs to a zip folder in the LAtools directory
+		self.exportLogsButton = QPushButton("Export error logs")
+		self.exportLogsButton.clicked.connect(self.mainWindow.zipLogs)
+		self.exportLogsButton.setToolTip("<qt/>Saves your error log files to \"Logs.zip\" in the LAtools directory. <br>" +
+										 "You can also do this at any time via the File menu.")
+		self.stageControls.addDefaultButton(self.exportLogsButton)
+
+		# We create a button to link to the form for reporting an issue
+		self.reportButton = QPushButton("Report an issue")
+		self.reportButton.clicked.connect(self.reportButtonClick)
+		self.stageControls.addDefaultButton(self.reportButton)
+		self.reportButton.setToolTip(links[2])
+
 		# We create the export button for the right-most section of the Controls Pane.
 		self.exportButton = QPushButton("Export")
 		self.exportButton.clicked.connect(self.pressedExportButton)
@@ -368,3 +383,7 @@ class ExportStage():
 	def raiseError(self, message):
 		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.exportStageWidget, "Error", message, QMessageBox.Ok)
+
+	def reportButtonClick(self):
+		""" Links to the online form for reporting an issue """
+		self.stageControls.reportIssue(self.reportIssue)

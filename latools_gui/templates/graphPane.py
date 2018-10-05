@@ -272,20 +272,30 @@ class GraphWindow(QWidget):
 				if self.legendLayout.itemAt(item).widget().isChecked():
 					analyte_list.append(self.legendLayout.itemAt(item).widget().text())
 
+			# We find the reports folder created on import to use as a default location for the save dialogue
+			reports_folder = self.project.dataLocation
+			if reports_folder[-1] == "/":
+				reports_folder = reports_folder[:-1]
+			reports_folder = reports_folder + "_reports"
+
+			# We bring up a dialogue to select the save directory
+			self.fileLocation = QFileDialog.getExistingDirectory(self.legend, 'Save report', reports_folder)
+			if self.fileLocation == "":
+				return
+
 			try:
 				self.project.eg.trace_plots(analytes=analyte_list,
 											samples=self.sampleList.currentItem().text(),
 											focus=self.project.eg.focus_stage,
+											outdir=self.fileLocation,
 											subset=None)
 				infoBox = QMessageBox.information(self.legend, "Export",
-												  "The current data plot has been saved as a pdf in the reports folder " +
-												  "created on import",
+												  "The current data plot has been saved as a pdf in the folder.",
 												  QMessageBox.Ok)
 			except:
 				infoBox = QMessageBox.information(self.legend, "Export",
 												  "Encountered an error when attempting to export the plot.",
 												  QMessageBox.Ok)
-
 
 	def save_all_button(self):
 		"""
@@ -299,17 +309,28 @@ class GraphWindow(QWidget):
 				if self.legendLayout.itemAt(item).widget().isChecked():
 					analyte_list.append(self.legendLayout.itemAt(item).widget().text())
 
+			# We find the reports folder created on import to use as a default location for the save dialogue
+			reports_folder = self.project.dataLocation
+			if reports_folder[-1] == "/":
+				reports_folder = reports_folder[:-1]
+			reports_folder = reports_folder + "_reports"
+
+			# We bring up a dialogue to select the save directory
+			fileLocation = QFileDialog.getExistingDirectory(self.legend, 'Save report', reports_folder)
+			if fileLocation == "":
+				return
+
 			try:
-				self.project.eg.trace_plots(analytes=analyte_list, focus=self.project.eg.focus_stage)
+				self.project.eg.trace_plots(analytes=analyte_list,
+											focus=self.project.eg.focus_stage,
+											outdir=fileLocation)
 				infoBox = QMessageBox.information(self.legend, "Export",
-												  "The current data plot has been saved as a pdf in the reports folder " +
-												  "created on import",
+												  "The current data plots have been saved as pdfs in the folder.",
 												  QMessageBox.Ok)
 			except:
 				infoBox = QMessageBox.information(self.legend, "Export",
 												  "Encountered an error when attempting to export the plots.",
 												  QMessageBox.Ok)
-
 
 	# populate sample list
 	def populateSamples(self):

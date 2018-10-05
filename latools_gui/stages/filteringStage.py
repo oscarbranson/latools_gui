@@ -11,7 +11,7 @@ class FilteringStage():
 	The filtering stage is set up differently to the other stages. It is all run in FilterControls
 	"""
 	#@logged
-	def __init__(self, stageLayout, graphPaneObj, project, guideDomain):
+	def __init__(self, stageLayout, graphPaneObj, project, links):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -27,7 +27,7 @@ class FilteringStage():
 			including the latools analyse object that the stages will update.
 		"""
 
-		self.stageControls = filterControls.FilterControls(stageLayout, project, graphPaneObj, guideDomain)
+		self.stageControls = filterControls.FilterControls(stageLayout, project, graphPaneObj, links)
 
 	def updateStageInfo(self):
 		""" Updates the stage after data is imported at runtime """
