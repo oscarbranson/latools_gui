@@ -32,9 +32,15 @@ class RatioStage():
 			updates t the graph, produced by the processing defined in the stage.
 		progressPaneObj : ProgressPane
 			A reference to the Progress Pane so that the right button can be enabled by completing the stage.
+		ratioWidget : QWidget
+			The parent widget for this object. Used mainly for displaying error boxes.
 		project : RunningProject
 			A reference to the project object which contains all of the information unique to this project,
 			including the latools analyse object that the stages will update.
+		links : (str, str, str)
+			links[0] = The User guide website domain
+			links[1] = The web link for reporting an issue
+			links[2] = The tooltip for the report issue button
 		"""
 
 		self.graphPaneObj = graphPaneObj
@@ -44,6 +50,7 @@ class RatioStage():
 		self.guideDomain = links[0]
 		self.reportIssue = links[1]
 
+		# We create a controls pane object which covers the general aspects of the stage's controls pane
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
 		# We import the stage information from a json file
@@ -127,6 +134,7 @@ class RatioStage():
 
 	#@logged
 	def internal_standardClicked(self):
+		""" Only allows the apply button to be activated when an internal standard option has been selected """
 		if self.internal_standardOption.currentIndex() != 0:
 			self.applyButton.setEnabled(True)
 		else:

@@ -40,6 +40,10 @@ class ImportStage():
 		project : RunningProject
 			A reference to the project object which contains all of the information unique to this project,
 			including the latools analyse object that the stages will update.
+		links : (str, str, str)
+			links[0] = The User guide website domain
+			links[1] = The web link for reporting an issue
+			links[2] = The tooltip for the report issue button
 		"""
 		self.logger = logging.getLogger(__name__)
 		self.logger.info('Initialised import stage!')
@@ -53,6 +57,7 @@ class ImportStage():
 		self.guideDomain = links[0]
 		self.reportIssue = links[1]
 
+		# We create a controls pane object which covers the general aspects of the stage's controls pane
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
 		# We capture the default parameters for this stage's function call
@@ -100,12 +105,14 @@ class ImportStage():
 		for key in dict(la.config.read_latoolscfg()[1]):
 			self.configOption.addItem(key)
 
+		# The config option
 		self.config_label = QLabel(self.stageInfo["config_label"])
 		self.optionsGrid.addWidget(self.config_label, 1,0)
 		self.optionsGrid.addWidget(self.configOption, 1,1)
 		self.configOption.setToolTip(self.stageInfo["config_description"])
 		self.config_label.setToolTip(self.stageInfo["config_description"])
 
+		# The SRM identifier option
 		self.srm_identifierLabel = QLabel(self.stageInfo["srm_label"])
 		self.srm_identifierOption = QLineEdit(self.defaultParams['srm_identifier'])
 		self.optionsGrid.addWidget(self.srm_identifierLabel, 2, 0)
@@ -113,6 +120,7 @@ class ImportStage():
 		self.srm_identifierOption.setToolTip(self.stageInfo["srm_description"])
 		self.srm_identifierLabel.setToolTip(self.stageInfo["srm_description"])
 
+		# The file extension option
 		self.file_extensionLabel = QLabel(self.stageInfo["file_extension_label"])
 		self.file_extensionOption = QLineEdit(self.defaultParams['extension'])
 		self.optionsGrid.addWidget(self.file_extensionLabel, 3, 0)
@@ -155,8 +163,6 @@ class ImportStage():
 	def pressedApplyButton(self):
 		""" Imports data into the project when the apply button is pressed. """
 
-		
-
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		self.logger.info('Button clicked')
 
@@ -174,8 +180,10 @@ class ImportStage():
 										 srm_identifier=self.srm_identifierOption.text(),
 										 pbar=self.progressPaneObj.progressUpdater)
 
+			# The graph is updated with the newly imported raw data
 			self.graphPaneObj.updateGraph(importing=True)
 
+			# The progress pane is notified that the import stage has been completed
 			self.progressPaneObj.completedStage(0)
 
 			# The data location is recorded to be used as the default savefile location
@@ -216,9 +224,19 @@ class ImportStage():
 	
 	#@logged
 	def setImportListener(self, importListener):
+		"""
+		Adds the import listener, an object that handles communication between stages during run time.
+
+		Parameters
+		----------
+		importListener : ImportListener
+			The object that passes information between stages during run-time, such as notifying
+			the other stages that the data has been imported, and they can now populate analyte lists.
+		"""
 		self.importListener = importListener
 
 	def makeConfig(self):
+		""" A button to run the Make Configuration option from the file menu """
 		if not self.importListener is None:
 			self.importListener.makeConfiguration()
 
@@ -236,8 +254,16 @@ class ImportStage():
 		self.pressedApplyButton()
 
 	def fillValues(self, params):
-		""" Fills the stage parameters from a given dictionary """
+		"""
+		Fills the stage parameters from a given dictionary
 
+		Parameters
+		----------
+		params : dict
+			The key-word arguments of the stage call, saved in the lalog file.
+		"""
+
+		# The keyword arguments are added to the control fields
 		if params is not None:
 			self.fileLocationLine.setText(params.get("data_folder", ""))
 			self.configOption.setCurrentText(params.get("config", ""))
@@ -264,7 +290,7 @@ class ImportStage():
 
 	#@logged
 	def defaultButtonPress(self):
-
+		""" Returns the option values to their default states """
 		params = {
 			"data_folder": self.defaultDataFolder,
 			"config": self.defaultParams["config"],
@@ -287,6 +313,7 @@ class ImportStage():
 		self.applyButton.setToolTip("<qt/>To start your analysis over with new data, please restart the program.")
 
 	def converterPressed(self):
+		""" Creates and displays the data converter window """
 		self.converter = converterWindow.ConverterWindow()
 		self.converter.show()
 

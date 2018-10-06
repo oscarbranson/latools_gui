@@ -25,6 +25,10 @@ class FilteringStage():
 		project : RunningProject
 			A reference to the project object which contains all of the information unique to this project,
 			including the latools analyse object that the stages will update.
+		links : (str, str, str)
+			links[0] = The User guide website domain
+			links[1] = The web link for reporting an issue
+			links[2] = The tooltip for the report issue button
 		"""
 
 		self.stageControls = filterControls.FilterControls(stageLayout, project, graphPaneObj, links)

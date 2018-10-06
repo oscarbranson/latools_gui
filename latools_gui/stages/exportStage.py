@@ -33,6 +33,10 @@ class ExportStage():
 		project : RunningProject
 			A reference to the project object which contains all of the information unique to this project,
 			including the latools analyse object that the stages will update.
+		links : (str, str, str)
+			links[0] = The User guide website domain
+			links[1] = The web link for reporting an issue
+			links[2] = The tooltip for the report issue button
 		"""
 		self.logger = logging.getLogger(__name__)
 		self.logger.info('Initialised import stage!')
@@ -43,12 +47,18 @@ class ExportStage():
 		self.project = project
 		self.guideDomain = links[0]
 		self.reportIssue = links[1]
+
+		# Updated on import with the default location to export data to
 		self.defaultDataFolder = ""
 		self.statsExportCount = 1
+
+		# Updated with each completed focus stage
 		self.focus_stages = []
 		self.focusSet = set()
+
 		self.mainWindow = mainWindow
 
+		# We create a controls pane object which covers the general aspects of the stage's controls pane
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
 		# We import the stage information from a json file and set the default data folder
@@ -244,8 +254,8 @@ class ExportStage():
 		self.exportButton.clicked.connect(self.pressedExportButton)
 		self.stageControls.addApplyButton(self.exportButton)
 
-
 	def typeChange(self):
+		""" When the type of export is changed we hide or show the different option panes """
 
 		if self.typeCombo.currentText() == "Full export":
 			self.pane2Frame.setParent(None)
@@ -263,6 +273,7 @@ class ExportStage():
 
 		if stage not in self.focusSet:
 
+			# If we have not encountered the current focus stage yet, we create a new checkbox for it
 			new = QCheckBox(stage)
 
 			# There is a different tooltip for the 'filtered' checkbox
@@ -271,6 +282,7 @@ class ExportStage():
 			else:
 				new.setToolTip(self.stageInfo["focus_description"])
 
+			# We add our new focus stage checkbox to the list, and to the scrollable display area
 			self.focus_stages.append(new)
 			self.pane1Layout.addWidget(new, len(self.focus_stages), 0)
 			self.focusSet.add(stage)
@@ -279,12 +291,14 @@ class ExportStage():
 			self.pane1Layout.setRowStretch(len(self.focus_stages), 0)
 			self.pane1Layout.setRowStretch(len(self.focus_stages) + 1, 1)
 
-
+			# If we are up tot he background subtraction focus stage, then the default export option becomes
+			# Sample statistics
 			if stage == "bkgsub":
 				self.typeCombo.addItem("Sample statistics")
 				self.typeCombo.setCurrentText("Sample statistics")
 				self.typeChange()
 
+		# If someone reimports data we need to remove the Sample Statistics option
 		if stage == "rawdata" and self.typeCombo.count() == 2:
 			self.typeCombo.removeItem(1)
 			self.typeChange()
@@ -323,18 +337,21 @@ class ExportStage():
 
 
 	def pressedExportButton(self):
+		""" When the export button is pressed we run an export command based on the option values. """
 
+		# We create a list of the checked analytes. There must be at least one checked.
 		analytes = []
 		for a in self.analyteBoxes:
 			if a.isChecked():
 				analytes.append(a.text())
-
 		if len(analytes) == 0:
 			self.raiseError("You must select at least one analyte.")
 			return
 
+		# If the type is full export, we run the corresponding export function
 		if self.typeCombo.currentText() == "Full export":
 
+			# The user must select at least one focus stage. They are added to a list.
 			stages = []
 			filtered = False
 			for s in self.focus_stages:
@@ -348,6 +365,7 @@ class ExportStage():
 				self.raiseError("You must select at least one analysis stage to include.")
 				return
 
+			# We run a separate export call for each focus stage selected.
 			for stage in stages:
 				self.project.eg.export_traces(outdir=self.fileLocationLine.text(),
 											  focus_stage=stage,
@@ -359,20 +377,26 @@ class ExportStage():
 											  QMessageBox.Ok)
 
 		else:
+			# Otherwise run the Sample Statistics export
+
+			# We create a list of stat functions to include
 			stats = []
 			for s in self.statsBoxes:
 				if s.isChecked():
 					stats.append(s.text())
-
+			# At least one stat function must be selected
 			if len(analytes) == 0:
 				self.raiseError("You must select at least one stat function.")
 				return
 
+			# We run the sample statistics export function
 			self.project.eg.sample_stats(analytes=analytes,
 										 filt=self.filtStats.isChecked(),
 										 stats=stats)
 
+			# We create a data frame from of the sample statistics data
 			df = self.project.eg.getstats(save=False)
+			# We save the data frame to csv in the specified location
 			df.to_csv(os.path.join(self.fileLocationLine.text(), "Sample_stats" + str(self.statsExportCount) + ".csv"))
 			self.statsExportCount += 1
 

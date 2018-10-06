@@ -33,9 +33,15 @@ class DespikingStage():
 			updates t the graph, produced by the processing defined in the stage.
 		progressPaneObj : ProgressPane
 			A reference to the Progress Pane so that the right button can be enabled by completing the stage.
+		despikingWidget : QWidget
+			The parent widget for this object. Used mainly for displaying error boxes.
 		project : RunningProject
 			A reference to the project object which contains all of the information unique to this project,
 			including the latools analyse object that the stages will update.
+		links : (str, str, str)
+			links[0] = The User guide website domain
+			links[1] = The web link for reporting an issue
+			links[2] = The tooltip for the report issue button
 		"""
 
 		self.graphPaneObj = graphPaneObj
@@ -45,6 +51,7 @@ class DespikingStage():
 		self.guideDomain = links[0]
 		self.reportIssue = links[1]
 
+		# We create a controls pane object which covers the general aspects of the stage's controls pane
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
 		# We capture the default parameters for this stage's function call
@@ -73,6 +80,9 @@ class DespikingStage():
 
 		# We define the stage options and add them to the Controls Pane
 
+		# We make two despiking option areas, called pane1 and pane2
+
+		# We create the first pane of options
 		self.pane1VWidget = QWidget()
 		self.pane1VLayout = QVBoxLayout(self.pane1VWidget)
 		self.exponentialLabel = QLabel(self.stageInfo["despike_1"])
@@ -89,11 +99,13 @@ class DespikingStage():
 
 		self.optionsGrid.addWidget(self.pane1VWidget)
 
+		# We add the exp decay option
 		self.pane1expdecayOption = QCheckBox(self.stageInfo["exp_decay_label"])
 		self.pane1expdecayOption.setChecked(self.defaultParams['expdecay_despiker'] == 'True')
 		self.pane1Layout.addWidget(self.pane1expdecayOption, 0, 0, 1, 0)
 		self.pane1expdecayOption.setToolTip(self.stageInfo["exp_decay_description"])
 
+		# We add the exponent option
 		self.pane1ExponentLabel = QLabel(self.stageInfo["exponent_label"])
 		self.pane1Exponent = QLineEdit(self.defaultParams['exponent'])
 		self.pane1Layout.addWidget(self.pane1ExponentLabel, 1, 0)
@@ -123,11 +135,13 @@ class DespikingStage():
 
 		self.optionsGrid.addWidget(self.pane2VWidget)
 
+		# We create the noise option
 		self.pane2NoiseOption = QCheckBox(self.stageInfo["noise_label"])
 		self.pane2NoiseOption.setChecked(self.defaultParams['noise_despiker'] == 'True')
 		self.pane2Layout.addWidget(self.pane2NoiseOption, 0, 0, 1, 0)
 		self.pane2NoiseOption.setToolTip(self.stageInfo["noise_description"])
 
+		# We create the win option
 		self.winLabel = QLabel(self.stageInfo["win_label"])
 		self.pane2win = QLineEdit(self.defaultParams['win'])
 		self.pane2Layout.addWidget(self.winLabel, 1, 0)
@@ -135,6 +149,7 @@ class DespikingStage():
 		self.pane2win.setToolTip(self.stageInfo["win_description"])
 		self.winLabel.setToolTip(self.stageInfo["win_description"])
 
+		# We create the nlim option
 		self.nlimLabel = QLabel(self.stageInfo["nlim_label"])
 		self.pane2nlim = QLineEdit(self.defaultParams['nlim']) #nlim
 		self.pane2Layout.addWidget(self.nlimLabel, 2, 0)
@@ -142,6 +157,7 @@ class DespikingStage():
 		self.pane2nlim.setToolTip(self.stageInfo["nlim_description"])
 		self.nlimLabel.setToolTip(self.stageInfo["nlim_description"])
 
+		# We create the maxiter option
 		self.maxiterLabel = QLabel(self.stageInfo["maxiter_label"])
 		self.pane2Maxiter = QLineEdit(self.defaultParams['maxiter'])
 		self.pane2Layout.addWidget(self.maxiterLabel, 3, 0)
@@ -150,7 +166,6 @@ class DespikingStage():
 		self.maxiterLabel.setToolTip(self.stageInfo["maxiter_description"])
 
 		# We create a reset to default button
-
 		self.defaultButton = QPushButton("Defaults")
 		self.defaultButton.clicked.connect(self.defaultButtonPress)
 		self.stageControls.addDefaultButton(self.defaultButton)
@@ -281,8 +296,16 @@ class DespikingStage():
 		self.pressedApplyButton()
 
 	def fillValues(self, params):
-		""" Fills the stage parameters from a given dictionary """
+		"""
+		Fills the stage parameters from a given dictionary
 
+		Parameters
+			----------
+			params : dict
+				The key-word arguments of the stage call, saved in the lalog file.
+		"""
+
+		# The keyword arguments are added to the control fields
 		if params is not None:
 			self.pane1expdecayOption.setChecked(params.get("expdecay_despiker", False))
 			self.pane1Exponent.setText(str(params.get("exponent", "")))
@@ -300,7 +323,7 @@ class DespikingStage():
 
 	#@logged
 	def defaultButtonPress(self):
-
+		""" Returns the option values to their default states """
 		params = {
 			"expdecay_despiker": self.defaultParams['expdecay_despiker'] == 'True',
 			"exponent": self.defaultParams["exponent"],
