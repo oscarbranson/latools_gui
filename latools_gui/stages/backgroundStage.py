@@ -10,7 +10,6 @@ import ast
 import sys
 import os
 
-from project.ErrLogger import logged
 import logging
 
 class BackgroundStage():
@@ -305,16 +304,6 @@ class BackgroundStage():
 
 			# The actual call to the analyse object for this stage is run, using the stage values as parameters
 			try:
-				# logging 
-				self.logger.info('Executing stage Import with stage variables: [weight_fwhm]:{}\n[n_min]:{}\n[n_max]:'
-								 '{}\n[cstep]:{}\n[bkg_filter]:{}\n[f_win]:{}\n[f_n_lim]:{}\n'.format( myweight,
-																								     myn_min,
-																								     myn_max,
-																								     mycstep,
-																								     self.bkg_filterOption.isChecked(),
-																								     myf_win,
-																								     myf_n_lim))
-				
 				self.project.eg.bkg_calc_weightedmean(analytes=None,
 								      weight_fwhm=myweight,
 								      n_min=myn_min,
@@ -324,6 +313,19 @@ class BackgroundStage():
 								      f_win=myf_win,
 								      f_n_lim=myf_n_lim)
 			except:
+				for l in self.project.eg.log:
+					self.logger.error(l)
+				# logging 
+				self.logger.error('Executing stage Background (weighted mean) with stage variables: [weight_fwhm]:{}\n[n_min]:{}\n[n_max]:'
+								 '{}\n[cstep]:{}\n[bkg_filter]:{}\n[f_win]:{}\n[f_n_lim]:{}\n'.format( myweight,
+																		myn_min,
+																		myn_max,
+																		mycstep,
+																		self.bkg_filterOption.isChecked(),
+																		myf_win,
+																		myf_n_lim))
+				
+
 				self.logger.exception("Exception in background stage:")
 				self.raiseError("A problem occurred. There may be a problem with the input values.")
 				return
@@ -388,6 +390,17 @@ class BackgroundStage():
 											f_win=myf_win,
 											f_n_lim=myf_n_lim)
 			except:
+				for l in self.project.eg.log:
+					self.logger.error(l)
+				# logging 
+				self.logger.error('Executing stage Background (interp) with stage variables: [weight_fwhm]:{}\n[n_min]:{}\n[n_max]:'
+								 '{}\n[cstep]:{}\n[bkg_filter]:{}\n[f_win]:{}\n[f_n_lim]:{}\n'.format( myweight,
+																		myn_min,
+																		myn_max,
+																		mycstep,
+																		self.bkg_filterOption.isChecked(),
+																		myf_win,
+																		myf_n_lim))
 				self.logger.exception("Exception in background stage:")
 				self.raiseError("A problem occurred. There may be a problem with the input values.")
 				return

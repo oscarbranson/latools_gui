@@ -631,15 +631,15 @@ if __name__ == '__main__':
 				'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 			},
 		},
-		'handlers': {
-			'loghandler': {
-				'level': 'DEBUG',
-				'class': 'logging.handlers.TimedRotatingFileHandler',
-				'formatter': 'stdFormatter',
-				'filename': logFile,
-				'when': 'midnight',
-				'backupCount': 2
-			},
+		'handlers': { #Debug log currently not used
+			#'loghandler': {
+			#	'level': 'DEBUG',
+			#	'class': 'logging.handlers.TimedRotatingFileHandler',
+			#	'formatter': 'stdFormatter',
+			#	'filename': logFile,
+			#	'when': 'midnight',
+			#	'backupCount': 2
+			#},
 			'errhandler': {
 				'level': 'ERROR',
 				'class': 'logging.FileHandler',
@@ -649,7 +649,7 @@ if __name__ == '__main__':
 		},
 		'loggers': {
 			'': {
-				'handlers': ['loghandler', 'errhandler'],
+				'handlers': ['errhandler'],
 				'level': 'DEBUG',
 				'propagate': True
 			},

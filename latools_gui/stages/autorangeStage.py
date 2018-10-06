@@ -10,8 +10,6 @@ import ast
 import sys
 import os
 
-
-from project.ErrLogger import logged
 import logging
 
 class AutorangeStage():
@@ -231,14 +229,7 @@ class AutorangeStage():
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		try:
 
-			# Logging the values
-			self.logger.info('Executing stage Import with stage variables: [Analyte]:{}\n[gwin]:{}\n[swin]:{}\n[win]:'
-							 '{}\n[on_mult]:{}\n[off_mult]:{}\n'.format( self.analyteBox.currentText(),
-																			       localGwin,
-																			       localSwin,
-																			       localWin,
-																			       localOn_mult,
-																			       localOff_mult))
+		
 			self.project.eg.autorange(analyte=self.analyteBox.currentText(),
 								gwin=localGwin,
 								swin=localSwin,
@@ -248,6 +239,16 @@ class AutorangeStage():
 								#nbin=localNbin,
 								transform=self.logTransformCheck.isChecked())
 		except:
+			for l in self.project.eg.log:
+				self.logger.error(l)
+			# Logging the values
+			self.logger.error('Executing stage Autorange with stage variables: [Analyte]:{}\n[gwin]:{}\n[swin]:{}\n[win]:'
+							 '{}\n[on_mult]:{}\n[off_mult]:{}\n'.format( self.analyteBox.currentText(),
+													localGwin,
+													localSwin,
+													localWin,
+													localOn_mult,
+													localOff_mult))
 			self.logger.exception("Exception in autorange stage:")
 			self.raiseError("A problem occurred. There may be a problem with the input values.")
 			return

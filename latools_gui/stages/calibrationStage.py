@@ -12,7 +12,7 @@ import sys
 import ast
 
 
-#from project.ErrLogger import logged
+
 import logging
 
 class CalibrationStage():
@@ -194,23 +194,22 @@ class CalibrationStage():
 
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		try:
-			#Logging
-			
-			self.logger.info('Executing stage Import with stage variables: [drift_correct]:{}\n[srms_used]:{}\n'
-							 '[n_min]:{}\n'.format( self.drift_correctOption.isChecked(),
-																				 srmParam,
-																				 #self.zero_interceptOption.isChecked(),
-																				 myn_min))
 			self.project.eg.calibrate(analytes=None,
 								drift_correct=self.drift_correctOption.isChecked(),
 								srms_used=srmParam,
 								#zero_intercept=self.zero_interceptOption.isChecked(),
 								n_min=myn_min)
 		except:
+			for l in self.project.eg.log:
+					self.logger.error(l)
+					self.logger.info('Executing stage Calibration with stage variables: [drift_correct]:{}\n[srms_used]:{}\n'
+							 '[n_min]:{}\n'.format( self.drift_correctOption.isChecked(),
+											srmParam,
+											#self.zero_interceptOption.isChecked(),
+											myn_min))
 			self.logger.exception("Exception occured in calibration stage:")
 			self.raiseError("A problem occurred. There may be a problem with the input values.")
 			return
-
 		self.graphPaneObj.updateGraph()
 
 		self.popupButton.setEnabled(True)

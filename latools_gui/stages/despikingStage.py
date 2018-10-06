@@ -10,7 +10,6 @@ import ast
 import sys
 import os
 
-from project.ErrLogger import logged
 import logging
 
 class DespikingStage():
@@ -239,16 +238,6 @@ class DespikingStage():
 
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		try:
-			
-			self.logger.info('Executing despiking stage with stage variables: [expdecay_despiker]:'
-							 '{}\n[exponent]:{}\n[noise_despiker]:{}\n[win]:{}\n[nlim]:{}\n[maxiter]'
-							 ':{}\n'.format( self.pane1expdecayOption.isChecked(),
-											 localExponent,
-											 self.pane2NoiseOption.isChecked(),
-											 localWin,
-											 localNlim,
-											 localMaxiter))
-
 			self.project.eg.despike(expdecay_despiker=self.pane1expdecayOption.isChecked(),
 								exponent=localExponent,
 								noise_despiker=self.pane2NoiseOption.isChecked(),
@@ -257,6 +246,16 @@ class DespikingStage():
 								exponentplot=False,
 								maxiter=localMaxiter)
 		except:
+			for l in self.eg.log:
+				self.logger.error(self.eg.log(l))
+			self.logger.error('Executing despiking stage with stage variables: [expdecay_despiker]:'
+							 '{}\n[exponent]:{}\n[noise_despiker]:{}\n[win]:{}\n[nlim]:{}\n[maxiter]'
+							 ':{}\n'.format( self.pane1expdecayOption.isChecked(),
+											 localExponent,
+											 self.pane2NoiseOption.isChecked(),
+											 localWin,
+											 localNlim,
+											 localMaxiter))
 			self.logger.exception("Problem occured in despiking stage:")
 			self.raiseError("A problem occurred. There may be a problem with the input values.")
 			return

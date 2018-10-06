@@ -12,7 +12,6 @@ import sys
 
 import time
 
-from project.ErrLogger import logged
 import logging
 
 class ImportStage():
@@ -163,14 +162,8 @@ class ImportStage():
 	def pressedApplyButton(self):
 		""" Imports data into the project when the apply button is pressed. """
 
-		# The actual call to the analyse object for this stage is run, using the stage values as parameters
-		self.logger.info('Button clicked')
-
-		self.logger.info('Executing stage Import with stage variables: [Loaction]:{}\n[Config]:{}\n[Extension]:{}\n'
-						 '[srm_Identifier]:{}\n'.format( self.fileLocationLine.text(),
-																			       self.configOption.currentText(),
-																			       self.file_extensionOption.text(),
-																			       self.srm_identifierOption.text()))
+		
+	
 		try:
 			self.logger.info('Attempting to locate data')
 			
@@ -207,6 +200,11 @@ class ImportStage():
 										QMessageBox.Ok)
 
 		except:
+			self.logger.error('Executing stage Import with stage variables: [Loaction]:{}\n[Config]:{}\n[Extension]:{}\n'
+						 '[srm_Identifier]:{}\n'.format( self.fileLocationLine.text(),
+										self.configOption.currentText(),
+										self.file_extensionOption.text(),
+										self.srm_identifierOption.text()))
 			self.logger.exception("Unhandled error during data import")
 			print("An error occured")
 

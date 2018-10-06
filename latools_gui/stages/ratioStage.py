@@ -8,7 +8,6 @@ import ast
 
 import templates.controlsPane as controlsPane
 
-from project.ErrLogger import logged
 import logging
 
 class RatioStage():
@@ -112,16 +111,26 @@ class RatioStage():
 	def pressedApplyButton(self):
 		""" Ratios the project data with a given standard when a button is pressed. """
 
-		# The actual call to the analyse object for this stage is run, using the stage values as parameters
-		self.project.eg.ratio(internal_standard=self.internal_standardOption.currentText())
+		try:
 
-		# Automatically saves the project if it already has a save location
-		# self.project.reSave()
+			# The actual call to the analyse object for this stage is run, using the stage values as parameters
+			self.project.eg.ratio(internal_standard=self.internal_standardOption.currentText())
 
-		self.graphPaneObj.updateGraph()
-		self.progressPaneObj.completedStage(4)
+			# Automatically saves the project if it already has a save location
+			# self.project.reSave()
 
-		self.project.importListener.updateRatio()
+			self.graphPaneObj.updateGraph()
+			self.progressPaneObj.completedStage(4)
+
+			self.project.importListener.updateRatio()
+		except:
+			for l in self.project.eg.log:
+					self.logger.error(l)
+			#logging 
+			self.logger.error('Executing stage Ratio with stage variables: [internal_standard]:{}\n['.format( self.internal_standardOption.currentText()))
+			
+			self.logger.exception("Exception in ratio stage:")
+			return
 
 	#@logged
 	def updateStageInfo(self):
