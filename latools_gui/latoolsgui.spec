@@ -9,7 +9,7 @@ extra_datas = [('graphics', 'graphics'),
 		('data', 'data'),
 		('latools', 'latools'),
 		('logs', 'logs'),
-		('logging.conf', ''),
+		('logging.conf', '.'),
 		('information', 'information')]
 
 hiddenimports = ['pandas._libs.tslibs.timedeltas',
