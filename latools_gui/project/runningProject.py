@@ -2,7 +2,9 @@
 
 import ast
 from PyQt5.QtWidgets import *
+import os
 from project.ErrLogger import logged
+
 class RunningProject():
 	"""
 	An object that defines and records all the details from the currently running project, and handles
@@ -10,7 +12,13 @@ class RunningProject():
 	"""
 	#@logged
 	def __init__(self, mainWidget):
-		""" Initialises a blank project state
+		"""
+		Initialises a blank project state
+
+		Parameters
+		----------
+		mainWidget : MainWindow
+			The main window created in latoolsgui
 		"""
 		self.mainWidget = mainWidget
 
@@ -37,8 +45,6 @@ class RunningProject():
 	#@logged
 	def saveProject(self):
 		""" Save overwrites the current save file with the latest file strings """
-
-		#print("saving")
 
 		# If the project hasn't been saved before it will not have a save file location
 		if not self.hasSaved:
@@ -71,7 +77,16 @@ class RunningProject():
 			print("failed to save")
 
 	def newFile(self, name, location = None):
-		""" Sets up a new save file, and stores the name and location """
+		"""
+		Sets up a new save file, and stores the name and location
+
+		Parameters
+		----------
+		name : str
+			The name of the project
+		location : str
+			The file location for the save file
+		"""
 
 		# Record save file info
 		self.fileName = name
@@ -81,16 +96,31 @@ class RunningProject():
 
 	#@logged
 	def loadFile(self, name, location, progress=None):
-		""" Loads a save file, stores the file info, populates the stage parameters and runs
-		the stage function calls """
+		"""
+		Loads a save file, stores the file info, populates the stage parameters and runs
+		the stage function calls
+
+		Parameters
+		----------
+		name : str
+			The name of the project
+		location : str
+			The file location for the save file
+		progress : ProgressBar
+			The progress bar object that will be used in this project
+		"""
 		self.fileName = name
 		self.folder = location
 		self.hasSaved = True
+
+		# A list of filter calls in the lalog file
 		self.filters = []
+
+		# A list of filter on and off calls in the lalog file
 		self.filterOnOff = []
 
 		# We open the log file and split into lines
-		logName = location + "/" + name + ".lalog"
+		logName = os.path.join(location, name + ".lalog")
 		logFile = open(logName, "r")
 		logFileStrings = logFile.read().splitlines()
 
@@ -212,8 +242,7 @@ class RunningProject():
 		if len(self.filters) != 0:
 			self.importListener.loadFilters(self.filters, self.filterOnOff)
 
-
-
+		# We reset the progress bar after the last stage call is run
 		if progress is not None:
 			bar.reset()
 
@@ -221,28 +250,65 @@ class RunningProject():
 		self.importListener.setStageIndex(self.lastStage + 1)
 
 	def setImportListener(self, importListener):
-		""" Receives the importListener to use to pass info to stages at runtime """
+		"""
+		Receives the importListener to use to pass info to stages at runtime
+
+		Parameters
+		----------
+		importListener : ImportListener
+			The object that manages communication between different program elements at run time.
+		"""
 		self.importListener = importListener
 
 	def getStageParams(self, stage):
+		"""
+		Passes the keyword arguments that have been loaded as a dict for the requested stage
+
+		Parameters
+		----------
+		stage : str
+			The name of the stage to return the parameters for
+		"""
 		# If the stage doesn't exist as a key, return None
 		return self.stageParams.get(stage, None)
 
 	def updateLastStage(self, i):
-		""" A quick function for updating the last stage if the provided index is greater """
+		"""
+		A quick function for updating the 'last stage' if the provided index is greater
+
+		Parameters
+		----------
+		i : int
+			The index of the current stage.
+		"""
 		if i > self.lastStage:
 			self.lastStage = i
 
 	def setDataLocation(self, location):
-		""" Saves the location of the specified data folder """
+		"""
+		Saves the location of the specified data folder
+
+		Parameters
+		----------
+		location : str
+			The location of the specified data folder
+		"""
 		self.dataLocation = location
-		#print(location)
 
 	def reSave(self):
-		""" Only saves the project if it already has a save file location. Used when stage apply buttons are pressed """
+		"""
+		Only saves the project if it already has a save file location. Used when stage apply buttons are pressed
+		This has currently been deactivated so as not to save when the user hasn't specified to.
+		"""
 		if self.hasSaved:
 			self.saveProject()
 
 	def addRecentProjects(self, recents):
-		""" saves a reference to the recentProjects object, which manages and displays the recent projects """
+		""" saves a reference to the recentProjects object, which manages and displays the recent projects
+
+		Parameters
+		----------
+		recents : RecentProjects
+			An object that handles updating, displaying and saving the list of recent projects
+		"""
 		self.recentProjects = recents

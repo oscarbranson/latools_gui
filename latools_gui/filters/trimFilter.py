@@ -5,10 +5,17 @@ from PyQt5.QtWidgets import *
 
 class TrimFilter:
 	"""
-	Trim Filter info
+	The options and controls for creating a trim filter within a filterTab
 	"""
 	def __init__(self, filterTab):
+		"""
+		Creates the unique aspects of this filter, housed within the filterTab
 
+		Parameters
+		----------
+		filterTab : FilterTab
+			The general tab in which this filter's unique aspects will be created.
+		"""
 		# This filter has access to the general filter structure
 		self.filterTab = filterTab
 
@@ -57,18 +64,19 @@ class TrimFilter:
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
 		oldFilters = len(list(self.filterTab.project.eg.data[egSubset].filt.components.keys()))
 
+		# We make sure there are start and end values that are in the form of an int
 		try:
 			start = int(self.startEdit.text())
 		except:
 			self.raiseError("The " + self.filterTab.filterInfo["start_label"] + " value must be an integer")
 			return
-
 		try:
 			end = int(self.endEdit.text())
 		except:
 			self.raiseError("The " + self.filterTab.filterInfo["end_label"] + " value must be an integer")
 			return
 
+		# We create the filter
 		try:
 			self.filterTab.project.eg.filter_trim(start = start,
 											  end = end,
@@ -78,6 +86,7 @@ class TrimFilter:
 							"the input values.")
 			return
 
+		# We update the name of the tab with the filter details
 		self.createName(tabIndex, "Trim", str(start), str(end))
 
 		# We determine how many filters have been created
@@ -88,6 +97,7 @@ class TrimFilter:
 		for i in range(len(currentFilters) - oldFilters):
 			self.filterTab.createFilter(currentFilters[i + oldFilters])
 
+		# We disable all of the option fields so that they record the parameters used in creating the filter
 		self.freezeOptions()
 
 	def raiseError(self, message):
@@ -100,9 +110,20 @@ class TrimFilter:
 		self.filterTab.updateName(index)
 
 	def loadFilter(self, params):
+		""" When loading an lalog file, the parameters of this filter are added to the gui, then the
+			create button function is called.
+
+			Parameters
+			----------
+			params : dict
+				The key-word arguments of the filter call, saved in the lalog file.
+		"""
+		# For the args in params, we update each filter option, using the default value if the argument is not in the dict.
 		self.startEdit.setText(str(params.get("start", "")))
 		self.endEdit.setText(str(params.get("end", "")))
 		self.filtCheckBox.setChecked(params.get("filt", True))
+
+		# We act as though the user has added these options and clicked the create button.
 		self.createClick()
 
 	def freezeOptions(self):
@@ -116,7 +137,7 @@ class TrimFilter:
 		self.createButton.setEnabled(False)
 
 	def updateOptions(self):
-
+		""" Delivers the current state of each option to the plot pane. """
 		return {
 			"start": self.startEdit.text(),
 			"end": self.endEdit.text(),

@@ -33,9 +33,15 @@ class BackgroundStage():
 			updates t the graph, produced by the processing defined in the stage.
 		progressPaneObj : ProgressPane
 			A reference to the Progress Pane so that the right button can be enabled by completing the stage.
+		backgroundWidget : QWidget
+			The parent widget for this object. Used mainly for displaying error boxes.
 		project : RunningProject
 			A reference to the project object which contains all of the information unique to this project,
 			including the latools analyse object that the stages will update.
+		links : (str, str, str)
+			links[0] = The User guide website domain
+			links[1] = The web link for reporting an issue
+			links[2] = The tooltip for the report issue button
 		"""
 
 		self.graphPaneObj = graphPaneObj
@@ -45,6 +51,7 @@ class BackgroundStage():
 		self.guideDomain = links[0]
 		self.reportIssue = links[1]
 
+		# We create a controls pane object which covers the general aspects of the stage's controls pane
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
 		# We capture the default parameters for this stage's function call
@@ -437,6 +444,7 @@ class BackgroundStage():
 
 	#@logged
 	def resetButtons(self):
+		""" Resets the buttons to default state if the user goes back to an earlier stage """
 		self.popupButton.setEnabled(False)
 		self.subtractButton.setEnabled(False)
 
@@ -490,6 +498,7 @@ class BackgroundStage():
 
 	#@logged
 	def defaultButtonPress(self):
+		""" Returns the option values to their default states """
 
 		self.methodOption.setCurrentText(self.stageInfo["bkg_method_1_label"])
 

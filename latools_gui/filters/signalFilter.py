@@ -6,10 +6,17 @@ from PyQt5.QtCore import Qt
 
 class SignalFilter:
 	"""
-	Signal Optimiser Filter info
+	The options and controls for creating a signal optimiser filter within a filterTab
 	"""
 	def __init__(self, filterTab):
+		"""
+		Creates the unique aspects of this filter, housed within the filterTab
 
+		Parameters
+		----------
+		filterTab : FilterTab
+			The general tab in which this filter's unique aspects will be created.
+		"""
 		# This filter has access to the general filter structure
 		self.filterTab = filterTab
 
@@ -63,6 +70,8 @@ class SignalFilter:
 		self.modeCombo = QComboBox()
 		self.modeLabel.setToolTip(self.filterTab.filterInfo["mode_description"])
 		self.modeCombo.setToolTip(self.filterTab.filterInfo["mode_description"])
+
+		# We add the different mode options
 		self.modes = ["kde_first_max", "mean", "median", "bayes_mvs"]
 		for s in self.modes:
 			self.modeCombo.addItem(s)
@@ -105,15 +114,18 @@ class SignalFilter:
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
 		oldFilters = len(list(self.filterTab.project.eg.data[egSubset].filt.components.keys()))
 
+		# We create the list of analytes based on the checked boxes
 		selectedAnalytes = []
 		for i in range(len(self.filterTab.project.eg.analytes)):
 			if self.analyteList[i].isChecked():
 				selectedAnalytes.append(str(self.filterTab.project.eg.analytes[i]))
 
+		# We make sure the user has selected at least one analyte
 		if len(selectedAnalytes) == 0:
 			self.raiseError("You must select one or more analytes to apply the signal optimiser filter to.")
 			return
 
+		# If there is a min_p value provided we make sure it can be cast to an int
 		min_p = 5
 		if self.minEdit.text() != "":
 			try:
@@ -122,6 +134,7 @@ class SignalFilter:
 				self.raiseError("The " + self.filterTab.filterInfo["min_label"] + " value must be an integer.")
 				return
 
+		# If there is an x_bias value provided we make sure it can be cast to a float
 		local_x_bias = 0
 		if self.x_biasEdit.text != "":
 			try:
@@ -131,13 +144,14 @@ class SignalFilter:
 								" value must be a floating point number.")
 				return
 
-
+		# We create the filter
 		self.filterTab.project.eg.optimise_signal(analytes=selectedAnalytes,
 												  min_points=min_p,
 												  threshold_mode=self.modeCombo.currentText(),
 												  x_bias=local_x_bias,
 												  filt=self.filtCheckBox.isChecked())
 
+		# We update the name of the tab with the filter details
 		self.createName(tabIndex, "Signal optimiser", str(selectedAnalytes))
 
 		# We determine how many filters have been created
@@ -148,6 +162,7 @@ class SignalFilter:
 		for i in range(len(currentFilters) - oldFilters):
 			self.filterTab.createFilter(currentFilters[i + oldFilters])
 
+		# We disable all of the option fields so that they record the parameters used in creating the filter
 		self.freezeOptions()
 
 	def raiseError(self, message):
@@ -160,6 +175,14 @@ class SignalFilter:
 		self.filterTab.updateName(tabIndex)
 
 	def loadFilter(self, params):
+		""" When loading an lalog file, the parameters of this filter are added to the gui, then the
+			create button function is called.
+
+			Parameters
+			----------
+			params : dict
+				The key-word arguments of the filter call, saved in the lalog file.
+		"""
 
 		# We first take all of the analyte names that were included in the save file's analyte list
 		# and put them in a set
@@ -177,6 +200,8 @@ class SignalFilter:
 		self.modeCombo.setCurrentText(params.get("threshold_mode", "kde_first_max"))
 		self.x_biasEdit.setText(str(params.get("x_bias", "")))
 		self.filtCheckBox.setChecked(params.get("filt", True))
+
+		# We act as though the user has added these options and clicked the create button.
 		self.createClick()
 
 	def freezeOptions(self):
@@ -193,6 +218,7 @@ class SignalFilter:
 		self.createButton.setEnabled(False)
 
 	def updateOptions(self):
+		""" Delivers the current state of each option to the plot pane. """
 
 		analytes = []
 		for box in self.analyteList:

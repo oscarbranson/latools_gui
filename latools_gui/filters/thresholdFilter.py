@@ -6,10 +6,17 @@ import ast
 
 class ThresholdFilter:
 	"""
-	Threshold Filter info
+	The options and controls for creating a threshold filter within a filterTab
 	"""
 	def __init__(self, filterTab):
+		"""
+		Creates the unique aspects of this filter, housed within the filterTab
 
+		Parameters
+		----------
+		filterTab : FilterTab
+			The general tab in which this filter's unique aspects will be created.
+		"""
 		# This filter has access to the general filter structure
 		self.filterTab = filterTab
 
@@ -24,6 +31,9 @@ class ThresholdFilter:
 		self.typeCombo = QComboBox()
 		self.typeCombo.activated.connect(self.typeChanged)
 
+		# We add the threshold types to the combobox.
+		# Currently there is a problem with the Gradient Threshold Percentile filter. When that is resolved
+		# it can be added to the list.
 		self.thresholdTypes = ["Threshold",
 							   "Threshold Percentile",
 							   "Gradient Threshold"]
@@ -32,8 +42,8 @@ class ThresholdFilter:
 		for t in self.thresholdTypes:
 			self.typeCombo.addItem(t)
 
+		# The type combobox is added to the layout, and the tooltips are set for the box and label
 		self.optionsLayout.addWidget(self.typeCombo, 0, 1)
-
 		self.typeLabel.setToolTip(self.filterTab.filterInfo["type_description"])
 		self.typeCombo.setToolTip(self.filterTab.filterInfo["type_description"])
 
@@ -233,6 +243,7 @@ class ThresholdFilter:
 		for i in range(len(currentFilters) - oldFilters):
 			self.filterTab.createFilter(currentFilters[i + oldFilters])
 
+		# We disable all of the option fields so that they record the parameters used in creating the filter
 		self.freezeOptions()
 
 	def raiseError(self, message):
@@ -276,12 +287,23 @@ class ThresholdFilter:
 		self.filterTab.updateName(index)
 
 	def loadFilter(self, params, typeIndex):
+		""" When loading an lalog file, the parameters of this filter are added to the gui, then the
+			create button function is called.
+
+			Parameters
+			----------
+			params : dict
+				The key-word arguments of the filter call, saved in the lalog file.
+		"""
+		# For the args in params, we update each filter option, using the default value if the argument is not in the dict.
 		self.typeCombo.setCurrentIndex(typeIndex)
 		self.analyteCombo.setCurrentIndex(self.analyteCombo.findText(params.get("analyte", "")))
 		self.threshValueEdit.setText(str(params.get("threshold", "")))
 		self.percentEdit.setText(str(params.get("percentiles", [""])[0]))
 		self.winEdit.setText(str(params.get("win", "")))
 		self.levelCombo.setCurrentIndex(self.levelCombo.findText(params.get("level", "")))
+
+		# We act as though the user has added these options and clicked the create button.
 		self.createClick()
 
 	def freezeOptions(self):
@@ -298,6 +320,7 @@ class ThresholdFilter:
 		self.createButton.setEnabled(False)
 
 	def updateOptions(self):
+		""" Delivers the current state of each option to the plot pane. """
 
 		return {
 			"type": self.typeCombo.currentText(),

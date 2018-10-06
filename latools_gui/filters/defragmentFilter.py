@@ -5,10 +5,17 @@ from PyQt5.QtWidgets import *
 
 class DefragmentFilter:
 	"""
-	Correlation Filter info
+	The options and controls for creating a defragment filter within a filterTab
 	"""
 	def __init__(self, filterTab):
+		"""
+		Creates the unique aspects of this filter, housed within the filterTab
 
+		Parameters
+		----------
+		filterTab : FilterTab
+			The general tab in which this filter's unique aspects will be created.
+		"""
 		# This filter has access to the general filter structure
 		self.filterTab = filterTab
 
@@ -61,11 +68,14 @@ class DefragmentFilter:
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
 		oldFilters = len(list(self.filterTab.project.eg.data[egSubset].filt.components.keys()))
 
+		# We make sure that we can cast the contents of the threshold field to an int
 		try:
 			threshold = int(self.thresholdEdit.text())
 		except:
 			self.raiseError("The " + self.filterTab.filterInfo["threshold_label"] + " value must be an integer.")
 			return
+
+		# We create the filter
 		try:
 			self.filterTab.project.eg.filter_defragment(threshold = threshold,
 													mode = self.modeCombo.currentText(),
@@ -75,6 +85,7 @@ class DefragmentFilter:
 							"the input values.")
 			return
 
+		# We update the name of the tab with the filter details
 		self.createName(tabIndex, "Defrag", self.modeCombo.currentText(), str(threshold))
 
 		# We determine how many filters have been created
@@ -85,6 +96,7 @@ class DefragmentFilter:
 		for i in range(len(currentFilters) - oldFilters):
 			self.filterTab.createFilter(currentFilters[i + oldFilters])
 
+		# We disable all of the option fields so that they record the parameters used in creating the filter
 		self.freezeOptions()
 
 	def raiseError(self, message):
@@ -97,10 +109,20 @@ class DefragmentFilter:
 		self.filterTab.updateName(index)
 
 	def loadFilter(self, params):
+		""" When loading an lalog file, the parameters of this filter are added to the gui, then the
+			create button function is called.
 
+			Parameters
+			----------
+			params : dict
+				The key-word arguments of the filter call, saved in the lalog file.
+		"""
+		# For the args in params, we update each filter option, using the default value if the argument is not in the dict.
 		self.thresholdEdit.setText(str(params.get("threshold", "")))
 		self.modeCombo.setCurrentIndex(self.modeCombo.findText(params.get("mode", "include")))
 		self.filtCheckBox.setChecked(params.get("filt", True))
+
+		# We act as though the user has added these options and clicked the create button.
 		self.createClick()
 
 	def freezeOptions(self):
@@ -114,7 +136,7 @@ class DefragmentFilter:
 		self.createButton.setEnabled(False)
 
 	def updateOptions(self):
-
+		""" Delivers the current state of each option to the plot pane. """
 		return {
 			"threshold": self.thresholdEdit.text(),
 			"mode": self.modeCombo.currentText(),

@@ -35,9 +35,15 @@ class CalibrationStage():
 			updates t the graph, produced by the processing defined in the stage.
 		progressPaneObj : ProgressPane
 			A reference to the Progress Pane so that the right button can be enabled by completing the stage.
+		calibrationWidget : QWidget
+			The parent widget for this object. Used mainly for displaying error boxes.
 		project : RunningProject
 			A reference to the project object which contains all of the information unique to this project,
 			including the latools analyse object that the stages will update.
+		links : (str, str, str)
+			links[0] = The User guide website domain
+			links[1] = The web link for reporting an issue
+			links[2] = The tooltip for the report issue button
 		"""
 
 		self.graphPaneObj = graphPaneObj
@@ -48,6 +54,7 @@ class CalibrationStage():
 		self.reportIssue = links[1]
 		self.imported_srms = False
 
+		# We create a controls pane object which covers the general aspects of the stage's controls pane
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 		self.srmfile = None
 		self.srmList = []
@@ -76,10 +83,12 @@ class CalibrationStage():
 		# The space for the stage options is provided by the Controls Pane.
 		self.optionsHBox = QHBoxLayout(self.stageControls.getOptionsWidget())
 
+		# We create a panel on the left for options
 		self.optionsLeftWidget = QWidget()
 		self.optionsLeft = QGridLayout(self.optionsLeftWidget)
 		self.optionsHBox.addWidget(self.optionsLeftWidget)
 
+		# We create an area to hold the SRM list
 		self.analytesWidget = QWidget()
 
 		self.scroll = QScrollArea()
@@ -278,8 +287,16 @@ class CalibrationStage():
 		self.pressedApplyButton()
 
 	def fillValues(self, params):
-		""" Fills the stage parameters from a given dictionary """
+		"""
+		Fills the stage parameters from a given dictionary
 
+		Parameters
+			----------
+			params : dict
+				The key-word arguments of the stage call, saved in the lalog file.
+		"""
+
+		# The keyword arguments are added to the control fields
 		if params is not None:
 			self.drift_correctOption.setChecked(params.get("drift_correct", True))
 			#self.zero_interceptOption.setChecked(params.get("zero_intercept", True))
@@ -293,14 +310,17 @@ class CalibrationStage():
 
 	#@logged
 	def pressedPopupButton(self):
+		""" When the user presses the plot in popup button """
 		self.graphPaneObj.showAuxGraph(cali=True)
 
 	#@logged
 	def pressedCalculateButton(self):
+		""" When the user presses the calculate button """
 		self.applyButton.setEnabled(True)
 
 	#@logged
 	def defaultButtonPress(self):
+		""" Returns the option values to their default states """
 
 		params = {
 			"drift_correct": self.defaultParams['drift_correct'] == 'True',
