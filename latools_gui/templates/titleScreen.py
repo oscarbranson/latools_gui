@@ -70,11 +70,11 @@ class TitleScreen():
 		self.welcomeLabel = QLabel("<span style=\"font-size:20px;\">"
 			"<b>Welcome to LA tools</b></span>")
 		self.welcomeLabel.setAlignment(Qt.AlignCenter)
-		self.mainLayout.addWidget(self.welcomeLabel)
+		#self.mainLayout.addWidget(self.welcomeLabel)
 
 		# Small spacer after the text
-		self.welcomeSpacer = QSpacerItem(0, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-		self.mainLayout.addItem(self.welcomeSpacer)
+		#self.welcomeSpacer = QSpacerItem(0, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+		#self.mainLayout.addItem(self.welcomeSpacer)
 
 		# A small grid of buttons and fields for starting or loading a project
 		self.titleGridWidget = QWidget()
@@ -98,18 +98,12 @@ class TitleScreen():
 		self.newProjectBool = False
 
 		self.nameLabel = QLabel("Project name:")
-		self.titleGrid.addWidget(self.nameLabel, 1, 0)
-		self.nameLabel.setVisible(False)
 
 		self.nameEdit = QLineEdit()
-		self.titleGrid.addWidget(self.nameEdit, 2, 0, 1, 2)
-		self.nameEdit.setVisible(False)
 		self.nameEdit.setMaxLength(60)
 
 		self.backButton = QPushButton("Back")
 		self.backButton.clicked.connect(self.backButtonClick)
-		self.titleGrid.addWidget(self.backButton, 5, 0)
-		self.backButton.setVisible(False)
 
 		# The button to load or begin the project
 		self.nextButton = QPushButton("Begin")
@@ -224,13 +218,10 @@ class TitleScreen():
 		The 'new project' options are displayed, and the recent projects dropdown is hidden.
 		"""
 		self.newProjectBool = True
-		self.recentDropdown.setVisible(False)
-		self.nameLabel.setVisible(True)
-		self.nameEdit.setVisible(True)
-		self.backButton.setVisible(True)
-		# self.locationLabel.setVisible(True)
-		# self.newBrowse.setVisible(True)
-		# self.newLocation.setVisible(True)
+		self.recentDropdown.setParent(None)
+		self.titleGrid.addWidget(self.nameLabel, 1, 0)
+		self.titleGrid.addWidget(self.nameEdit, 2, 0, 1, 2)
+		self.titleGrid.addWidget(self.backButton, 5, 0)
 		self.nextButton.setEnabled(False)
 		self.nameEdit.setFocus()
 
@@ -283,10 +274,10 @@ class TitleScreen():
 	def backButtonClick(self):
 		""" The functionality for the back button, when a new project entry is cancelled """
 		self.newProjectBool = False
-		self.recentDropdown.setVisible(True)
-		self.nameLabel.setVisible(False)
-		self.nameEdit.setVisible(False)
-		self.backButton.setVisible(False)
+		self.nameLabel.setParent(None)
+		self.nameEdit.setParent(None)
+		self.backButton.setParent(None)
+		self.titleGrid.addWidget(self.recentDropdown, 1, 0, 1, 2)
 		self.nextButton.setEnabled(False)
 		self.recentDropdown.setCurrentIndex(0)
 
