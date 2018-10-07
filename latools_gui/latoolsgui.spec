@@ -40,6 +40,7 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 
 # Define exe for Windows and Linuz
+import sys
 if sys.platform == 'win32' or sys.platform == 'win64' or sys.platform == 'linux':
   exe = EXE(pyz,
             a.scripts,
