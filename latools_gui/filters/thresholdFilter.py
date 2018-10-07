@@ -2,7 +2,9 @@
 
 from PyQt5.QtWidgets import *
 import ast
+from PyQt5.QtGui import *
 
+import logging
 
 class ThresholdFilter:
 	"""
@@ -113,6 +115,13 @@ class ThresholdFilter:
 		self.createButton.clicked.connect(self.createClick)
 		self.filterTab.addButton(self.createButton)
 
+		self.threshValueEdit.setValidator(QDoubleValidator())
+		self.percentEdit.setValidator(QDoubleValidator())
+		self.winEdit.setValidator(QIntValidator())
+		
+		#log
+		self.logger = logging.getLogger(__name__)
+
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
 
@@ -145,6 +154,15 @@ class ThresholdFilter:
 				self.filterTab.project.eg.filter_threshold(analyte = self.analyteCombo.currentText(),
 													   threshold = localThreshold)
 			except:
+				try:    # This has no reference to the latools log currently
+					#for l in self.project.eg.log:
+					#	self.logger.error(l)
+					self.logger.error('Attempting threshold filter with variables: [analyte]:{}\n[threshold]:{}\n'.format( self.analyteCombo.currentText(),
+									localThreshold))
+				except:
+					self.logger.exception('Failed to log history:')
+				finally:
+					self.logger.exception('Exception creating filter:')
 				self.raiseError(
 					"An error occurred while trying to create this filter. <br> There may be a problem with " +
 					"the input values.")
@@ -168,7 +186,18 @@ class ThresholdFilter:
 																  percentiles=localPercent,
 																  level=self.levelCombo.currentText())
 			except:
-				self.raiseError(
+				try:    # This has no reference to the latools log currently
+					#for l in self.project.eg.log:
+					#	self.logger.error(l)
+					self.logger.error('Attempting threshold percentile filter with variables: [analyte]:{}\n[percentiles]:{}\n'
+							  '[level]:{}\n'.format( self._analyteCombo.currentText(),
+									localPercent,
+									self.levelCombo.currentText()))
+				except:
+					self.logger.exception('Failed to log history:')
+				finally:
+					self.logger.exception('Exception creating filter:')
+					self.raiseError(
 					"An error occurred while trying to create this filter. <br> There may be a problem with " +
 					"the input values.")
 				return
@@ -197,6 +226,17 @@ class ThresholdFilter:
 																threshold=localThreshold,
 																win=localWin)
 			except:
+				try:    # This has no reference to the latools log currently
+					#for l in self.project.eg.log:
+					#	self.logger.error(l)
+					self.logger.error('Attempting gradient threshold percentile filter with variables: [analyte]:{}\n[threshold]:{}\n'
+							  '[win]:\n'.format( self._analyteCombo.currentText(),
+									localThreshold,
+									localWin))
+				except:
+					self.logger.exception('Failed to log history:')
+				finally:
+					self.logger.exception('Exception creating filter:')
 				self.raiseError(
 					"An error occurred while trying to create this filter. <br> There may be a problem with " +
 					"the input values.")
@@ -227,6 +267,18 @@ class ThresholdFilter:
 																		   level=self.levelCombo.currentText(),
 																		   win=localWin)
 			except:
+				try:    # This has no reference to the latools log currently
+					#for l in self.project.eg.log:
+					#	self.logger.error(l)
+					self.logger.error('Attempting gradient threshold percentile filter with variables: [analyte]:{}\n[percentiles]:{}\n'
+							  '[level]:{}\n[win]:\n'.format( self._analyteCombo.currentText(),
+									localPercent,
+									self.levelCombo.currentText(),
+									localWin))
+				except:
+					self.logger.exception('Failed to log history:')
+				finally:
+					self.logger.exception('Exception creating filter:')
 				self.raiseError(
 					"An error occurred while trying to create this filter. <br> There may be a problem with " +
 					"the input values.")

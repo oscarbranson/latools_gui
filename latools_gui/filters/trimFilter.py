@@ -1,7 +1,9 @@
 """ A filter for trimming data points """
 
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
+import logging
 
 class TrimFilter:
 	"""
@@ -53,6 +55,12 @@ class TrimFilter:
 		self.createButton.clicked.connect(self.createClick)
 		self.filterTab.addButton(self.createButton)
 
+		self.startEdit.setValidator(QIntValidator())
+		self.endEdit.setValidator(QIntValidator())
+		
+		#log
+		self.logger = logging.getLogger(__name__)
+
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
 
@@ -82,6 +90,16 @@ class TrimFilter:
 											  end = end,
 											  filt = self.filtCheckBox.isChecked())
 		except:
+			try:    # This has no reference to the latools log currently
+					#for l in self.project.eg.log:
+					#	self.logger.error(l)
+					self.logger.error('Attempting trim filter with variables: [start]:{}\n[end]:{}\n[filt]:{}\n'.format( start,
+									end,
+									self.filtCheckBox.isChecked()))
+			except:
+				self.logger.exception('Failed to log history:')
+			finally:
+				self.logger.exception('Exception creating filter:')
 			self.raiseError("An error occurred while trying to create this filter. <br> There may be a problem with " +
 							"the input values.")
 			return

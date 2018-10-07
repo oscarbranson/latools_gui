@@ -3,7 +3,6 @@
 from PyQt5.QtWidgets import *
 import templates.filterControls as filterControls
 
-from project.ErrLogger import logged
 import logging
 
 class FilteringStage():

@@ -1,7 +1,9 @@
 """ A filter for excluding data points after a specified threshold """
 
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
+import logging
 
 class ExcludeFilter:
 	"""
@@ -47,6 +49,12 @@ class ExcludeFilter:
 		self.createButton.clicked.connect(self.createClick)
 		self.filterTab.addButton(self.createButton)
 
+		self.thresholdEdit.setValidator(QIntValidator())
+		
+		#log
+		self.logger = logging.getLogger(__name__)
+
+
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
 
@@ -70,6 +78,15 @@ class ExcludeFilter:
 			self.filterTab.project.eg.filter_exclude_downhole(threshold = threshold,
 														  filt = self.filtCheckBox.isChecked())
 		except:
+			try:    # This has no reference to the latools log currently
+					#for l in self.project.eg.log:
+					#	self.logger.error(l)
+					self.logger.error('Attempting exclude filter with variables: [threshold]:{}\n[filt]:{}'.format( threshold,
+									self.filtCheckBox.isChecked()))
+			except:
+				self.logger.exception('Failed to log history:')
+			finally:
+				self.logger.exception('Exception creating filter:')
 			self.raiseError("An error occurred while trying to create this filter. <br> There may be a problem with " +
 							"the input values.")
 			return

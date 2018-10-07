@@ -304,6 +304,8 @@ class BackgroundStage():
 
 			# The actual call to the analyse object for this stage is run, using the stage values as parameters
 			try:
+				
+				
 				self.project.eg.bkg_calc_weightedmean(analytes=None,
 								      weight_fwhm=myweight,
 								      n_min=myn_min,
@@ -534,6 +536,7 @@ class BackgroundStage():
 	def userGuide(self):
 		""" Opens the online user guide to a particular page for the current stage """
 		self.stageControls.userGuide(self.guideDomain + "LAtoolsGUIUserGuide/users/06-background.html")
+
 
 	def reportButtonClick(self):
 		""" Links to the online form for reporting an issue """

@@ -1,7 +1,9 @@
 """ A filter for correlated elements """
 
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
+import logging
 
 class DefragmentFilter:
 	"""
@@ -57,6 +59,13 @@ class DefragmentFilter:
 		self.createButton.clicked.connect(self.createClick)
 		self.filterTab.addButton(self.createButton)
 
+		
+		self.thresholdEdit.setValidator(QIntValidator())
+		
+		#log
+		self.logger = logging.getLogger(__name__)
+
+
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
 
@@ -81,6 +90,15 @@ class DefragmentFilter:
 													mode = self.modeCombo.currentText(),
 													filt = self.filtCheckBox.isChecked())
 		except:
+			try:    # This has no reference to the latools log currently
+					#for l in self.project.eg.log:
+					#	self.logger.error(l)
+					self.logger.error('Attempting defragment filter with variables: [mode]:{}\n[filt]:{}'.format( self.modeCombo.currentText(),
+									self.filtCheckBox.isChecked()))
+			except:
+				self.logger.exception('Failed to log history:')
+			finally:
+				self.logger.exception('Exception creating filter:')
 			self.raiseError("An error occurred while trying to create this filter. <br> There may be a problem with " +
 							"the input values.")
 			return

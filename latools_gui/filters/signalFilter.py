@@ -3,6 +3,9 @@ standard deviation (std) and concentration of all analytes is minimised.  """
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import *
+
+import logging
 
 class SignalFilter:
 	"""
@@ -103,6 +106,12 @@ class SignalFilter:
 		self.createButton.clicked.connect(self.createClick)
 		self.filterTab.addButton(self.createButton)
 
+		self.minEdit.setValidator(QIntValidator())
+		self.x_biasEdit.setValidator(QDoubleValidator())
+		
+		#log
+		self.logger = logging.getLogger(__name__)
+
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
 
@@ -145,12 +154,26 @@ class SignalFilter:
 				return
 
 		# We create the filter
-		self.filterTab.project.eg.optimise_signal(analytes=selectedAnalytes,
+		try:
+                        self.filterTab.project.eg.optimise_signal(analytes=selectedAnalytes,
 												  min_points=min_p,
 												  threshold_mode=self.modeCombo.currentText(),
 												  x_bias=local_x_bias,
 												  filt=self.filtCheckBox.isChecked())
-
+		except:
+			try:    # This has no reference to the latools log currently
+					#for l in self.project.eg.log:
+					#	self.logger.error(l)
+					self.logger.error('Attempting signal filter with variables: [min_points]:{}\n[threshold_mode]:{}\n[x_bias]:'
+								'{}\n[filt]:{}\n'.format( min_p,
+									self.modeCombo.currentText(),
+									local_x_bias,
+									self.filtCheckBox.isChecked()))
+			except:
+				self.logger.exception('Failed to log history:')
+			finally:
+				self.logger.exception('Exception creating filter:')
+			return
 		# We update the name of the tab with the filter details
 		self.createName(tabIndex, "Signal optimiser", str(selectedAnalytes))
 
