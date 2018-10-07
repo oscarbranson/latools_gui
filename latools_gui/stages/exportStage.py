@@ -9,6 +9,8 @@ import os
 import sys
 import json
 
+import logging
+
 class ExportStage():
 	"""
 	Each stage has its own Controls Pane, where it defines a description and the unique options for that
@@ -254,6 +256,9 @@ class ExportStage():
 		self.exportButton.clicked.connect(self.pressedExportButton)
 		self.stageControls.addApplyButton(self.exportButton)
 
+		# Initialise logging
+		self.logger = logging.getLogger(__name__)
+
 	def typeChange(self):
 		""" When the type of export is changed we hide or show the different option panes """
 
@@ -339,70 +344,87 @@ class ExportStage():
 	def pressedExportButton(self):
 		""" When the export button is pressed we run an export command based on the option values. """
 
-		# We create a list of the checked analytes. There must be at least one checked.
-		analytes = []
-		for a in self.analyteBoxes:
-			if a.isChecked():
-				analytes.append(a.text())
-		if len(analytes) == 0:
-			self.raiseError("You must select at least one analyte.")
-			return
-
-		# If the type is full export, we run the corresponding export function
-		if self.typeCombo.currentText() == "Full export":
-
-			# The user must select at least one focus stage. They are added to a list.
-			stages = []
-			filtered = False
-			for s in self.focus_stages:
-				if s.isChecked():
-					if s.text() == "filtered":
-						filtered = True
-					else:
-						stages.append(s.text())
-
-			if len(stages) == 0:
-				self.raiseError("You must select at least one analysis stage to include.")
-				return
-
-			# We run a separate export call for each focus stage selected.
-			for stage in stages:
-				self.project.eg.export_traces(outdir=self.fileLocationLine.text(),
-											  focus_stage=stage,
-											  analytes=analytes,
-											  filt=filtered)
-
-			infoBox = QMessageBox.information(self.exportStageWidget, "Export",
-											  "The data has been exported.",
-											  QMessageBox.Ok)
-
-		else:
-			# Otherwise run the Sample Statistics export
-
-			# We create a list of stat functions to include
-			stats = []
-			for s in self.statsBoxes:
-				if s.isChecked():
-					stats.append(s.text())
-			# At least one stat function must be selected
+		try:
+			# We create a list of the checked analytes. There must be at least one checked.
+			analytes = []
+			for a in self.analyteBoxes:
+				if a.isChecked():
+					analytes.append(a.text())
 			if len(analytes) == 0:
-				self.raiseError("You must select at least one stat function.")
+				self.raiseError("You must select at least one analyte.")
 				return
 
-			# We run the sample statistics export function
-			self.project.eg.sample_stats(analytes=analytes,
-										 filt=self.filtStats.isChecked(),
-										 stats=stats)
+			# If the type is full export, we run the corresponding export function
+			if self.typeCombo.currentText() == "Full export":
 
-			# We create a data frame from of the sample statistics data
-			df = self.project.eg.getstats(save=False)
-			# We save the data frame to csv in the specified location
-			df.to_csv(os.path.join(self.fileLocationLine.text(), "Sample_stats" + str(self.statsExportCount) + ".csv"))
-			self.statsExportCount += 1
+				# The user must select at least one focus stage. They are added to a list.
+				stages = []
+				filtered = False
+				for s in self.focus_stages:
+					if s.isChecked():
+						if s.text() == "filtered":
+							filtered = True
+						else:
+							stages.append(s.text())
 
-			infoBox = QMessageBox.information(self.exportStageWidget, "Export",
-											  "The sample statistics have been exported.",
-											  QMessageBox.Ok)
+				if len(stages) == 0:
+					self.raiseError("You must select at least one analysis stage to include.")
+					return
+
+				# We run a separate export call for each focus stage selected.
+				for stage in stages:
+					self.project.eg.export_traces(outdir=self.fileLocationLine.text(),
+												  focus_stage=stage,
+												  analytes=analytes,
+												  filt=filtered)
+
+				infoBox = QMessageBox.information(self.exportStageWidget, "Export",
+												  "The data has been exported.",
+												  QMessageBox.Ok)
+
+			else:
+				# Otherwise run the Sample Statistics export
+
+				# We create a list of stat functions to include
+				stats = []
+				for s in self.statsBoxes:
+					if s.isChecked():
+						stats.append(s.text())
+				# At least one stat function must be selected
+				if len(analytes) == 0:
+					self.raiseError("You must select at least one stat function.")
+					return
+
+				# We run the sample statistics export function
+				self.project.eg.sample_stats(analytes=analytes,
+											 filt=self.filtStats.isChecked(),
+											 stats=stats)
+
+				# We create a data frame from of the sample statistics data
+				df = self.project.eg.getstats(save=False)
+				# We save the data frame to csv in the specified location
+				df.to_csv(os.path.join(self.fileLocationLine.text(), "Sample_stats" + str(self.statsExportCount) + ".csv"))
+				self.statsExportCount += 1
+
+				infoBox = QMessageBox.information(self.exportStageWidget, "Export",
+												  "The sample statistics have been exported.",
+												  QMessageBox.Ok)
+			
+		except:
+			for l in self.project.eg.log:
+					self.logger.error(l)
+			#logging 
+			self.logger.error('Attempting to export with stage variables: [export_type]:{}\n[filter]:{}\n'.format(
+					self.typeCombo.currentText(),
+					self.filtStats.isChecked()))
+				for a in self.analyteBoxes:
+					self.logger.error('[analyte {}:]{}'.format(a.text(), a.isChecked()))
+							  
+				for s in self.focus_stages:
+					self.logger.error('[stage {}]:{}'.format(s.text(), s.isChecked()))
+			
+			self.logger.exception("Exception in export stage:")
+			return
 
 	def raiseError(self, message):
 		""" Creates an error box with the given message """

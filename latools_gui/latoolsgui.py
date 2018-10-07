@@ -28,7 +28,7 @@ from stages import filteringStage
 from stages import exportStage
 
 from project import runningProject
-from project.ErrLogger import *
+
 import logging
 import logging.config
 
