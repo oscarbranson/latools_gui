@@ -2,7 +2,9 @@
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import *
 
+import logging
 
 class ClusteringFilter:
 	"""
@@ -121,6 +123,12 @@ class ClusteringFilter:
 		self.createButton.clicked.connect(self.createClick)
 		self.filterTab.addButton(self.createButton)
 
+		self.minEdit.setValidator(QIntValidator())
+		self.n_clustersEdit.setValidator(QIntValidator())
+		
+		#log
+		self.logger = logging.getLogger(__name__)
+
 	def methodUpdate(self):
 		""" Enables or disables options based on which method option is currently selected """
 		if self.methodCombo.currentText() == "meanshift":
@@ -169,7 +177,21 @@ class ClusteringFilter:
 														sort = self.sortCheckBox.isChecked(),
 														min_data = min)
 			except:
-				self.raiseError("An error occurred while trying to create this filter. <br> There may be a problem with " +
+				try:
+					#for l in self.project.eg.log:
+					#	self.logger.error(l)
+					self.logger.error('Attempting meanshift clustering filter with variables: [filt]:{}\n[normalise]:{}\n[method]:'
+								'{}\n[include_time]:{}\n[sort]:{}\n[min_data]:{}\n'.format( self.filtCheckBox.isChecked(),
+									self.normaliseCheckBox.isChecked(),
+									self.methodCombo.currentText(),
+									self.timeCheckBox.isChecked(),
+									self.sortCheckBox.isChecked(),
+									min))
+				except:
+					self.logger.exception('Failed to log history:')
+				finally:
+					self.logger.exception('Exception creating filter:')
+					self.raiseError("An error occurred while trying to create this filter. <br> There may be a problem with " +
 								"the input values.")
 				return
 
@@ -194,7 +216,24 @@ class ClusteringFilter:
 														min_data = min,
 														n_clusters = n_clust)
 			except:
-				self.raiseError("An error occurred while trying to create this filter. <br> There may be a problem with " +
+				try:
+						      
+					#for l in self.project.eg.log:
+					#	self.logger.error(l)
+					self.logger.error('Attempting kmeans clustering filter with variables: [filt]:{}\n[normalise]:{}\n[method]:'
+								'{}\n[include_time]:{}\n[sort]:{}\n[min_data]:{}\n[n_clust]:[]\n'.format( self.filtCheckBox.isChecked(),
+									self.normaliseCheckBox.isChecked(),
+									self.methodCombo.currentText(),
+									self.timeCheckBox.isChecked(),
+									self.sortCheckBox.isChecked(),
+									min,
+									n_clust))
+				except:
+					self.logger.exception('Failed to log history:')
+				finally:
+						      
+					self.logger.exception('Exception creating filter:')
+					self.raiseError("An error occurred while trying to create this filter. <br> There may be a problem with " +
 								"the input values.")
 				return
 

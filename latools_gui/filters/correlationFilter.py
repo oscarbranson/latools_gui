@@ -1,7 +1,9 @@
 """ A filter for correlated elements """
 
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
+import logging
 
 class CorrelationFilter:
 	"""
@@ -91,6 +93,13 @@ class CorrelationFilter:
 		self.createButton.clicked.connect(self.createClick)
 		self.filterTab.addButton(self.createButton)
 
+		self.r_thresholdEdit.setValidator(QDoubleValidator())
+		self.p_thresholdEdit.setValidator(QDoubleValidator())
+		self.windowEdit.setValidator(QIntValidator())
+		
+		#log
+		self.logger = logging.getLogger(__name__)
+
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
 
@@ -142,7 +151,21 @@ class CorrelationFilter:
 													 p_threshold = p_threshold,
 													 filt = self.filtCheckBox.isChecked())
 		except:
-			self.raiseError("An error occurred while trying to create this filter. <br> There may be a problem with " +
+			try:    # This has no reference to the latools log currently
+					#for l in self.project.eg.log:
+					#	self.logger.error(l)
+					self.logger.error('Attempting correlation filter with variables: [x_analyte]:{}\n[y_analyte]:{}\n[window]:'
+								'{}\n[r_threshold]:{}\n[p_threshold]:{}\n[filt]:{}\n'.format( self.x_analyteCombo.currentText(),
+									self.y_analyteCombo.currentText(),
+									window,
+									r_threshold,
+									p_threshold,
+									self.filtCheckBox.isChecked()))
+			except:
+				self.logger.exception('Failed to log history:')
+			finally:
+				self.logger.exception('Exception creating filter:')
+				self.raiseError("An error occurred while trying to create this filter. <br> There may be a problem with " +
 							"the input values.")
 			return
 
