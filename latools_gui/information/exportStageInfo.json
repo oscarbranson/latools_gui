@@ -1,5 +1,6 @@
 {
-	"stage_description": "You can export reports of your data at any time.",
+	"stage_label": "Data export",
+	"stage_description": "You can export your processed data at any time, either as a full export, or as sample statistics.",
 	"location_label": "Folder",
 	"location_description": "<qt/>The folder that the reports will be saved to.",
 	"type_label": "Type",

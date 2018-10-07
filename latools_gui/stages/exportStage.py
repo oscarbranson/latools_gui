@@ -80,7 +80,7 @@ class ExportStage():
 			self.stageInfo = json.load(read_file)
 			read_file.close()
 
-		self.stageControls.setDescription("Export Reports", self.stageInfo["stage_description"])
+		self.stageControls.setDescription(self.stageInfo["stage_label"], self.stageInfo["stage_description"])
 
 		# The space for the stage options is provided by the Controls Pane.
 		self.optionsGrid = QGridLayout(self.stageControls.getOptionsWidget())
@@ -417,11 +417,11 @@ class ExportStage():
 			self.logger.error('Attempting to export with stage variables: [export_type]:{}\n[filter]:{}\n'.format(
 					self.typeCombo.currentText(),
 					self.filtStats.isChecked()))
-				for a in self.analyteBoxes:
-					self.logger.error('[analyte {}:]{}'.format(a.text(), a.isChecked()))
-							  
-				for s in self.focus_stages:
-					self.logger.error('[stage {}]:{}'.format(s.text(), s.isChecked()))
+			for a in self.analyteBoxes:
+				self.logger.error('[analyte {}:]{}'.format(a.text(), a.isChecked()))
+
+			for s in self.focus_stages:
+				self.logger.error('[stage {}]:{}'.format(s.text(), s.isChecked()))
 			
 			self.logger.exception("Exception in export stage:")
 			return
