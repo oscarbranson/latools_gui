@@ -38,14 +38,40 @@ a = Analysis(['latoolsgui.py'],
              cipher=block_cipher)
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
-exe = EXE(pyz,
-          a.scripts,
-          exclude_binaries=True,
-          name='latoolsgui',
-          debug=False,
-          strip=False,
-          upx=True,
-          console=True )
+
+# Define exe for Windows and Linuz
+if sys.platform == 'win32' or sys.platform == 'win64' or sys.platform == 'linux':
+  exe = EXE(pyz,
+            a.scripts,
+            exclude_binaries=True,
+            name='LAtools GUI',
+            debug=False,
+            strip=False,
+            upx=True,
+            console=True,
+            icon='graphics/latools-logo-icon.ico')
+
+# Define exe for OS X
+if sys.platform == 'darwin':
+  exe = EXE(pyz,
+            a.scripts,
+            exclude_binaries=True,
+            name='LAtools GUI',
+            debug=False,
+            strip=False,
+            upx=True,
+            console=True,
+            icon='graphics/latools-logo-icon.icns')
+
+# Package the executable file into .app if on OS X
+if sys.platform == 'darwin':
+   app = BUNDLE(exe,
+                name='latoolsgui.app',
+                info_plist={
+                  'NSHighResolutionCapable': 'True'
+                },
+                icon='graphics/latools-logo-icon.icns')
+
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
