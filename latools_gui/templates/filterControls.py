@@ -441,7 +441,7 @@ class FilterTab:
 		# We create the control buttons
 		self.crossPlotButton = QPushButton("Cross-plot")
 		self.crossPlotButton.clicked.connect(self.crossPlotClick)
-		self.controlButtonsLayout.addWidget(self.crossPlotButton)
+		#self.controlButtonsLayout.addWidget(self.crossPlotButton)
 
 		#self.plotButton = QPushButton("Plot")
 		#self.plotButton.clicked.connect(self.plotClick)
