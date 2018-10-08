@@ -17,7 +17,7 @@ The step by step procedure for building an executable file for LAtools GUI is as
   3. With PyInstaller installed, run the following command:
 ::
 
-    pyinstaller --onedir latoolsgui.SPEC
+    pyinstaller --windowed --onedir latoolsgui.SPEC
 
 This will create a new folder at "latools_gui/latools_gui/dist" called "latoolsgui". This folder contains an executable
 file "latoolsgui.exe" at the top level, as well as all the necessary files to run the executable without a native
@@ -54,13 +54,25 @@ required to manually import these modules. Hidden imports is a list of strings "
 various modules that need to be manually included in the build.
 
 
-TODO
+Mac OS Specific Instructions
 ============================
+When PyInstaller builds the Mac package, it creates a bundled app alongside the package directory.
+This app can be used to run the program as a standalone item, but it is incomplete. By default
+PyInstaller does not copy all the necessary content into the bundle, but this can be done manually.
+Copy and paste the entire directory of the packaged latoolsgui into the bundle "Contents/MacOS/",
+overwriting the existing files in the MacOS directory.
+Right click on the bundle, and select "Show package contents" to view the app's contents.
 
-If Oscar changes anything latools.cfg or anything in the latools/resources folder, he needs to update it
-in our code as well.
 
-MAC. jedi-hook.
+LAtools Config and Resource Files
+============================
+The original LAtools module makes use of config and resource files which are necessary for the program to run, but
+which PyInstaller does not immediately recognise and package. The fix for this is that the file "latools/latools.cfg"
+and the whole folder "latools/resources" are cloned in the LAtools GUI repository under the directory
+"latools_gui/latools", and a pointer in the SPEC file directs PyInstaller to include them.
+
+Should any changes be made to "latools/latools.cfg" or the files in "latools/resources", then their copies in the
+LAtools GUI repository should be updated as well.
 
 
 Common Issues
@@ -77,7 +89,8 @@ any of the main processes can be run. It will appear briefly in the console and 
 
     ModuleNotFoundError: No module named 'module.name'
 
-This error can be solved by copying the given module name into the list of hidden imports in the SPEC file.
+This error can be solved by copying the given module name into the list of hidden imports in the SPEC file. If this does
+not fix the issue, a more detailed hook may need to be created for the specific module as part of PyInstaller.
 
 After adding new imports to the SPEC file, it may be necessary to delete the previous build files before running
 PyInstaller again.

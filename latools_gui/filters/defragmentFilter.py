@@ -1,14 +1,23 @@
 """ A filter for correlated elements """
 
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
+import logging
 
 class DefragmentFilter:
 	"""
-	Correlation Filter info
+	The options and controls for creating a defragment filter within a filterTab
 	"""
 	def __init__(self, filterTab):
+		"""
+		Creates the unique aspects of this filter, housed within the filterTab
 
+		Parameters
+		----------
+		filterTab : FilterTab
+			The general tab in which this filter's unique aspects will be created.
+		"""
 		# This filter has access to the general filter structure
 		self.filterTab = filterTab
 
@@ -50,6 +59,13 @@ class DefragmentFilter:
 		self.createButton.clicked.connect(self.createClick)
 		self.filterTab.addButton(self.createButton)
 
+		
+		self.thresholdEdit.setValidator(QIntValidator())
+		
+		#log
+		self.logger = logging.getLogger(__name__)
+
+
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
 
@@ -61,20 +77,33 @@ class DefragmentFilter:
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
 		oldFilters = len(list(self.filterTab.project.eg.data[egSubset].filt.components.keys()))
 
+		# We make sure that we can cast the contents of the threshold field to an int
 		try:
 			threshold = int(self.thresholdEdit.text())
 		except:
 			self.raiseError("The " + self.filterTab.filterInfo["threshold_label"] + " value must be an integer.")
 			return
+
+		# We create the filter
 		try:
 			self.filterTab.project.eg.filter_defragment(threshold = threshold,
 													mode = self.modeCombo.currentText(),
 													filt = self.filtCheckBox.isChecked())
 		except:
+			try:    # This has no reference to the latools log currently
+					#for l in self.project.eg.log:
+					#	self.logger.error(l)
+					self.logger.error('Attempting defragment filter with variables: [mode]:{}\n[filt]:{}'.format( self.modeCombo.currentText(),
+									self.filtCheckBox.isChecked()))
+			except:
+				self.logger.exception('Failed to log history:')
+			finally:
+				self.logger.exception('Exception creating filter:')
 			self.raiseError("An error occurred while trying to create this filter. <br> There may be a problem with " +
 							"the input values.")
 			return
 
+		# We update the name of the tab with the filter details
 		self.createName(tabIndex, "Defrag", self.modeCombo.currentText(), str(threshold))
 
 		# We determine how many filters have been created
@@ -85,6 +114,7 @@ class DefragmentFilter:
 		for i in range(len(currentFilters) - oldFilters):
 			self.filterTab.createFilter(currentFilters[i + oldFilters])
 
+		# We disable all of the option fields so that they record the parameters used in creating the filter
 		self.freezeOptions()
 
 	def raiseError(self, message):
@@ -97,10 +127,20 @@ class DefragmentFilter:
 		self.filterTab.updateName(index)
 
 	def loadFilter(self, params):
+		""" When loading an lalog file, the parameters of this filter are added to the gui, then the
+			create button function is called.
 
+			Parameters
+			----------
+			params : dict
+				The key-word arguments of the filter call, saved in the lalog file.
+		"""
+		# For the args in params, we update each filter option, using the default value if the argument is not in the dict.
 		self.thresholdEdit.setText(str(params.get("threshold", "")))
 		self.modeCombo.setCurrentIndex(self.modeCombo.findText(params.get("mode", "include")))
 		self.filtCheckBox.setChecked(params.get("filt", True))
+
+		# We act as though the user has added these options and clicked the create button.
 		self.createClick()
 
 	def freezeOptions(self):
@@ -112,3 +152,11 @@ class DefragmentFilter:
 		self.modeCombo.setEnabled(False)
 		self.filtCheckBox.setEnabled(False)
 		self.createButton.setEnabled(False)
+
+	def updateOptions(self):
+		""" Delivers the current state of each option to the plot pane. """
+		return {
+			"threshold": self.thresholdEdit.text(),
+			"mode": self.modeCombo.currentText(),
+			"filt": self.filtCheckBox.isChecked()
+		}

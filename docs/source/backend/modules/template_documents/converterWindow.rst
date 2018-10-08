@@ -1,5 +1,5 @@
 ######################################
-Despiking
+Converter Window
 ######################################
 
-.. automodule:: stages.despikingStage
+.. automodule:: templates.converterWindow

@@ -1,5 +1,5 @@
 ######################################
-Despiking
+Stage Tabs
 ######################################
 
-.. automodule:: stages.despikingStage
+.. automodule:: templates.stageTabs

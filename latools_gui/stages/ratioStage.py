@@ -8,7 +8,6 @@ import ast
 
 import templates.controlsPane as controlsPane
 
-from project.ErrLogger import logged
 import logging
 
 class RatioStage():
@@ -19,7 +18,7 @@ class RatioStage():
 	"""
 	
 	#@logged
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, ratioWidget, project, guideDomain):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, ratioWidget, project, links):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -32,17 +31,25 @@ class RatioStage():
 			updates t the graph, produced by the processing defined in the stage.
 		progressPaneObj : ProgressPane
 			A reference to the Progress Pane so that the right button can be enabled by completing the stage.
+		ratioWidget : QWidget
+			The parent widget for this object. Used mainly for displaying error boxes.
 		project : RunningProject
 			A reference to the project object which contains all of the information unique to this project,
 			including the latools analyse object that the stages will update.
+		links : (str, str, str)
+			links[0] = The User guide website domain
+			links[1] = The web link for reporting an issue
+			links[2] = The tooltip for the report issue button
 		"""
 
 		self.graphPaneObj = graphPaneObj
 		self.progressPaneObj = progressPaneObj
 		self.ratioWidget = ratioWidget
 		self.project = project
-		self.guideDomain = guideDomain
+		self.guideDomain = links[0]
+		self.reportIssue = links[1]
 
+		# We create a controls pane object which covers the general aspects of the stage's controls pane
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
 		# We import the stage information from a json file
@@ -84,6 +91,12 @@ class RatioStage():
 		self.guideButton.clicked.connect(self.userGuide)
 		self.stageControls.addDefaultButton(self.guideButton)
 
+		# We create a button to link to the form for reporting an issue
+		self.reportButton = QPushButton("Report an issue")
+		self.reportButton.clicked.connect(self.reportButtonClick)
+		self.stageControls.addDefaultButton(self.reportButton)
+		self.reportButton.setToolTip(links[2])
+
 		# We create the apply button for the right-most section of the Controls Pane.
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
@@ -98,16 +111,26 @@ class RatioStage():
 	def pressedApplyButton(self):
 		""" Ratios the project data with a given standard when a button is pressed. """
 
-		# The actual call to the analyse object for this stage is run, using the stage values as parameters
-		self.project.eg.ratio(internal_standard=self.internal_standardOption.currentText())
+		try:
 
-		# Automatically saves the project if it already has a save location
-		# self.project.reSave()
+			# The actual call to the analyse object for this stage is run, using the stage values as parameters
+			self.project.eg.ratio(internal_standard=self.internal_standardOption.currentText())
 
-		self.graphPaneObj.updateGraph()
-		self.progressPaneObj.completedStage(4)
+			# Automatically saves the project if it already has a save location
+			# self.project.reSave()
 
-		self.project.importListener.updateRatio()
+			self.graphPaneObj.updateGraph()
+			self.progressPaneObj.completedStage(4)
+
+			self.project.importListener.updateRatio()
+		except:
+			for l in self.project.eg.log:
+					self.logger.error(l)
+			#logging 
+			self.logger.error('Executing stage Ratio with stage variables: [internal_standard]:{}\n['.format( self.internal_standardOption.currentText()))
+			
+			self.logger.exception("Exception in ratio stage:")
+			return
 
 	#@logged
 	def updateStageInfo(self):
@@ -120,6 +143,7 @@ class RatioStage():
 
 	#@logged
 	def internal_standardClicked(self):
+		""" Only allows the apply button to be activated when an internal standard option has been selected """
 		if self.internal_standardOption.currentIndex() != 0:
 			self.applyButton.setEnabled(True)
 		else:
@@ -149,3 +173,8 @@ class RatioStage():
 	def userGuide(self):
 		""" Opens the online user guide to a particular page for the current stage """
 		self.stageControls.userGuide(self.guideDomain + "LAtoolsGUIUserGuide/users/07-ratio.html")
+
+	def reportButtonClick(self):
+		""" Links to the online form for reporting an issue """
+		self.stageControls.reportIssue(self.reportIssue)
+

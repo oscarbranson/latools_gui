@@ -1,5 +1,5 @@
 ######################################
-Despiking
+Correlation Filter
 ######################################
 
-.. automodule:: stages.despikingStage
+.. automodule:: filters.correlationFilter

@@ -1,5 +1,5 @@
 ######################################
-Despiking
+Filter Controls
 ######################################
 
-.. automodule:: stages.despikingStage
+.. automodule:: templates.filterControls

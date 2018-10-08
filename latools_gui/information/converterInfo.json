@@ -3,5 +3,9 @@
 	"find_data_label": "Find data file",
 	"find_data_description": "<qt/>The data file to convert.",
 	"location_label": "Export location",
-	"location_description": "<qt/>Where you would like to save the converted data file. Be careful not to overwrite the original file."
+	"location_description": "<qt/>Where you would like to save the converted data file. Be careful not to overwrite the original file.",
+	"find_directory_label": "Import folder",
+	"find_directory_description": "<qt/>A folder containing files to convert",
+	"date_label": "Infer date from first file",
+	"date_description": "<qt/>When running on a folder of data files, can we use the position of the date in the first file to find the dates in all other files?"
 }

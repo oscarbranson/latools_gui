@@ -1,14 +1,23 @@
 """ A filter for correlated elements """
 
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
+import logging
 
 class CorrelationFilter:
 	"""
-	Correlation Filter info
+	The options and controls for creating a correlation filter within a filterTab
 	"""
 	def __init__(self, filterTab):
+		"""
+		Creates the unique aspects of this filter, housed within the filterTab
 
+		Parameters
+		----------
+		filterTab : FilterTab
+			The general tab in which this filter's unique aspects will be created.
+		"""
 		# This filter has access to the general filter structure
 		self.filterTab = filterTab
 
@@ -21,6 +30,8 @@ class CorrelationFilter:
 		self.y_analyteCombo = QComboBox()
 		self.optionsLayout.addWidget(self.y_analyteCombo, 0, 1)
 		self.y_analyteCombo.addItem(" ")
+
+		# As this filter must be created after import, we can access the list of analytes in the latools analyse object
 		for i in range(len(self.filterTab.project.eg.analytes)):
 			self.y_analyteCombo.addItem(str(self.filterTab.project.eg.analytes[i]))
 		self.y_analyteLabel.setToolTip(self.filterTab.filterInfo["y_analyte_description"])
@@ -82,6 +93,13 @@ class CorrelationFilter:
 		self.createButton.clicked.connect(self.createClick)
 		self.filterTab.addButton(self.createButton)
 
+		self.r_thresholdEdit.setValidator(QDoubleValidator())
+		self.p_thresholdEdit.setValidator(QDoubleValidator())
+		self.windowEdit.setValidator(QIntValidator())
+		
+		#log
+		self.logger = logging.getLogger(__name__)
+
 	def createClick(self):
 		""" Adds the new filter to the Summary tab """
 
@@ -93,14 +111,15 @@ class CorrelationFilter:
 		egSubset = self.filterTab.project.eg.subsets['All_Samples'][0]
 		oldFilters = len(list(self.filterTab.project.eg.data[egSubset].filt.components.keys()))
 
+		# We make sure there is y and x analyte currently selected
 		if self.y_analyteCombo.currentText() == " ":
 			self.raiseError("You must select a Y analyte to apply the filter to.")
 			return
-
 		if self.x_analyteCombo.currentText() == " ":
 			self.raiseError("You must select a X analyte to apply the filter to.")
 			return
 
+		# If there is text in the window option we make sure we can cast it to an int
 		window = None
 		if self.windowEdit.text() != "":
 			try:
@@ -109,19 +128,21 @@ class CorrelationFilter:
 				self.raiseError("The " + self.filterTab.filterInfo["window_label"] + " value must be an integer.")
 				return
 
+		# We make sure we can cast the r and p threshold values to floats
 		try:
 			r_threshold = float(self.r_thresholdEdit.text())
 		except:
 			self.raiseError("The " + self.filterTab.filterInfo["r_threshold_label"] +
 							" value must be a floating point number.")
 			return
-
 		try:
 			p_threshold = float(self.p_thresholdEdit.text())
 		except:
 			self.raiseError("The " + self.filterTab.filterInfo["p_threshold_label"] +
 							" value must be a floating point number.")
 			return
+
+		# We create the filter
 		try:
 			self.filterTab.project.eg.filter_correlation(x_analyte = self.x_analyteCombo.currentText(),
 													 y_analyte = self.y_analyteCombo.currentText(),
@@ -130,10 +151,25 @@ class CorrelationFilter:
 													 p_threshold = p_threshold,
 													 filt = self.filtCheckBox.isChecked())
 		except:
-			self.raiseError("An error occurred while trying to create this filter. <br> There may be a problem with " +
+			try:    # This has no reference to the latools log currently
+					#for l in self.project.eg.log:
+					#	self.logger.error(l)
+					self.logger.error('Attempting correlation filter with variables: [x_analyte]:{}\n[y_analyte]:{}\n[window]:'
+								'{}\n[r_threshold]:{}\n[p_threshold]:{}\n[filt]:{}\n'.format( self.x_analyteCombo.currentText(),
+									self.y_analyteCombo.currentText(),
+									window,
+									r_threshold,
+									p_threshold,
+									self.filtCheckBox.isChecked()))
+			except:
+				self.logger.exception('Failed to log history:')
+			finally:
+				self.logger.exception('Exception creating filter:')
+				self.raiseError("An error occurred while trying to create this filter. <br> There may be a problem with " +
 							"the input values.")
 			return
 
+		# We update the name of the tab with the filter details
 		self.createName(tabIndex, "Correlation", self.x_analyteCombo.currentText(), self.y_analyteCombo.currentText())
 
 		# We determine how many filters have been created
@@ -144,6 +180,7 @@ class CorrelationFilter:
 		for i in range(len(currentFilters) - oldFilters):
 			self.filterTab.createFilter(currentFilters[i + oldFilters])
 
+		# We disable all of the option fields so that they record the parameters used in creating the filter
 		self.freezeOptions()
 
 	def raiseError(self, message):
@@ -156,12 +193,23 @@ class CorrelationFilter:
 		self.filterTab.updateName(index)
 
 	def loadFilter(self, params):
+		""" When loading an lalog file, the parameters of this filter are added to the gui, then the
+			create button function is called.
+
+			Parameters
+			----------
+			params : dict
+				The key-word arguments of the filter call, saved in the lalog file.
+		"""
+		# For the args in params, we update each filter option, using the default value if the argument is not in the dict.
 		self.y_analyteCombo.setCurrentIndex(self.y_analyteCombo.findText(params.get("y_analyte", "")))
 		self.x_analyteCombo.setCurrentIndex(self.x_analyteCombo.findText(params.get("x_analyte", "")))
 		self.windowEdit.setText(str(params.get("window", "")))
 		self.r_thresholdEdit.setText(str(params.get("r_threshold", "")))
 		self.p_thresholdEdit.setText(str(params.get("p_threshold", "")))
 		self.filtCheckBox.setChecked(params.get("filt", True))
+
+		# We act as though the user has added these options and clicked the create button.
 		self.createClick()
 
 	def freezeOptions(self):
@@ -176,3 +224,14 @@ class CorrelationFilter:
 		self.p_thresholdEdit.setEnabled(False)
 		self.filtCheckBox.setEnabled(False)
 		self.createButton.setEnabled(False)
+
+	def updateOptions(self):
+		""" Delivers the current state of each option to the plot pane. """
+		return {
+			"y_analyte": self.y_analyteCombo.currentText(),
+			"x_analyte": self.x_analyteCombo.currentText(),
+			"window": self.windowEdit.text(),
+			"r_threshold": self.r_thresholdEdit.text(),
+			"p_threshold": self.p_thresholdEdit.text(),
+			"filt": self.filtCheckBox.isChecked()
+		}

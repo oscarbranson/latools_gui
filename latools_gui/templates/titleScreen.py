@@ -15,7 +15,7 @@ class TitleScreen():
 	The screen that shows up at the beginning of the program and allows a user to define a new project,
 	or continue an existing one.
 	"""
-	def __init__(self, stack, project, userGuideDomain):
+	def __init__(self, stack, project, links):
 		"""
 		Initialising builds and displays the screen.
 
@@ -34,7 +34,8 @@ class TitleScreen():
 		self.loadProjectBool = False
 		self.importListener = None
 		self.nameOK = False
-		self.userGuideDomain = userGuideDomain
+		self.userGuideDomain = links[0]
+		self.reportIssue = links[1]
 
 		# The layout is created from the mainWidget
 		self.mainLayout = QVBoxLayout(self.mainWidget)
@@ -69,11 +70,11 @@ class TitleScreen():
 		self.welcomeLabel = QLabel("<span style=\"font-size:20px;\">"
 			"<b>Welcome to LA tools</b></span>")
 		self.welcomeLabel.setAlignment(Qt.AlignCenter)
-		self.mainLayout.addWidget(self.welcomeLabel)
+		#self.mainLayout.addWidget(self.welcomeLabel)
 
 		# Small spacer after the text
-		self.welcomeSpacer = QSpacerItem(0, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-		self.mainLayout.addItem(self.welcomeSpacer)
+		#self.welcomeSpacer = QSpacerItem(0, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+		#self.mainLayout.addItem(self.welcomeSpacer)
 
 		# A small grid of buttons and fields for starting or loading a project
 		self.titleGridWidget = QWidget()
@@ -97,18 +98,12 @@ class TitleScreen():
 		self.newProjectBool = False
 
 		self.nameLabel = QLabel("Project name:")
-		self.titleGrid.addWidget(self.nameLabel, 1, 0)
-		self.nameLabel.setVisible(False)
 
 		self.nameEdit = QLineEdit()
-		self.titleGrid.addWidget(self.nameEdit, 2, 0, 1, 2)
-		self.nameEdit.setVisible(False)
 		self.nameEdit.setMaxLength(60)
 
 		self.backButton = QPushButton("Back")
 		self.backButton.clicked.connect(self.backButtonClick)
-		self.titleGrid.addWidget(self.backButton, 5, 0)
-		self.backButton.setVisible(False)
 
 		# The button to load or begin the project
 		self.nextButton = QPushButton("Begin")
@@ -132,6 +127,12 @@ class TitleScreen():
 		self.helpLayout.addWidget(self.helpButton)
 		self.mainLayout.addWidget(self.helpWidget)
 		self.helpButton.clicked.connect(self.helpButtonClick)
+
+		# A button for reporting issues
+		self.reportButton = QPushButton("Report an issue")
+		self.helpLayout.addWidget(self.reportButton)
+		self.reportButton.clicked.connect(self.reportButtonClick)
+		self.reportButton.setToolTip(links[2])
 
 		# A spacer at the bottom.
 		self.bottomSpacer = QSpacerItem(0, 75, QSizePolicy.Minimum, QSizePolicy.Expanding)
@@ -217,13 +218,10 @@ class TitleScreen():
 		The 'new project' options are displayed, and the recent projects dropdown is hidden.
 		"""
 		self.newProjectBool = True
-		self.recentDropdown.setVisible(False)
-		self.nameLabel.setVisible(True)
-		self.nameEdit.setVisible(True)
-		self.backButton.setVisible(True)
-		# self.locationLabel.setVisible(True)
-		# self.newBrowse.setVisible(True)
-		# self.newLocation.setVisible(True)
+		self.recentDropdown.setParent(None)
+		self.titleGrid.addWidget(self.nameLabel, 1, 0)
+		self.titleGrid.addWidget(self.nameEdit, 2, 0, 1, 2)
+		self.titleGrid.addWidget(self.backButton, 5, 0)
 		self.nextButton.setEnabled(False)
 		self.nameEdit.setFocus()
 
@@ -276,10 +274,10 @@ class TitleScreen():
 	def backButtonClick(self):
 		""" The functionality for the back button, when a new project entry is cancelled """
 		self.newProjectBool = False
-		self.recentDropdown.setVisible(True)
-		self.nameLabel.setVisible(False)
-		self.nameEdit.setVisible(False)
-		self.backButton.setVisible(False)
+		self.nameLabel.setParent(None)
+		self.nameEdit.setParent(None)
+		self.backButton.setParent(None)
+		self.titleGrid.addWidget(self.recentDropdown, 1, 0, 1, 2)
 		self.nextButton.setEnabled(False)
 		self.recentDropdown.setCurrentIndex(0)
 
@@ -305,6 +303,10 @@ class TitleScreen():
 		""" Link to online user guide """
 		url = QUrl(self.userGuideDomain + "LAtoolsGUIUserGuide/index.html")
 		QDesktopServices.openUrl(url)
+
+	def reportButtonClick(self):
+		""" Links to the online form for reporting an issue """
+		QDesktopServices.openUrl(QUrl(self.reportIssue))
 
 	def enterPressed(self):
 		if self.nextButton.isEnabled():

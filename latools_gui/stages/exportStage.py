@@ -9,13 +9,15 @@ import os
 import sys
 import json
 
+import logging
+
 class ExportStage():
 	"""
 	Each stage has its own Controls Pane, where it defines a description and the unique options for that
 	step of the data-processing. It updates the graph pane based on the modifications that are made to the
 	project.
 	"""
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, exportStageWidget, project, guideDomain):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, exportStageWidget, project, links, mainWindow):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -33,6 +35,10 @@ class ExportStage():
 		project : RunningProject
 			A reference to the project object which contains all of the information unique to this project,
 			including the latools analyse object that the stages will update.
+		links : (str, str, str)
+			links[0] = The User guide website domain
+			links[1] = The web link for reporting an issue
+			links[2] = The tooltip for the report issue button
 		"""
 		self.logger = logging.getLogger(__name__)
 		self.logger.info('Initialised import stage!')
@@ -41,12 +47,20 @@ class ExportStage():
 		self.progressPaneObj = progressPaneObj
 		self.exportStageWidget = exportStageWidget
 		self.project = project
-		self.guideDomain = guideDomain
+		self.guideDomain = links[0]
+		self.reportIssue = links[1]
+
+		# Updated on import with the default location to export data to
 		self.defaultDataFolder = ""
 		self.statsExportCount = 1
+
+		# Updated with each completed focus stage
 		self.focus_stages = []
 		self.focusSet = set()
 
+		self.mainWindow = mainWindow
+
+		# We create a controls pane object which covers the general aspects of the stage's controls pane
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
 		# We import the stage information from a json file and set the default data folder
@@ -66,7 +80,7 @@ class ExportStage():
 			self.stageInfo = json.load(read_file)
 			read_file.close()
 
-		self.stageControls.setDescription("Export Reports", self.stageInfo["stage_description"])
+		self.stageControls.setDescription(self.stageInfo["stage_label"], self.stageInfo["stage_description"])
 
 		# The space for the stage options is provided by the Controls Pane.
 		self.optionsGrid = QGridLayout(self.stageControls.getOptionsWidget())
@@ -224,13 +238,29 @@ class ExportStage():
 		self.pane2Layout.setColumnStretch(3, 1)
 		self.pane2Layout.setRowStretch(3, 1)
 
+		# We create a button to export the error logs to a zip folder in the LAtools directory
+		self.exportLogsButton = QPushButton("Export error logs")
+		self.exportLogsButton.clicked.connect(self.mainWindow.zipLogs)
+		self.exportLogsButton.setToolTip("<qt/>Saves your error log files to \"Logs.zip\" in the LAtools directory. <br>" +
+										 "You can also do this at any time via the File menu.")
+		self.stageControls.addDefaultButton(self.exportLogsButton)
+
+		# We create a button to link to the form for reporting an issue
+		self.reportButton = QPushButton("Report an issue")
+		self.reportButton.clicked.connect(self.reportButtonClick)
+		self.stageControls.addDefaultButton(self.reportButton)
+		self.reportButton.setToolTip(links[2])
+
 		# We create the export button for the right-most section of the Controls Pane.
 		self.exportButton = QPushButton("Export")
 		self.exportButton.clicked.connect(self.pressedExportButton)
 		self.stageControls.addApplyButton(self.exportButton)
 
+		# Initialise logging
+		self.logger = logging.getLogger(__name__)
 
 	def typeChange(self):
+		""" When the type of export is changed we hide or show the different option panes """
 
 		if self.typeCombo.currentText() == "Full export":
 			self.pane2Frame.setParent(None)
@@ -248,6 +278,7 @@ class ExportStage():
 
 		if stage not in self.focusSet:
 
+			# If we have not encountered the current focus stage yet, we create a new checkbox for it
 			new = QCheckBox(stage)
 
 			# There is a different tooltip for the 'filtered' checkbox
@@ -256,6 +287,7 @@ class ExportStage():
 			else:
 				new.setToolTip(self.stageInfo["focus_description"])
 
+			# We add our new focus stage checkbox to the list, and to the scrollable display area
 			self.focus_stages.append(new)
 			self.pane1Layout.addWidget(new, len(self.focus_stages), 0)
 			self.focusSet.add(stage)
@@ -264,12 +296,14 @@ class ExportStage():
 			self.pane1Layout.setRowStretch(len(self.focus_stages), 0)
 			self.pane1Layout.setRowStretch(len(self.focus_stages) + 1, 1)
 
-
+			# If we are up tot he background subtraction focus stage, then the default export option becomes
+			# Sample statistics
 			if stage == "bkgsub":
 				self.typeCombo.addItem("Sample statistics")
 				self.typeCombo.setCurrentText("Sample statistics")
 				self.typeChange()
 
+		# If someone reimports data we need to remove the Sample Statistics option
 		if stage == "rawdata" and self.typeCombo.count() == 2:
 			self.typeCombo.removeItem(1)
 			self.typeChange()
@@ -308,63 +342,94 @@ class ExportStage():
 
 
 	def pressedExportButton(self):
+		""" When the export button is pressed we run an export command based on the option values. """
 
-		analytes = []
-		for a in self.analyteBoxes:
-			if a.isChecked():
-				analytes.append(a.text())
-
-		if len(analytes) == 0:
-			self.raiseError("You must select at least one analyte.")
-			return
-
-		if self.typeCombo.currentText() == "Full export":
-
-			stages = []
-			filtered = False
-			for s in self.focus_stages:
-				if s.isChecked():
-					if s.text() == "filtered":
-						filtered = True
-					else:
-						stages.append(s.text())
-
-			if len(stages) == 0:
-				self.raiseError("You must select at least one analysis stage to include.")
-				return
-
-			for stage in stages:
-				self.project.eg.export_traces(outdir=self.fileLocationLine.text(),
-											  focus_stage=stage,
-											  analytes=analytes,
-											  filt=filtered)
-
-			infoBox = QMessageBox.information(self.exportStageWidget, "Export",
-											  "The data has been exported.",
-											  QMessageBox.Ok)
-
-		else:
-			stats = []
-			for s in self.statsBoxes:
-				if s.isChecked():
-					stats.append(s.text())
-
+		try:
+			# We create a list of the checked analytes. There must be at least one checked.
+			analytes = []
+			for a in self.analyteBoxes:
+				if a.isChecked():
+					analytes.append(a.text())
 			if len(analytes) == 0:
-				self.raiseError("You must select at least one stat function.")
+				self.raiseError("You must select at least one analyte.")
 				return
 
-			self.project.eg.sample_stats(analytes=analytes,
-										 filt=self.filtStats.isChecked(),
-										 stats=stats)
+			# If the type is full export, we run the corresponding export function
+			if self.typeCombo.currentText() == "Full export":
 
-			df = self.project.eg.getstats(save=False)
-			df.to_csv(os.path.join(self.fileLocationLine.text(), "Sample_stats" + str(self.statsExportCount) + ".csv"))
-			self.statsExportCount += 1
+				# The user must select at least one focus stage. They are added to a list.
+				stages = []
+				filtered = False
+				for s in self.focus_stages:
+					if s.isChecked():
+						if s.text() == "filtered":
+							filtered = True
+						else:
+							stages.append(s.text())
 
-			infoBox = QMessageBox.information(self.exportStageWidget, "Export",
-											  "The sample statistics have been exported.",
-											  QMessageBox.Ok)
+				if len(stages) == 0:
+					self.raiseError("You must select at least one analysis stage to include.")
+					return
+
+				# We run a separate export call for each focus stage selected.
+				for stage in stages:
+					self.project.eg.export_traces(outdir=self.fileLocationLine.text(),
+												  focus_stage=stage,
+												  analytes=analytes,
+												  filt=filtered)
+
+				infoBox = QMessageBox.information(self.exportStageWidget, "Export",
+												  "The data has been exported.",
+												  QMessageBox.Ok)
+
+			else:
+				# Otherwise run the Sample Statistics export
+
+				# We create a list of stat functions to include
+				stats = []
+				for s in self.statsBoxes:
+					if s.isChecked():
+						stats.append(s.text())
+				# At least one stat function must be selected
+				if len(analytes) == 0:
+					self.raiseError("You must select at least one stat function.")
+					return
+
+				# We run the sample statistics export function
+				self.project.eg.sample_stats(analytes=analytes,
+											 filt=self.filtStats.isChecked(),
+											 stats=stats)
+
+				# We create a data frame from of the sample statistics data
+				df = self.project.eg.getstats(save=False)
+				# We save the data frame to csv in the specified location
+				df.to_csv(os.path.join(self.fileLocationLine.text(), "Sample_stats" + str(self.statsExportCount) + ".csv"))
+				self.statsExportCount += 1
+
+				infoBox = QMessageBox.information(self.exportStageWidget, "Export",
+												  "The sample statistics have been exported.",
+												  QMessageBox.Ok)
+			
+		except:
+			for l in self.project.eg.log:
+					self.logger.error(l)
+			#logging 
+			self.logger.error('Attempting to export with stage variables: [export_type]:{}\n[filter]:{}\n'.format(
+					self.typeCombo.currentText(),
+					self.filtStats.isChecked()))
+			for a in self.analyteBoxes:
+				self.logger.error('[analyte {}:]{}'.format(a.text(), a.isChecked()))
+
+			for s in self.focus_stages:
+				self.logger.error('[stage {}]:{}'.format(s.text(), s.isChecked()))
+			
+			self.logger.exception("Exception in export stage:")
+			return
 
 	def raiseError(self, message):
 		""" Creates an error box with the given message """
 		errorBox = QMessageBox.critical(self.exportStageWidget, "Error", message, QMessageBox.Ok)
+
+	def reportButtonClick(self):
+		""" Links to the online form for reporting an issue """
+		self.stageControls.reportIssue(self.reportIssue)

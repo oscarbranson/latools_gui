@@ -1,5 +1,5 @@
 ######################################
-Despiking
+Trim Filter
 ######################################
 
-.. automodule:: stages.despikingStage
+.. automodule:: filters.trimFilter

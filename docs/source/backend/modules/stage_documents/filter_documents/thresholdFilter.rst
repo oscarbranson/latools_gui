@@ -1,5 +1,5 @@
 ######################################
-Despiking
+Threshold Filter
 ######################################
 
-.. automodule:: stages.despikingStage
+.. automodule:: filters.thresholdFilter

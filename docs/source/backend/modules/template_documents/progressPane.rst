@@ -1,5 +1,5 @@
 ######################################
-Despiking
+Progress Pane
 ######################################
 
-.. automodule:: stages.despikingStage
+.. automodule:: templates.progressPane

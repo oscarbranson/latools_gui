@@ -1,5 +1,5 @@
 ######################################
-Despiking
+Clustering Filter
 ######################################
 
-.. automodule:: stages.despikingStage
+.. automodule:: filters.clusteringFilter

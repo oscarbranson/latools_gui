@@ -1,5 +1,6 @@
 {
-	"stage_description": "You can export reports of your data at any time.",
+	"stage_label": "Data export",
+	"stage_description": "You can export your processed data at any time, either as a full export, or as sample statistics.",
 	"location_label": "Folder",
 	"location_description": "<qt/>The folder that the reports will be saved to.",
 	"type_label": "Type",
@@ -10,6 +11,6 @@
 	"analyte_description": "<qt/>The analytes to include in the export.",
 	"filt_label": "Apply filters",
 	"filt_description": "<qt/>Include filters in the export.",
-	"stats_label": "Statistics",
+	"stats_label": "Stat functions",
 	"stats_description": "<qt/>mean(): arithmetic mean<br>std(): arithmetic standard deviation<br>se(): arithmetic standard error<br>H15_mean(): Huber mean (outlier removal)<br>H15_std(): Huber standard deviation (outlier removal)<br>H15_se(): Huber standard error (outlier removal)"
 }

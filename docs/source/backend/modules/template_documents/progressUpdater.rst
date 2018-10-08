@@ -1,5 +1,5 @@
 ######################################
-Despiking
+Progress Updater
 ######################################
 
-.. automodule:: stages.despikingStage
+.. automodule:: templates.progressUpdater

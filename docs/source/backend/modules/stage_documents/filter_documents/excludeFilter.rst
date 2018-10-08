@@ -1,5 +1,5 @@
 ######################################
-Despiking
+Exclude Filter
 ######################################
 
-.. automodule:: stages.despikingStage
+.. automodule:: filters.excludeFilter

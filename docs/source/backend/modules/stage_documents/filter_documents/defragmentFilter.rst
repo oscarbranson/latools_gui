@@ -1,5 +1,5 @@
 ######################################
-Despiking
+Defragment Filter
 ######################################
 
-.. automodule:: stages.despikingStage
+.. automodule:: filters.defragmentFilter

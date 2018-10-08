@@ -1,5 +1,5 @@
 ######################################
-Despiking
+Filter Plot
 ######################################
 
-.. automodule:: stages.despikingStage
+.. automodule:: templates.filterPlot

@@ -10,7 +10,6 @@ import ast
 import sys
 import os
 
-from project.ErrLogger import logged
 import logging
 
 class BackgroundStage():
@@ -20,7 +19,7 @@ class BackgroundStage():
 	project.
 	"""
 	#@logged
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, backgroundWidget, project, guideDomain):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, backgroundWidget, project, links):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -33,17 +32,25 @@ class BackgroundStage():
 			updates t the graph, produced by the processing defined in the stage.
 		progressPaneObj : ProgressPane
 			A reference to the Progress Pane so that the right button can be enabled by completing the stage.
+		backgroundWidget : QWidget
+			The parent widget for this object. Used mainly for displaying error boxes.
 		project : RunningProject
 			A reference to the project object which contains all of the information unique to this project,
 			including the latools analyse object that the stages will update.
+		links : (str, str, str)
+			links[0] = The User guide website domain
+			links[1] = The web link for reporting an issue
+			links[2] = The tooltip for the report issue button
 		"""
 
 		self.graphPaneObj = graphPaneObj
 		self.progressPaneObj = progressPaneObj
 		self.backgroundWidget = backgroundWidget
 		self.project = project
-		self.guideDomain = guideDomain
+		self.guideDomain = links[0]
+		self.reportIssue = links[1]
 
+		# We create a controls pane object which covers the general aspects of the stage's controls pane
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
 		# We capture the default parameters for this stage's function call
@@ -192,6 +199,12 @@ class BackgroundStage():
 		self.guideButton.clicked.connect(self.userGuide)
 		self.stageControls.addDefaultButton(self.guideButton)
 
+		# We create a button to link to the form for reporting an issue
+		self.reportButton = QPushButton("Report an issue")
+		self.reportButton.clicked.connect(self.reportButtonClick)
+		self.stageControls.addDefaultButton(self.reportButton)
+		self.reportButton.setToolTip(links[2])
+
 		# We create the buttons for the right-most section of the Controls Pane.
 
 		self.calcButton = QPushButton("Calculate background")
@@ -223,7 +236,6 @@ class BackgroundStage():
 		self.kindOption.setValidator(QIntValidator())
 		self.n_minOption2.setValidator(QIntValidator())
 		self.n_maxOption2.setValidator(QIntValidator())
-		
 
 	#@logged
 	def pressedCalcButton(self):
@@ -292,15 +304,7 @@ class BackgroundStage():
 
 			# The actual call to the analyse object for this stage is run, using the stage values as parameters
 			try:
-				# logging 
-				self.logger.info('Executing stage Import with stage variables: [weight_fwhm]:{}\n[n_min]:{}\n[n_max]:'
-								 '{}\n[cstep]:{}\n[bkg_filter]:{}\n[f_win]:{}\n[f_n_lim]:{}\n'.format( myweight,
-																								     myn_min,
-																								     myn_max,
-																								     mycstep,
-																								     self.bkg_filterOption.isChecked(),
-																								     myf_win,
-																								     myf_n_lim))
+				
 				
 				self.project.eg.bkg_calc_weightedmean(analytes=None,
 								      weight_fwhm=myweight,
@@ -311,6 +315,19 @@ class BackgroundStage():
 								      f_win=myf_win,
 								      f_n_lim=myf_n_lim)
 			except:
+				for l in self.project.eg.log:
+					self.logger.error(l)
+				# logging 
+				self.logger.error('Executing stage Background (weighted mean) with stage variables: [weight_fwhm]:{}\n[n_min]:{}\n[n_max]:'
+								 '{}\n[cstep]:{}\n[bkg_filter]:{}\n[f_win]:{}\n[f_n_lim]:{}\n'.format( myweight,
+																		myn_min,
+																		myn_max,
+																		mycstep,
+																		self.bkg_filterOption.isChecked(),
+																		myf_win,
+																		myf_n_lim))
+				
+
 				self.logger.exception("Exception in background stage:")
 				self.raiseError("A problem occurred. There may be a problem with the input values.")
 				return
@@ -375,6 +392,17 @@ class BackgroundStage():
 											f_win=myf_win,
 											f_n_lim=myf_n_lim)
 			except:
+				for l in self.project.eg.log:
+					self.logger.error(l)
+				# logging 
+				self.logger.error('Executing stage Background (interp) with stage variables: [weight_fwhm]:{}\n[n_min]:{}\n[n_max]:'
+								 '{}\n[cstep]:{}\n[bkg_filter]:{}\n[f_win]:{}\n[f_n_lim]:{}\n'.format( myweight,
+																		myn_min,
+																		myn_max,
+																		mycstep,
+																		self.bkg_filterOption.isChecked(),
+																		myf_win,
+																		myf_n_lim))
 				self.logger.exception("Exception in background stage:")
 				self.raiseError("A problem occurred. There may be a problem with the input values.")
 				return
@@ -431,6 +459,7 @@ class BackgroundStage():
 
 	#@logged
 	def resetButtons(self):
+		""" Resets the buttons to default state if the user goes back to an earlier stage """
 		self.popupButton.setEnabled(False)
 		self.subtractButton.setEnabled(False)
 
@@ -484,6 +513,7 @@ class BackgroundStage():
 
 	#@logged
 	def defaultButtonPress(self):
+		""" Returns the option values to their default states """
 
 		self.methodOption.setCurrentText(self.stageInfo["bkg_method_1_label"])
 
@@ -506,3 +536,8 @@ class BackgroundStage():
 	def userGuide(self):
 		""" Opens the online user guide to a particular page for the current stage """
 		self.stageControls.userGuide(self.guideDomain + "LAtoolsGUIUserGuide/users/06-background.html")
+
+
+	def reportButtonClick(self):
+		""" Links to the online form for reporting an issue """
+		self.stageControls.reportIssue(self.reportIssue)

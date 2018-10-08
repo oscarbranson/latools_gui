@@ -4,6 +4,12 @@ Filtering
 
 .. automodule:: stages.filteringStage
 
-.. autoclass:: stages.filteringStage.FilteringStage
 
-    .. automethod:: FilteringStage.__init__
+Filters
+==================================
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+
+   ./filter_documents/*

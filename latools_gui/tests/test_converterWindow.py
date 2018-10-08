@@ -19,6 +19,8 @@ class TestConverterWindow(unittest.TestCase):
 		app = QApplication([])
 		window = converterWindow.ConverterWindow()
 
+		window.runningTest = True
+
 		file_list = os.listdir(testDataDir)
 		convert_list = []
 		index_count = "test_file"
@@ -40,7 +42,6 @@ class TestConverterWindow(unittest.TestCase):
 			window.nameEdit.setText(str(index_count))
 
 			window.runConverter()
-			window.yesClicked()
 
 			la.analyse(data_folder=os.path.join(testDataDir, "latools_formatted"),
 					   config="DEFAULT",

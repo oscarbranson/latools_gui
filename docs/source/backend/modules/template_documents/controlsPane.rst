@@ -1,5 +1,5 @@
 ######################################
-Despiking
+Controls Pane
 ######################################
 
-.. automodule:: stages.despikingStage
+.. automodule:: templates.controlsPane

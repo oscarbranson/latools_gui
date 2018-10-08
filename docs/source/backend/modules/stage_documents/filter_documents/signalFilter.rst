@@ -1,5 +1,5 @@
 ######################################
-Despiking
+Signal Filter
 ######################################
 
-.. automodule:: stages.despikingStage
+.. automodule:: filters.signalFilter

@@ -89,6 +89,7 @@ class GraphPane():
 			self.crossPlot.initialiseGraph()
 		self.graph.updateFocus(showRanges)
 		self.graph.hideInternalStandard()
+		self.graph.autorange()
 
 	def updateBkg(self):
 		if self.bkgGraph.populated:
@@ -121,15 +122,22 @@ class GraphWindow(QWidget):
 		"""
 		super().__init__()
 		self.project = project
-		self.graphs = {}
-		self.graphWins = []
-		self.graphLines = {}
+		self.sampleName = ""	
+		self.graph = None
 		self.highlightedAnalytes = []
 		self.currentInternalStandard = None
-		self.filts = {}
+		self.populated = False
+		
 
-		# dicts for storing {analyte: checkbox pairs}
+		# dicts for storing {analyte: checkbox pairs, analyte: pg.PlotDataItem pairs}
 		self.legendEntries = {}
+		self.filts = {}
+		self.graphLines = {}
+		self.graphErrorbars = {}
+		self.graphScatters = {}
+		self.graphLines = {}
+		self.graphHistograms = {}
+		self.graphFills = {}
 
 		self.layout = QHBoxLayout()
 
@@ -145,8 +153,10 @@ class GraphWindow(QWidget):
 		for k, v in kwargs.items():
 			print(k, v, type(v))
 
-	# convert hex to rgb colour
 	def hex_2_rgba(self, value, alpha=255):
+		"""
+			convert hex to rgb colour
+		"""
 		value = value.lstrip('#')
 		lv = len(value)
 		rgba = [int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3)] + [int(alpha)]
@@ -155,7 +165,9 @@ class GraphWindow(QWidget):
 		#return 'rgba(' + ','.join(srgba) + ')'
 
 	def initialiseSamples(self):
-		# Add list of samples to the layout
+		"""
+			Add list of samples to the layout
+		"""
 
 		samples = QWidget()
 		samplesLayout = QVBoxLayout()
@@ -184,10 +196,27 @@ class GraphWindow(QWidget):
 
 		self.yLogCheckBox = yLogCheckBox
 
+		autorangeButton = QPushButton('Centre Graph')
+		autorangeButton.clicked.connect(self.autorange)
+		samplesLayout.addWidget(autorangeButton)
+
+		self.autorangeButton = autorangeButton
+
+	def autorange(self):
+		"""
+			Recentres the graph window
+		"""
+		if self.graph != None:
+			self.graph.autoRange()
+
+	# to be implemented in child classes
 	def updateLogScale(self):
 		pass
 
 	def initialiseLegend(self):
+		"""
+			Generate default legend wigets and adds it to the graph layout
+		"""
 		# Add setting to the layout
 		setting = QWidget()
 		settingLayout = QGridLayout()
@@ -231,17 +260,10 @@ class GraphWindow(QWidget):
 
 		self.layout.addWidget(setting)
 
-	def save_all_button(self):
-		""" When the 'Save all' button is pressed we export all plots """
-		if self.project.eg is not None:
-			self.project.eg.trace_plots()
-			infoBox = QMessageBox.information(self.legend, "Export",
-											   "Your data plots have been saved as pdfs in the reports folder " +
-											   "created on import",
-											   QMessageBox.Ok)
-
 	def save_current_button(self):
-		""" When the 'save plot' button is pressed we export the current plot """
+		"""
+			When the 'Save all' button is pressed we export all plots
+		"""
 		if self.project.eg is not None:
 
 			# We make a list of analytes to include based on the checkboxes
@@ -250,22 +272,70 @@ class GraphWindow(QWidget):
 				if self.legendLayout.itemAt(item).widget().isChecked():
 					analyte_list.append(self.legendLayout.itemAt(item).widget().text())
 
-			print(analyte_list)
+			# We find the reports folder created on import to use as a default location for the save dialogue
+			reports_folder = self.project.dataLocation
+			if reports_folder[-1] == "/":
+				reports_folder = reports_folder[:-1]
+			reports_folder = reports_folder + "_reports"
+
+			# We bring up a dialogue to select the save directory
+			self.fileLocation = QFileDialog.getExistingDirectory(self.legend, 'Save report', reports_folder)
+			if self.fileLocation == "":
+				return
 
 			try:
-				self.project.eg.trace_plots(analytes=analyte_list, focus=self.project.eg.focus_stage)
+				self.project.eg.trace_plots(analytes=analyte_list,
+											samples=self.sampleList.currentItem().text(),
+											focus=self.project.eg.focus_stage,
+											outdir=self.fileLocation,
+											subset=None)
 				infoBox = QMessageBox.information(self.legend, "Export",
-												  "The current data plot has been saved as a pdf in the reports folder " +
-												  "created on import",
+												  "The current data plot has been saved as a pdf in the folder.",
 												  QMessageBox.Ok)
 			except:
-				pass
+				infoBox = QMessageBox.information(self.legend, "Export",
+												  "Encountered an error when attempting to export the plot.",
+												  QMessageBox.Ok)
 
+	def save_all_button(self):
+		"""
+			When the 'save plot' button is pressed we export the current plot
+		"""
+		if self.project.eg is not None:
+
+			# We make a list of analytes to include based on the checkboxes
+			analyte_list = []
+			for item in range(self.legendLayout.count()):
+				if self.legendLayout.itemAt(item).widget().isChecked():
+					analyte_list.append(self.legendLayout.itemAt(item).widget().text())
+
+			# We find the reports folder created on import to use as a default location for the save dialogue
+			reports_folder = self.project.dataLocation
+			if reports_folder[-1] == "/":
+				reports_folder = reports_folder[:-1]
+			reports_folder = reports_folder + "_reports"
+
+			# We bring up a dialogue to select the save directory
+			fileLocation = QFileDialog.getExistingDirectory(self.legend, 'Save report', reports_folder)
+			if fileLocation == "":
+				return
+
+			try:
+				self.project.eg.trace_plots(analytes=analyte_list,
+											focus=self.project.eg.focus_stage,
+											outdir=fileLocation)
+				infoBox = QMessageBox.information(self.legend, "Export",
+												  "The current data plots have been saved as pdfs in the folder.",
+												  QMessageBox.Ok)
+			except:
+				infoBox = QMessageBox.information(self.legend, "Export",
+												  "Encountered an error when attempting to export the plots.",
+												  QMessageBox.Ok)
 
 	# populate sample list
 	def populateSamples(self):
 		"""
-		Updates the list of available samples from the dataset viewable on the graph
+			Updates the list of available samples from the dataset viewable on the graph
 		"""
 
 		samples = self.project.eg.samples
@@ -278,7 +348,7 @@ class GraphWindow(QWidget):
 	# populate legend check-boxes
 	def populateLegend(self):
 		"""
-		Populate legend with all analytes
+			Populate legend with all analytes
 		"""
 		# clear legend Entries
 		for i in reversed(range(self.legendLayout.count())):
@@ -300,6 +370,9 @@ class GraphWindow(QWidget):
 		self.scroll.setWidget(self.legend)
 
 	def hideInternalStandard(self):
+		"""
+			Hides the analyte set as the internal standard from line graphs, and the legend
+		"""
 		if self.currentInternalStandard != None:
 			self.legendEntries[self.currentInternalStandard].show()
 			self.graphLines[self.currentInternalStandard].show()
@@ -315,6 +388,9 @@ class GraphWindow(QWidget):
 			self.graphLines[analyte].show()
 
 	def toggleLegendItems(self):
+		"""
+			Checks/unchecks all legend analytes
+		"""
 		for item in reversed(range(self.legendLayout.count())):
 			if self.legendLayout.itemAt(item).widget().isChecked():
 				self.legendLayout.itemAt(item).widget().setChecked(False)
@@ -323,17 +399,35 @@ class GraphWindow(QWidget):
 				if self.legendLayout.itemAt(item).widget().text() == self.currentInternalStandard:
 					self.hideInternalStandard()
 
+	def showGraph(self):
+		"""
+			Display graph window
+		"""
+		self.showNormal()
+
+
+class AnalyteGridGraph(GraphWindow):
+	def __init__(self, project):
+			"""	
+				Parent class for graphs that have a grid of graph, one for each analyte.
+
+			"""
+			super().__init__(project)
+			self.grids = {}
+			self.cells = {}
+
+		
+
 class MainGraph(GraphWindow):
 	"""
-	Widget that contains a PyQtGraph plot, all the settings that control it, and a new window button
-	that creates a clone graph
+		Widget that contains a PyQtGraph plot, and all the settings that control it.
 
 	"""
 	def __init__(self, project):
 		super().__init__(project)
 		self.showRanges = False
 		self.ranges = []
-		
+		self.graphWins = []
 
 		# By default the focus stage is 'rawdata'
 		self.focusStage = 'rawdata'
@@ -349,6 +443,7 @@ class MainGraph(GraphWindow):
 		pg.setConfigOption('background', self.backgroundColour)
 		pg.setConfigOption('foreground', 'k')
 		graph = pg.PlotWidget()
+		graph.hideButtons()
 
 		self.graphWins.append(graph)
 
@@ -360,7 +455,7 @@ class MainGraph(GraphWindow):
 	# create lines (only happens once)
 	def drawLines(self):
 		"""
-		Draw lines on graph for the first time.
+			Draw lines on graph for the first time.
 		"""
 		dat = self.project.eg.data[self.sampleName]
 
@@ -382,7 +477,7 @@ class MainGraph(GraphWindow):
 	# draw labels
 	def drawLabels(self):
 		"""
-		Draw axis labels, depending on self.focusStage
+			Draw axis labels, depending on self.focusStage
 		"""
 		ud = {'rawdata': 'counts',
               'despiked': 'counts',
@@ -402,7 +497,7 @@ class MainGraph(GraphWindow):
 	# function for setting all graph objects at initialisation
 	def initialiseGraph(self):
 		"""
-		Draw graph for the first time
+			Draw graph for the first time
 		"""
 		self.focusStage = self.project.eg.focus_stage
 
@@ -415,10 +510,17 @@ class MainGraph(GraphWindow):
 		# set sample in list - has to happen *after* lines are drawn
 		self.sampleList.setCurrentItem(self.sampleList.item(0))
 
-	# action when
+	def autorange(self):
+		"""
+			Recentres the main graph window
+		"""
+		for graph in self.graphWins:
+			graph.autoRange()
+
+	# update graph when swapping between samples
 	def swapSample(self):
 		"""
-		Grabs the name of the currently selected sample and passes it to the "updateGraphs" function
+			Grabs the name of the currently selected sample and passes it to the "updateGraphs" function
 		"""
 		# sets current sample to selected sample
 		selectedSamples = self.sampleList.selectedItems()
@@ -434,7 +536,7 @@ class MainGraph(GraphWindow):
 	# change between log/linear y scale
 	def updateLogScale(self):
 		"""
-		When log(y) checkbox is modified, update y-axis scale
+			When log(y) checkbox is modified, update y-axis scale
 		"""
 		for graph in self.graphWins:
 			graph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
@@ -443,7 +545,7 @@ class MainGraph(GraphWindow):
 	# action when legend check-boxes are changed
 	def legendStateChange(self, analyte):
 		"""
-		Actions to perform when legend check box changes state
+			Actions to perform when legend check box changes state
 		"""
 		# change line visibility
 		self.graphLines[analyte].setVisible(self.legendEntries[analyte].isChecked())
@@ -452,7 +554,7 @@ class MainGraph(GraphWindow):
 	
 	def updateLines(self):
 		"""
-		Update lines for new self.sampleName and/or self.focusStage
+			Update lines for new self.sampleName and/or self.focusStage
 		"""
 		dat = self.project.eg.data[self.sampleName]
 		for graph in self.graphWins:
@@ -481,7 +583,7 @@ class MainGraph(GraphWindow):
 	
 	def updateFocus(self, showRanges):
 		"""
-		Update graph for new focus stage. Focus-specific tasks should be included here.
+			Update graph for new focus stage. Focus-specific tasks should be included here.
 		"""
 		self.showRanges = showRanges
 		
@@ -491,12 +593,13 @@ class MainGraph(GraphWindow):
 		self.drawLabels()
 	
 	def onClickLine(self, analyte):
-		"""	This function is called when a line on the graph is clicked
+		"""	
+			This function is called when a line on the graph is clicked
 
 			Parameters
 			----------
-			item : pg.plotDataItem
-				The plotDataItem that was clicked
+			analyte : String
+				The analyte that was clicked
 
 		"""
 		if analyte in self.highlightedAnalytes:
@@ -515,11 +618,17 @@ class MainGraph(GraphWindow):
 			self.resetColours()
 	
 	def resetColours(self):
+		"""
+			Resets all graph lines and legend entries to default stylings
+		"""
 		for a in self.project.eg.analytes:
 			self.graphLines[a].curve.setPen(pg.mkPen(self.project.eg.cmaps[a], width=2))
 			self.legendEntries[a].setStyleSheet("color: {:s}".format(self.project.eg.cmaps[a]))
 
 	def addRegion(self, targetGraph, lims, brush):
+		"""
+			Adds highlight region to graph with given ranges and brush
+		"""
 		region = pg.LinearRegionItem(values=lims, brush=brush, movable=False)
 		region.lines[0].setPen(pg.mkPen((0,0,0,0)))
 		region.lines[1].setPen(pg.mkPen((0,0,0,0)))
@@ -527,6 +636,9 @@ class MainGraph(GraphWindow):
 		targetGraph.addItem(region)
 
 	def applyFilters(self):
+		"""
+			Using filtering data to grey out segments of the line graph
+		"""
 		dat = self.project.eg.data[self.sampleName]
 		for graph in self.graphWins:
 			for analyte in dat.analytes:
@@ -553,9 +665,6 @@ class MainGraph(GraphWindow):
 					graph.addItem(line)
 					self.filts[analyte] = line
 			self.hideInternalStandard()
-
-
-		
 		
 class BkgGraph(GraphWindow):
 	"""
@@ -563,9 +672,6 @@ class BkgGraph(GraphWindow):
 	"""
 	def __init__(self, project, err='stderr'):
 		super().__init__(project)
-		self.bkgScatters = {}
-		self.bkgLines = {}
-		self.bkgFills = {}
 		self.bkgSamplelines = {}
 		self.highlightRegions = {}
 		self.err = err
@@ -578,6 +684,7 @@ class BkgGraph(GraphWindow):
 		# Create graph
 		graph = pg.PlotWidget()
 		graph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
+		graph.hideButtons()
 
 		self.graph = graph
 
@@ -591,12 +698,13 @@ class BkgGraph(GraphWindow):
 			Clears the elements in the graph, populates the samples list and legend with items
 		"""
 		self.populated = False
-		for graph in self.graphWins:
-			graph.clear()
 		self.populateSamples()
 		self.populateLegend()
 
 	def getDatapoints(self, dat, analyte):
+		"""
+			Retrieve data points from LaTools Data object
+		"""
 		sy = dat.bkg['raw'].loc[:, analyte]
 
 		x = dat.bkg['calc']['uTime']
@@ -624,13 +732,13 @@ class BkgGraph(GraphWindow):
 			# Add items to graph
 
 			scatter = pg.ScatterPlotItem(dat.bkg['raw'].uTime, datapoints[0], pen=None, brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 127)), size=3)
-			self.bkgScatters[analyte] = scatter
+			self.graphScatters[analyte] = scatter
 
 			line = pg.PlotDataItem(datapoints[1], datapoints[2], pen=pg.mkPen(dat.cmaps[analyte], width=2), label=analyte, name=analyte, connect='finite')
-			self.bkgLines[analyte] = line
+			self.graphLines[analyte] = line
 
 			fill = pg.FillBetweenItem(pg.PlotDataItem(datapoints[1], datapoints[3], pen=pg.mkPen(0,0,0,0)), pg.PlotDataItem(datapoints[1], datapoints[4], pen=pg.mkPen(0,0,0,0)), brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 204)))
-			self.bkgFills[analyte] = fill
+			self.graphFills[analyte] = fill
 
 			self.graphLines[analyte] = (scatter, line, fill)
 
@@ -658,20 +766,14 @@ class BkgGraph(GraphWindow):
 			datapoints = self.getDatapoints(dat, analyte)
 
 			# Update graph data
-			self.bkgScatters[analyte].setData(dat.bkg['raw'].uTime, datapoints[0])
-			self.bkgLines[analyte].setData(datapoints[1], datapoints[2])
-			self.bkgFills[analyte].setCurves(pg.PlotDataItem(datapoints[1], datapoints[3], pen=pg.mkPen(0,0,0,0)), pg.PlotDataItem(datapoints[1], datapoints[4], pen=pg.mkPen(0,0,0,0)))
+			self.graphScatters[analyte].setData(dat.bkg['raw'].uTime, datapoints[0])
+			self.graphLines[analyte].setData(datapoints[1], datapoints[2])
+			self.graphFills[analyte].setCurves(pg.PlotDataItem(datapoints[1], datapoints[3], pen=pg.mkPen(0,0,0,0)), pg.PlotDataItem(datapoints[1], datapoints[4], pen=pg.mkPen(0,0,0,0)))
 		
 		# Update highlight region data
 		for s, d in dat.data.items():
 			self.highlightRegions[s].setRegion((d.uTime[0], d.uTime[-1]))
 			self.bkgSamplelines[d].setValue(d.uTime[0])
-
-	def showGraph(self):
-		"""
-			Display graph window
-		"""
-		self.showNormal()
 
 	# populate sample list
 	def populateSamples(self):
@@ -716,17 +818,15 @@ class BkgGraph(GraphWindow):
 		for item in self.graphLines[analyte]:
 			item.setVisible(self.legendEntries[analyte].isChecked())
 
-		for graph in self.graphWins:
-			box = graph.getViewBox()
-			box.update()
+		box = self.graph.getViewBox()
+		box.update()
 
 	# change between log/linear y scale
 	def updateLogScale(self):
 		"""
 			When log(y) checkbox is modified, update y-axis scale
 		"""
-		for graph in self.graphWins:
-			graph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
+		self.graph.setLogMode(x=False, y=self.yLogCheckBox.isChecked())
 		self.populateGraph()
 
 	def addRegion(self, name, targetGraph, lims, brush):
@@ -752,7 +852,7 @@ class BkgGraph(GraphWindow):
 		self.highlightRegions[name] = region
 		targetGraph.addItem(region)
 
-class CaliGraph(GraphWindow):
+class CaliGraph(AnalyteGridGraph):
 	"""
 		Openable window from the Calibration stage. Graphs all analytes calibrated to the internal standard
 	"""
@@ -760,16 +860,10 @@ class CaliGraph(GraphWindow):
 		super().__init__(project)
 		self.loglog = loglog
 
-		self.cells = {}
 		self.errPlots = {}
-		self.errorbars = {}
-		self.caliScatters = {}
-		self.analyteTexts = {}
 		self.histPlots = {}
-		self.histograms = {}
+		self.analyteTexts = {}
 		self.eqTexts = {}
-
-		self.populated = False
 
 		# Create scollable area that holds all the elements of the window
 		scroll = QScrollArea()
@@ -916,14 +1010,14 @@ class CaliGraph(GraphWindow):
 				pen=pg.mkPen(self.hex_2_rgba(dat.cmaps[analyte], 153), width=2),
 				beam=0)
 			
-				self.errorbars[(row, i)] = errorbar
+				self.graphErrorbars[(row, i)] = errorbar
 				errPlot.addItem(errorbar)
 
 				scatter = pg.ScatterPlotItem(x=meas_mean,
 				y=srm_mean,
 				pen=None, brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 153)), size=8)
 				
-				self.caliScatters[(row, i)] = scatter
+				self.graphScatters[(row, i)] = scatter
 				errPlot.addItem(scatter)
 
 				errViewbox.setRange(xRange=xlim, yRange=ylim, disableAutoRange=True)
@@ -951,7 +1045,7 @@ class CaliGraph(GraphWindow):
 
 				hist = pg.PlotDataItem(hx, hy, stepMode=True, fillLevel=0, brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 127)), pen=pg.mkPen(color=self.hex_2_rgba(dat.cmaps[analyte], 127), width=0.5))
 				
-				self.histograms[(row, i)] = hist
+				self.graphHistograms[(row, i)] = hist
 				histPlot.addItem(hist)
 
 				hist.rotate(90)
@@ -963,13 +1057,13 @@ class CaliGraph(GraphWindow):
 				errPlot.addItem(eqText)
 
 			else:
-				self.errorbars[(row, i)].setData(x=meas_mean,
+				self.graphErrorbars[(row, i)].setData(x=meas_mean,
 				y=srm_mean,
 				width=meas_err,
 				height=srm_err,
 				pen=pg.mkPen(self.hex_2_rgba(dat.cmaps[analyte], 153)))
 
-				self.caliScatters[(row, i)].setData(x=meas_mean,
+				self.graphScatters[(row, i)].setData(x=meas_mean,
 				y=srm_mean,
 				brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 153)))
 
@@ -977,7 +1071,7 @@ class CaliGraph(GraphWindow):
 				line,
 				pen=pg.mkPen(color=self.hex_2_rgba(dat.cmaps[analyte], 127), style=Qt.DashLine, width=2))
 
-				self.histograms[(row, i)].setData(x=hx,
+				self.graphHistograms[(row, i)].setData(x=hx,
 				y=hy,
 				brush=pg.mkBrush(self.hex_2_rgba(dat.cmaps[analyte], 127)),
 				pen=pg.mkPen(color=self.hex_2_rgba(dat.cmaps[analyte], 127), width=0.5))
@@ -997,7 +1091,7 @@ class CaliGraph(GraphWindow):
 						errViewbox.setRange(yRange=ylim)
 
 				if self.loglog:
-					self.histograms[(row, i)].setLogMode(xMode=False, yMode=True)
+					self.graphHistograms[(row, i)].setLogMode(xMode=False, yMode=True)
 				histViewbox.setRange(yRange=ylim) # ylim of histogram axis
 				errViewbox.setRange(yRange=ylim) # ylim of calibration axis
 				histViewbox.invertX(True)
@@ -1030,13 +1124,7 @@ class CaliGraph(GraphWindow):
 		self.populated = True
 		self.scroll.setWidget(self.graph)
 
-	def showGraph(self):
-		"""
-			Display graph window
-		"""
-		self.showNormal()
-
-class Crossplot(GraphWindow):
+class Crossplot(AnalyteGridGraph):
 	def __init__(self, project):
 		super().__init__(project)
 		self.lognorm = True
@@ -1045,15 +1133,12 @@ class Crossplot(GraphWindow):
 		self.subset = None
 		self.colourful = True
 
-		self.cells = {}
 		self.labels = {}
-		self.current = None
-
-		self.populated = False
 
 		# Initialise samples menu
 		self.initialiseSamples()
 		self.yLogCheckBox.hide()
+		self.autorangeButton.hide()
 
 		filtCheckBox = QCheckBox()
 		filtCheckBox.setMaximumWidth(100)
@@ -1062,14 +1147,6 @@ class Crossplot(GraphWindow):
 		filtCheckBox.stateChanged.connect(self.updateFilt)
 		self.filtCheckBox = filtCheckBox
 		self.samplesLayout.addWidget(filtCheckBox)
-
-		scatterCheckBox = QCheckBox()
-		scatterCheckBox.setMaximumWidth(100)
-		scatterCheckBox.setText('scatter')
-		scatterCheckBox.setChecked(False)
-		scatterCheckBox.stateChanged.connect(self.updateScatter)
-		self.scatterCheckBox = scatterCheckBox
-		self.samplesLayout.addWidget(scatterCheckBox)
 
 		self.setWindowTitle("LAtools Crossplot")
 
@@ -1087,22 +1164,27 @@ class Crossplot(GraphWindow):
 		self.populateSamples()
 
 	def startup(self):
+		"""
+			Generate holder widget to houses the various crossplots, add all samples crossplot as default
+		"""
 		self.sampleName = self.sampleList.item(0).text()
 		self.sampleList.setCurrentItem(self.sampleList.item(0))
 		if not self.populated:
 			self.createCrossplot()
-			#print(self.sampleName+str(self.filtCheckBox.isChecked())+str(self.scatterCheckBox.isChecked()))
 			holder = QWidget()
 			holderLayout = QHBoxLayout(holder)
 			self.holderLayout = holderLayout
 			self.scrollMain.setWidget(holder)
-			self.current = self.graphs[self.sampleName+'False'+str(self.scatterCheckBox.isChecked())]['grid']
-			self.holderLayout.addWidget(self.current)
+			self.graph = self.grids[self.sampleName+'False']['grid']
+			self.holderLayout.addWidget(self.graph)
 			self.populated = True
 	
 	def createCrossplot(self):
-		key = self.sampleName+str(self.filtCheckBox.isChecked())+str(self.scatterCheckBox.isChecked())
-		if not key in self.graphs:
+		"""
+			If non-existant, generate a crossplot based of the currently selected sample
+		"""
+		key = self.sampleName+str(self.filtCheckBox.isChecked())
+		if not key in self.grids:
 			dat = self.project.eg
 			cmap = dat.cmaps
 
@@ -1115,155 +1197,117 @@ class Crossplot(GraphWindow):
 			else:
 				cmlist = ['Greys']
 
-			# determine normalisation shceme
-			if self.lognorm:
-				norm = True
-			else:
-				norm = False
-
-
 			#AnalyteObject
 
 			grid = self.initialiseGrid(key)
 
 			if self.sampleName == "ALL":
-				self.createCrossplotAll(key, dat, cmap, cmlist, norm, grid)
+				self.createCrossplotAll(key, dat, cmap, cmlist, grid)
 			else:
-				self.createCrossplotDat(key, dat, cmap, cmlist, norm, grid)
+				self.createCrossplotDat(key, dat, cmap, cmlist, grid)
 
-	def createCrossplotAll(self, key, dat, cmap, cmlist, norm,  grid):
-			analytes = dat.analytes
-			if dat.focus_stage in ['ratio', 'calibrated']:
-				analytes = [a for a in analytes if dat.internal_standard not in a]
-			# sort analytes
-			try:
-				analytes = sorted(analytes, key=lambda x: float(re.findall('[0-9.-]+', x)[0]))
-			except IndexError:
-				analytes = sorted(analytes)
+	def createCrossplotAll(self, key, dat, cmap, cmlist,  grid):
+		"""
+			Generate crossplot spanning all samples
+		"""
+		analytes = dat.analytes
+		if dat.focus_stage in ['ratio', 'calibrated']:
+			analytes = [a for a in analytes if dat.internal_standard not in a]
+		# sort analytes
+		try:
+			analytes = sorted(analytes, key=lambda x: float(re.findall('[0-9.-]+', x)[0]))
+		except IndexError:
+			analytes = sorted(analytes)
 
-			dat.get_focus(filt=self.filtCheckBox.isChecked(), samples=self.samples, subset=self.subset)
+		dat.get_focus(filt=self.filtCheckBox.isChecked(), samples=self.samples, subset=self.subset)
 
-			numvars = len(analytes)
-			"""
-			fig, axes = plt.subplots(nrows=numvars, ncols=numvars,
-									figsize=(12, 12))
-			fig.subplots_adjust(hspace=0.05, wspace=0.05)
+		numvars = len(analytes)
 
-			for ax in axes.flat:
-				ax.xaxis.set_visible(False)
-				ax.yaxis.set_visible(False)
+		if cmap is None and self.mode == 'scatter':
+			cmap = {k: 'k' for k in dat.analytes()}
 
-				if ax.is_first_col():
-					ax.yaxis.set_ticks_position('left')
-				if ax.is_last_col():
-					ax.yaxis.set_ticks_position('right')
-				if ax.is_first_row():
-					ax.xaxis.set_ticks_position('top')
-				if ax.is_last_row():
-					ax.xaxis.set_ticks_position('bottom')
-			"""
+		while len(cmlist) < len(analytes):
+			cmlist *= 2
 
-			if cmap is None and self.mode == 'scatter':
-				cmap = {k: 'k' for k in dat.analytes()}
+		# isolate nominal_values for all analytes
+		focus = {k: helpers.stat_fns.nominal_values(dat.focus[k]) for k in analytes}
+		# determine units for all analytes
+		udict = {a: helpers.helpers.unitpicker(np.nanmean(focus[a]),
+							focus_stage=dat.focus_stage,
+							denominator=dat.internal_standard) for a in analytes}
 
-			while len(cmlist) < len(analytes):
-				cmlist *= 2
+		axes = np.zeros((numvars, numvars))
+		
+		for i, j in zip(*np.triu_indices_from(axes, k=1)):
+			# get analytes
+			ai = analytes[i]
+			aj = analytes[j]
 
-			# isolate nominal_values for all analytes
-			focus = {k: helpers.stat_fns.nominal_values(dat.focus[k]) for k in analytes}
-			# determine units for all analytes
-			udict = {a: helpers.helpers.unitpicker(np.nanmean(focus[a]),
-								focus_stage=dat.focus_stage,
-								denominator=dat.internal_standard) for a in analytes}
+			# remove nan, apply multipliers
+			pi = focus[ai] * udict[ai][0]
+			pj = focus[aj] * udict[aj][0]
 
-			axes = np.zeros((numvars, numvars))
+			# draw plots
+
+			# remove nan
+			pi = pi[~np.isnan(pi)]
+			pj = pj[~np.isnan(pj)]
 			
-			for i, j in zip(*np.triu_indices_from(axes, k=1)):
-				# get analytes
-				ai = analytes[i]
-				aj = analytes[j]
+			h = np.histogram2d(pj, pi, self.bins, normed = self.lognorm)
+			item = pg.ImageItem(image=h[0], autoLevels=True)
+			view1 = pg.GraphicsView()
+			box = pg.ViewBox()
+			box.setMouseEnabled(False, False)
+			box.addItem(item)
+			box.setAspectLocked(False)
+			box.setRange(xRange=[0, h[0].shape[0]], yRange=[0, h[0].shape[1]])
+			view1.setCentralItem(box)
 
-				# remove nan, apply multipliers
-				pi = focus[ai] * udict[ai][0]
-				pj = focus[aj] * udict[aj][0]
+			self.cells[(key, (i, j))] = box
+			
 
-				# draw plots
-				if not self.scatterCheckBox.isChecked():
-					# remove nan
-					pi = pi[~np.isnan(pi)]
-					pj = pj[~np.isnan(pj)]
-					
-					h = np.histogram2d(pj, pi, self.bins, normed = norm)
-					item = pg.ImageItem(image=h[0], autoLevels=True)
-					view1 = pg.GraphicsView()
-					box = pg.ViewBox()
-					box.setMouseEnabled(False, False)
-					box.addItem(item)
-					box.setAspectLocked(False)
-					box.setRange(xRange=[0, h[0].shape[0]], yRange=[0, h[0].shape[1]])
-					view1.setCentralItem(box)
+			h = np.histogram2d(pi, pj, self.bins, normed = self.lognorm)
+			item = pg.ImageItem(image=h[0])
+			view2 = pg.GraphicsView()
+			box = pg.ViewBox()
+			box.setMouseEnabled(False, False)
+			box.addItem(item)
+			box.setAspectLocked(False)
+			box.setRange(xRange=[0, h[0].shape[0]], yRange=[0, h[0].shape[1]])
+			view2.setCentralItem(box)
 
-					self.cells[(key, (i, j))] = box
-					
+			self.cells[(key, (j, i))] = box
 
-					h = np.histogram2d(pi, pj, self.bins, normed = norm)
-					item = pg.ImageItem(image=h[0])
-					view2 = pg.GraphicsView()
-					box = pg.ViewBox()
-					box.setMouseEnabled(False, False)
-					box.addItem(item)
-					box.setAspectLocked(False)
-					box.setRange(xRange=[0, h[0].shape[0]], yRange=[0, h[0].shape[1]])
-					view2.setCentralItem(box)
-
-					self.cells[(key, (j, i))] = box
-
-					grid['gridLayout'].addWidget(view1, i, j)
-					grid['gridLayout'].addWidget(view2, j, i)
-
-				else:
-					pass
-					"""
-					axes[i, j].scatter(pj, pi, s=10,
-									c=cmap[ai], lw=0.5, edgecolor='k',
-									alpha=0.4)
-					axes[j, i].scatter(pi, pj, s=10,
-									c=cmap[aj], lw=0.5, edgecolor='k',
-									alpha=0.4)
-					"""
+			grid['gridLayout'].addWidget(view1, i, j)
+			grid['gridLayout'].addWidget(view2, j, i)
 
 
-			# diagonal labels
-			for a, n in zip(analytes, np.arange(len(analytes))):
-				a2 = udict[a][1]
-				a2 = a2.replace("$^{", "<sup>")
-				a2 = a2.replace("}$", "</sup>")
-				a2 = a2.replace("$\\mu$", "&mu;")
 
-				item = pg.TextItem(anchor=(0.5,0.5), html='<div style="text-align: center"><span style="color: #000;font-size:8em;">%(txt)s</span></div>'%{"txt": a + '<br />' + a2})
-				view = pg.GraphicsView()
-				box = pg.ViewBox()
-				box.autoRange()
-				box.setMouseEnabled(False, False)
-				box.addItem(item)
-				item.setPos(0.5, 0.5)
-				view.setCentralItem(box)
+		# diagonal labels
+		for a, n in zip(analytes, np.arange(len(analytes))):
+			a2 = udict[a][1]
+			a2 = a2.replace("$^{", "<sup>")
+			a2 = a2.replace("}$", "</sup>")
+			a2 = a2.replace("$\\mu$", "&mu;")
 
-				self.labels[(key, n)] = item
-				self.cells[(key, (n, n))] = box
-				grid['gridLayout'].addWidget(view, n, n)
+			item = pg.TextItem(anchor=(0.5,0.5), html='<div style="text-align: center"><span style="color: #000;font-size:8em;">%(txt)s</span></div>'%{"txt": a + '<br />' + a2})
+			view = pg.GraphicsView()
+			box = pg.ViewBox()
+			box.autoRange()
+			box.setMouseEnabled(False, False)
+			box.addItem(item)
+			item.setPos(0.5, 0.5)
+			view.setCentralItem(box)
 
-			"""
-			# switch on alternating axes
-			for i, j in zip(range(numvars), itertools.cycle((-1, 0))):
-				axes[j, i].xaxis.set_visible(True)
-				for label in axes[j, i].get_xticklabels():
-					label.set_rotation(90)
-				axes[i, j].yaxis.set_visible(True)
-			"""
+			self.labels[(key, n)] = item
+			self.cells[(key, (n, n))] = box
+			grid['gridLayout'].addWidget(view, n, n)
 
 
-	def createCrossplotDat(self, key, dat, cmap, cmlist, norm, grid):
+	def createCrossplotDat(self, key, dat, cmap, cmlist, grid):
+		"""
+			Generate crossplot for the specified sample
+		"""
 		
 		#DatObject
 		sampleObj = dat.data[self.sampleName]
@@ -1288,22 +1332,19 @@ class Crossplot(GraphWindow):
 									denominator=dat.internal_standard,
 									focus_stage=dat.focus_stage)
 				udict[analytes[x]] = (x, ux)
-				#print(sampleObj.filt.grab_filt(self.filtCheckBox.isChecked(), analytes[x]))
-				#print(helpers.stat_fns.nominal_values(sampleObj.focus[analytes[x]]))
+
 				# get filter
 				ind = (sampleObj.filt.grab_filt(self.filtCheckBox.isChecked(), analytes[x]) &
 					sampleObj.filt.grab_filt(self.filtCheckBox.isChecked(), analytes[y]) &
 					~np.isnan(helpers.stat_fns.nominal_values(sampleObj.focus[analytes[x]])) &
 					~np.isnan(helpers.stat_fns.nominal_values(sampleObj.focus[analytes[y]])))
 
-				#print(ind)
-
 				# make plot
 				pi = helpers.stat_fns.nominal_values(sampleObj.focus[analytes[x]][ind]) * mx
 				pj = helpers.stat_fns.nominal_values(sampleObj.focus[analytes[y]][ind]) * my
 
 				# draw plots
-				h = np.histogram2d(pj, pi, self.bins, normed = norm)
+				h = np.histogram2d(pj, pi, self.bins, normed = self.lognorm)
 				item = pg.ImageItem(image=h[0], autoLevels=True)
 				view1 = pg.GraphicsView()
 				box = pg.ViewBox()
@@ -1316,7 +1357,7 @@ class Crossplot(GraphWindow):
 				self.cells[(key, (i, j))] = box
 				
 
-				h = np.histogram2d(pi, pj, self.bins, normed = norm)
+				h = np.histogram2d(pi, pj, self.bins, normed = self.lognorm)
 				item = pg.ImageItem(image=h[0])
 				view2 = pg.GraphicsView()
 				box = pg.ViewBox()
@@ -1350,21 +1391,11 @@ class Crossplot(GraphWindow):
 			self.labels[(key, i)] = item
 			self.cells[(key, (i, i))] = box
 			grid['gridLayout'].addWidget(view, i, i)
-		
-		"""
-		# switch on alternating axes
-		for i, j in zip(range(numvars), itertools.cycle((-1, 0))):
-			axes[j, i].xaxis.set_visible(True)
-			for label in axes[j, i].get_xticklabels():
-				label.set_rotation(90)
-			axes[i, j].yaxis.set_visible(True)
-
-		axes[0, 0].set_title(self.sample, weight='bold', x=0.05, ha='left')
-		"""
-
-		
 
 	def initialiseGrid(self, key):
+		"""
+			Creates a grid widget with default settings
+		"""
 		# Initialise Grid that contains all the analyte graphs
 		grid = QWidget()
 		gridLayout = QGridLayout()
@@ -1376,7 +1407,7 @@ class Crossplot(GraphWindow):
 
 		grid = { 'grid': grid, 'gridLayout': gridLayout}
 
-		self.graphs[key] = grid
+		self.grids[key] = grid
 
 		return grid
 	
@@ -1405,37 +1436,21 @@ class Crossplot(GraphWindow):
 
 		if self.populated:
 			self.createCrossplot()
-			self.current.setParent(None)
-			self.current = self.graphs[self.sampleName+'False'+str(self.scatterCheckBox.isChecked())]['grid']
-			self.holderLayout.addWidget(self.current)
+			self.graph.setParent(None)
+			self.graph = self.grids[self.sampleName+'False']['grid']
+			self.holderLayout.addWidget(self.graph)
 
 	def updateFilt(self):
+		"""
+			Generates a crossplot reflecting whether the filt checkbox is ticked or not
+		"""
 		if not self.filtCheckBox.isChecked():
 			self.createCrossplot()
-			self.current.setParent(None)
-			self.current = self.graphs[self.sampleName+'False'+str(self.scatterCheckBox.isChecked())]['grid']
-			self.holderLayout.addWidget(self.current)
+			self.graph.setParent(None)
+			self.graph = self.grids[self.sampleName+'False']['grid']
+			self.holderLayout.addWidget(self.graph)
 		else:
 			self.createCrossplot()
-			self.current.setParent(None)
-			self.current = self.graphs[self.sampleName+'True'+str(self.scatterCheckBox.isChecked())]['grid']
-			self.holderLayout.addWidget(self.current)
-
-
-	def updateScatter(self):
-		if not self.scatterCheckBox.isChecked():
-			self.createCrossplot()
-			self.current.setParent(None)
-			self.current = self.graphs[self.sampleName+'False'+str(self.scatterCheckBox.isChecked())]['grid']
-			self.holderLayout.addWidget(self.current)
-		elif self.sampleName == "ALL":
-			self.createCrossplot()
-			self.current.setParent(None)
-			self.current = self.graphs[self.sampleName+'True'+str(self.scatterCheckBox.isChecked())]['grid']
-			self.holderLayout.addWidget(self.current)
-
-	def showGraph(self):
-		"""
-			Display graph window
-		"""
-		self.showNormal()
+			self.graph.setParent(None)
+			self.graph = self.grids[self.sampleName+'True']['grid']
+			self.holderLayout.addWidget(self.graph)

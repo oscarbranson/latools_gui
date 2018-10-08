@@ -10,8 +10,6 @@ import ast
 import sys
 import os
 
-
-from project.ErrLogger import logged
 import logging
 
 class AutorangeStage():
@@ -21,7 +19,7 @@ class AutorangeStage():
 	project.
 	"""
 	#@logged
-	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, autorangeWidget, project, guideDomain):
+	def __init__(self, stageLayout, graphPaneObj, progressPaneObj, autorangeWidget, project, links):
 		"""
 		Initialising creates and customises a Controls Pane for this stage.
 
@@ -34,16 +32,24 @@ class AutorangeStage():
 			updates t the graph, produced by the processing defined in the stage.
 		progressPaneObj : ProgressPane
 			A reference to the Progress Pane so that the right button can be enabled by completing the stage.
+		autorangeWidget : QWidget
+			The parent widget for this object. Used mainly for displaying error boxes.
 		project : RunningProject
 			A reference to the project object which contains all of the information unique to this project,
 			including the latools analyse object that the stages will update.
+		links : (str, str, str)
+			links[0] = The User guide website domain
+			links[1] = The web link for reporting an issue
+			links[2] = The tooltip for the report issue button
 		"""
 		self.graphPaneObj = graphPaneObj
 		self.progressPaneObj = progressPaneObj
 		self.autorangeWidget = autorangeWidget
 		self.project = project
-		self.guideDomain = guideDomain
+		self.guideDomain = links[0]
+		self.reportIssue = links[1]
 
+		# We create a controls pane object which covers the general aspects of the stage's controls pane
 		self.stageControls = controlsPane.ControlsPane(stageLayout)
 
 		# We capture the default parameters for this stage's function call
@@ -143,6 +149,12 @@ class AutorangeStage():
 		self.guideButton.clicked.connect(self.userGuide)
 		self.stageControls.addDefaultButton(self.guideButton)
 
+		# We create a button to link to the form for reporting an issue
+		self.reportButton = QPushButton("Report an issue")
+		self.reportButton.clicked.connect(self.reportButtonClick)
+		self.stageControls.addDefaultButton(self.reportButton)
+		self.reportButton.setToolTip(links[2])
+
 		# We create the button for the right-most section of the Controls Pane.
 		self.applyButton = QPushButton("APPLY")
 		self.applyButton.clicked.connect(self.pressedApplyButton)
@@ -150,7 +162,6 @@ class AutorangeStage():
 
 		# Initializing the logger
 		self.logger = logging.getLogger(__name__)
-
 
 		#Validators
 		self.gwinEdit.setValidator(QIntValidator())
@@ -218,14 +229,7 @@ class AutorangeStage():
 		# The actual call to the analyse object for this stage is run, using the stage values as parameters
 		try:
 
-			# Logging the values
-			self.logger.info('Executing stage Import with stage variables: [Analyte]:{}\n[gwin]:{}\n[swin]:{}\n[win]:'
-							 '{}\n[on_mult]:{}\n[off_mult]:{}\n'.format( self.analyteBox.currentText(),
-																			       localGwin,
-																			       localSwin,
-																			       localWin,
-																			       localOn_mult,
-																			       localOff_mult))
+		
 			self.project.eg.autorange(analyte=self.analyteBox.currentText(),
 								gwin=localGwin,
 								swin=localSwin,
@@ -235,6 +239,16 @@ class AutorangeStage():
 								#nbin=localNbin,
 								transform=self.logTransformCheck.isChecked())
 		except:
+			for l in self.project.eg.log:
+				self.logger.error(l)
+			# Logging the values
+			self.logger.error('Executing stage Autorange with stage variables: [Analyte]:{}\n[gwin]:{}\n[swin]:{}\n[win]:'
+							 '{}\n[on_mult]:{}\n[off_mult]:{}\n'.format( self.analyteBox.currentText(),
+													localGwin,
+													localSwin,
+													localWin,
+													localOn_mult,
+													localOff_mult))
 			self.logger.exception("Exception in autorange stage:")
 			self.raiseError("A problem occurred. There may be a problem with the input values.")
 			return
@@ -274,8 +288,16 @@ class AutorangeStage():
 		self.pressedApplyButton()
 
 	def fillValues(self, params):
-		""" Fills the stage parameters from a given dictionary """
+		"""
+		Fills the stage parameters from a given dictionary
 
+		Parameters
+			----------
+			params : dict
+				The key-word arguments of the stage call, saved in the lalog file.
+		"""
+
+		# The keyword arguments are added to the control fields
 		if params is not None:
 			self.analyteBox.setCurrentText(params.get("analyte", "total_counts"))
 			self.gwinEdit.setText(str(params.get("gwin", 5)))
@@ -296,7 +318,7 @@ class AutorangeStage():
 
 	#@logged
 	def defaultButtonPress(self):
-
+		""" Returns the option values to their default states """
 		params = {
 			"analyte": self.defaultParams["analyte"],
 			"gwin": self.defaultParams["gwin"],
@@ -311,3 +333,7 @@ class AutorangeStage():
 	def userGuide(self):
 		""" Opens the online user guide to a particular page for the current stage """
 		self.stageControls.userGuide(self.guideDomain + "LAtoolsGUIUserGuide/users/05-autorange.html")
+
+	def reportButtonClick(self):
+		""" Links to the online form for reporting an issue """
+		self.stageControls.reportIssue(self.reportIssue)
