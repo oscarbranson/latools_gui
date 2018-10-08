@@ -5,7 +5,7 @@ In this stage, you will 'despike' the raw data to remove physically unrealistic 
 
 In this tutorial, we will apply both despiking methods.
 
-.. tip:: You can skip this step if you wish by simply clicking on the :guilabel:`&->` or the Autorange tab.
+.. tip:: You may skip this step if you believe your data contains no anomalous values - just click the :guilabel:`&->` or the Autorange tab.
 
 
 Exponential decay despiker
@@ -14,16 +14,16 @@ Exponential decay despiker
 :guilabel:`&Cell Washout Despiking` removes all the low outliers in your data, based on the signal washout time of your laser cell. The signal washout is described using an exponential decay function. If the measured signal decreases faster than physically possible based on your laser setup, these points are removed, and replaced with the average of the adjacent values. The following list details the different parameters this function uses.
 
 * Exponent
-    If you know the exponential decay constant that describes the washout characteristics of your laser ablation cell, you can enter this value in the :guilabel:`&Washout Exponent` dialogue box. If you do not know this value, leave the :guilabel:`&Washout Exponent` dialogue box blank. ``latools`` will automatically calculate it for you by fitting an exponential decay function to the washout phase of measured SRMs in your data. The value will be displayed in the :guilabel:`&Washout Exponent` dialogue box.
+    If you know the exponential decay constant that describes the washout characteristics of your laser ablation cell, you can enter this value in the :guilabel:`&Washout Exponent` input field. If you do not know this value, leave the :guilabel:`&Washout Exponent` input field blank. ``latools`` will automatically calculate it for you by fitting an exponential decay function to the washout phase of measured SRMs in your data. The value will be displayed in the :guilabel:`&Washout Exponent` input field.
 
 .. can we show that value?
 
 To apply this method, tick the :guilabel:`&Cell Washout Despiking` check box, change any parameters as necessary (in this tutorial, we will change none), then click :guilabel:`&APPLY`.
 
 .. image:: gifs/04-cellwashout.gif
-        :width: 689px
-        :height: 496px
-        :scale: 100 %
+        :width: 1275px
+        :height: 760px
+        :scale: 50 %
         :alt: cell washout despiking
         :align: center
 
@@ -45,10 +45,10 @@ Noise Despiker
 To apply the exponential decay despike, tick the :guilabel:`&Signal Smoothing` check box, change any parameters you require (in this tutorial, we will change none), then click :guilabel:`&APPLY`.
 
 .. image:: gifs/04-signalsmoothing.gif
-        :width: 689px
-        :height: 496px
-        :scale: 100 %
+        :width: 1275px
+        :height: 760px
+        :scale: 50 %
         :alt: cell washout despiking
         :align: center
 
-.. tip:: You can apply both filters at the same time by checking both boxes and then clicking :guilabel:`&APPLY`
+.. tip:: You can apply both filters at the same time by checking both boxes and then clicking :guilabel:`&APPLY`. This will apply the Exponential Decay Spiker first, followed by the Noise Despiker.

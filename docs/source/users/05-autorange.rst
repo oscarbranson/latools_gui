@@ -3,13 +3,13 @@ Stage 3. Autorange
 In this stage, you will identify and separate background and signal regions in your data. For this tutorial, we will use the default settings. To do this, simply click :guilabel:`&APPLY`. Both signal (shaded grey) and noise (shaded red) regions will be identified in the graphing panel.
 
 .. image:: gifs/05-autorange.gif
-        :width: 689px
-        :height: 496px
-        :scale: 100 %
+        :width: 1275px
+        :height: 760px
+        :scale: 50 %
         :alt: autorange
         :align: center
 
-There are several parameters that can be modified to subtly alter the behaviour of this function. However, in testing the automatic separation proved remarkably robust, and you should not have to change these parameters much. If you would like to know more about these parameters, see :ref:`Parameters`.
+There are several parameters that can be modified to subtly alter the behaviour of this function. **However, in testing the automatic separation proved remarkably robust, and you should not have to change these parameters much**. If you would like to know more about these parameters, see :ref:`Parameters`.
 
 
 
@@ -26,7 +26,7 @@ Fundamentally, ‘laser on’ regions will contain high counts, while ‘laser o
 
 Parameters
 ==========
-If you would like to alter any of the parameters, simply enter the new value in its corresponding dialogue box or drop down menu. Once you are happy with your parameters, click :guilabel:`&APPLY`.
+If you would like to alter any of the parameters, simply enter the new value in its corresponding input field or drop down menu. Once you are happy with your parameters, click :guilabel:`&APPLY`.
 
 * Analyte
     The analyte you would like to use to discriminate between signal and background. 'total_counts' normally gives best results.

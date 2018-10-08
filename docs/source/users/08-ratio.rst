@@ -4,9 +4,9 @@ Stage 5. Ratio
 In this stage, we will normalise the data to an internal standard. Select the internal standard you would like to use by clicking on the :guilabel:`&Internal Standard` drop down menu, then apply it by clicking :guilabel:`&APPLY`. In this example, we will use Ca43, meaning all analytes will be divided by Ca43.
 
 .. image:: gifs/07-ratio.gif
-        :width: 689px
-        :height: 496px
-        :scale: 100 %
+        :width: 1275px
+        :height: 760px
+        :scale: 50 %
         :alt: ratio
         :align: center
 
