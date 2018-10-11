@@ -3,7 +3,7 @@
 import ast
 from PyQt5.QtWidgets import *
 import os
-from project.ErrLogger import logged
+# from project.ErrLogger import logged Disused
 
 class RunningProject():
 	"""
