@@ -202,11 +202,11 @@ class CalibrationStage():
 		except:
 			for l in self.project.eg.log:
 					self.logger.error(l)
-					self.logger.info('Executing stage Calibration with stage variables: [drift_correct]:{}\n[srms_used]:{}\n'
-							 '[n_min]:{}\n'.format( self.drift_correctOption.isChecked(),
-											srmParam,
-											#self.zero_interceptOption.isChecked(),
-											myn_min))
+			self.logger.info('Executing stage Calibration with stage variables: [drift_correct]:{}\n[srms_used]:{}\n'
+							'[n_min]:{}\n'.format( self.drift_correctOption.isChecked(),
+										srmParam,
+										#self.zero_interceptOption.isChecked(),
+										myn_min))
 			self.logger.exception("Exception occured in calibration stage:")
 			self.raiseError("A problem occurred. There may be a problem with the input values.")
 			return
