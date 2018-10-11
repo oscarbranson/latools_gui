@@ -546,6 +546,11 @@ class MainGraph(GraphWindow):
 	def legendStateChange(self, analyte):
 		"""
 			Actions to perform when legend check box changes state
+
+			Parameters
+			----------
+			analyte : String
+				The analyte that is associated with the check-box
 		"""
 		# change line visibility
 		self.graphLines[analyte].setVisible(self.legendEntries[analyte].isChecked())
@@ -584,6 +589,11 @@ class MainGraph(GraphWindow):
 	def updateFocus(self, showRanges):
 		"""
 			Update graph for new focus stage. Focus-specific tasks should be included here.
+
+			Parameters
+			----------
+			showRanges : Boolean
+				Whether highlighed regions are displayed or not
 		"""
 		self.showRanges = showRanges
 		
@@ -628,6 +638,15 @@ class MainGraph(GraphWindow):
 	def addRegion(self, targetGraph, lims, brush):
 		"""
 			Adds highlight region to graph with given ranges and brush
+
+			Parameters
+			----------
+			targetGraph : pg.plotItem
+				Graph that the region is being added to
+			lims : [???]
+				The range that the region occupies
+			brush : pg.mkBrush
+				Brush that styles the region
 		"""
 		region = pg.LinearRegionItem(values=lims, brush=brush, movable=False)
 		region.lines[0].setPen(pg.mkPen((0,0,0,0)))
@@ -704,6 +723,13 @@ class BkgGraph(GraphWindow):
 	def getDatapoints(self, dat, analyte):
 		"""
 			Retrieve data points from LaTools Data object
+
+			Parameters
+			----------
+			dat : la.latools.analyse
+				LaTools analyse object
+			analyte : String
+				The analyte being considered for background data points
 		"""
 		sy = dat.bkg['raw'].loc[:, analyte]
 
@@ -1206,9 +1232,22 @@ class Crossplot(AnalyteGridGraph):
 			else:
 				self.createCrossplotDat(key, dat, cmap, cmlist, grid)
 
-	def createCrossplotAll(self, key, dat, cmap, cmlist,  grid):
+	def createCrossplotAll(self, key, dat, cmap, cmlist, grid):
 		"""
 			Generate crossplot spanning all samples
+
+			Parameters
+			----------
+			key : String
+				Name of the created plot configuration
+			dat : la.latools.analyse
+				LaTools analyse object
+			cmap : la.latools.analyse.cmaps
+				Colour maps
+			cmlist : [String]
+				Strings that represent colours to be used
+			grid : {QWidget, QGridLayout}
+				The grid that holds the plots
 		"""
 		analytes = dat.analytes
 		if dat.focus_stage in ['ratio', 'calibrated']:
@@ -1307,6 +1346,19 @@ class Crossplot(AnalyteGridGraph):
 	def createCrossplotDat(self, key, dat, cmap, cmlist, grid):
 		"""
 			Generate crossplot for the specified sample
+
+			Parameters
+			----------
+			key : String
+				Name of the created plot configuration
+			dat : la.latools.analyse
+				LaTools analyse object
+			cmap : la.latools.analyse.cmaps
+				Colour maps
+			cmlist : [String]
+				Strings that represent colours to be used
+			grid : {QWidget, QGridLayout}
+				The grid that holds the plots
 		"""
 		
 		#DatObject
