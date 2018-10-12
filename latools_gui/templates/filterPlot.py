@@ -2,6 +2,7 @@
 
 from PyQt5.QtWidgets import *
 import pyqtgraph as pg
+from filters.thresholdFilterPlot import thresholdFilterPlot
 
 
 class FilterPlot(QWidget):
@@ -20,9 +21,13 @@ class FilterPlot(QWidget):
 		project : RunningProject
 			The analyse object for the project is: self.project.eg
 		"""
+		super().__init__()
 
 		self.filterTab = filterTab
 		self.project = project
+		
+		# create graph placeholder
+		self.graph = None
 
 		# filterOptions will hold a dictionary of the filter's current options
 		self.filterOptions = {}
@@ -43,7 +48,7 @@ class FilterPlot(QWidget):
 		# We use a grid layout
 		self.mainGrid = QGridLayout(self)
 
-		self.graph = None
+		# create graph
 		self.createGraph()
 
 		# The graph is added to the window.
@@ -72,9 +77,12 @@ class FilterPlot(QWidget):
 		""" Create a graph based on self.name, and self.filterOptions """
 
 		# A blank default for now:
-		self.graph = pg.PlotWidget()
+		# self.graph = pg.PlotWidget()
+		if self.name == 'Threshold':
+			self.graph = thresholdFilterPlot(self.project, self)
 
 	def updatePressed(self):
 		""" When the update button is pressed, an updated dictionary of filter options is returned. """
 		self.filterOptions = self.filterTab.updateOptions()
-		print(self.filterOptions)
+		if self.graph is not None:
+			self.graph.updateGraph(self.filterOptions)
