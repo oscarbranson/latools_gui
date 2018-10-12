@@ -443,9 +443,10 @@ class FilterTab:
 		self.crossPlotButton.clicked.connect(self.crossPlotClick)
 		#self.controlButtonsLayout.addWidget(self.crossPlotButton)
 
-		#self.plotButton = QPushButton("Plot")
-		#self.plotButton.clicked.connect(self.plotClick)
-		#self.controlButtonsLayout.addWidget(self.plotButton)
+		# Button to create a pop-up plot.
+		self.plotButton = QPushButton("Plot")
+		self.plotButton.clicked.connect(self.plotClick)
+		self.controlButtonsLayout.addWidget(self.plotButton)
 
 		# We add a stretch to push down the buttons
 		self.controlButtonsLayout.addStretch(1)
