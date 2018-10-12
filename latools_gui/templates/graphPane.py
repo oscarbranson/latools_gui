@@ -196,6 +196,7 @@ class GraphWindow(QWidget):
 
 		self.yLogCheckBox = yLogCheckBox
 
+		# auto-range button
 		autorangeButton = QPushButton('Centre Graph')
 		autorangeButton.clicked.connect(self.autorange)
 		samplesLayout.addWidget(autorangeButton)
@@ -209,8 +210,11 @@ class GraphWindow(QWidget):
 		if self.graph != None:
 			self.graph.autoRange()
 
-	# to be implemented in child classes
+	# dummy methods to be implemented in child classes
 	def updateLogScale(self):
+		pass
+	
+	def swapSample(self):
 		pass
 
 	def initialiseLegend(self):
