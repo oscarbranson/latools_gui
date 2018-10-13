@@ -8,7 +8,7 @@ class FilterPlot(QWidget):
 	""" A popup window to display a custom graph activated by the 'plot' button in a filter
 	"""
 
-	def __init__(self, filterTab, project):
+	def __init__(self, filterTab, project, graphPane):
 		"""
 		Creates the popup window
 
@@ -19,10 +19,13 @@ class FilterPlot(QWidget):
 			self.filterTab.updateOptions()
 		project : RunningProject
 			The analyse object for the project is: self.project.eg
+		graphPane : GraphPane
+			The graph pane object responsible for displaying graphs
 		"""
 
 		self.filterTab = filterTab
 		self.project = project
+		self.graphPane = graphPane
 
 		# filterOptions will hold a dictionary of the filter's current options
 		self.filterOptions = {}

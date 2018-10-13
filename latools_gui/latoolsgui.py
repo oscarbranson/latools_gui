@@ -242,7 +242,14 @@ class MainWindow(QMainWindow):
 		self.configWindow = None
 	
 	def keyPressEvent(self, event):
-		""" Keypress events are handled here """
+		"""
+		Keypress events are handled here
+
+		Parameters
+		----------
+		event : Event
+			The type of event that has just occured. We are looking for a key press type
+		"""
 		if type(event) == QKeyEvent:
 
 			# Pressing the enter key will attempt to press the main activation button on the stages and title screen
@@ -350,16 +357,31 @@ class MainWindow(QMainWindow):
 											  QMessageBox.Ok)
 
 	def zipdir(self, path, ziph):
-		""" Takes a new zip file and fills it with the contents of the path directory """
+		"""
+		Takes a new zip file and fills it with the contents of the path directory
 
-		# ziph is zipfile handle
+		Parameters
+		----------
+		path : str
+			The filepath of the folder we're zipping
+		ziph : ZipFile
+			The handle for the zipfile we're creating
+		"""
 		for root, dirs, files in os.walk(path):
 			for file in files:
 				ziph.write(os.path.join(root, file))
 
 	#@logged
 	def closeEvent(self, event):
-		""" Attempting to close the window is handled here """
+		"""
+		Attempting to close the window is handled here.
+		This function is automatically called as part of the functionality of a QT Main Window
+
+		Parameters
+		----------
+		event : Event
+			The close event (we don't need this)
+		"""
 
 		# If we are not on the title page...
 		if self.mainStack.currentIndex() != 0 and not self.quitting:
@@ -388,7 +410,14 @@ class MainWindow(QMainWindow):
 		self.configWindow.show()
 
 	def setProjectTitle(self, title):
-		""" Updates the program window with the project title """
+		"""
+		Updates the program window with the project title
+
+		Parameters
+		----------
+		title : str
+			The project title to update the main window with
+		"""
 		self.setWindowTitle("LAtools - " + title)
 
 	def helpButton(self):
@@ -401,7 +430,13 @@ class ConfigWindow(QWidget):
 	""" A popup window, accessed via the file menu, that allows the user to define a new configuration for LAtools """
 
 	def __init__(self, importStage):
-		""" Creates the popup window """
+		""" Creates the popup window
+
+		Parameters
+		----------
+		importStage : ImportStage
+			A reference to the import stage
+		"""
 
 		QWidget.__init__(self)
 		self.setWindowTitle("Create new configuration")
@@ -533,6 +568,12 @@ class ImportListener():
 				 titleScreen,
 				 stageTabs,
 				 mainWindow):
+		"""
+		This object passes information between stages at run time. The parameters are threrefore a reference to
+		every object and stage that may need information passed to it at run time.
+		"""
+
+		# References to each object are saved
 		self.importStage = importStage
 		self.despikingStage = despikingStage
 		self.autorangeStage = autorangeStage
@@ -547,6 +588,7 @@ class ImportListener():
 		self.stageTabs = stageTabs
 		self.mainWindow = mainWindow
 
+		# Stages are stored in a list so that we can access them by index
 		self.stageObjects = [self.importStage,
 							 self.despikingStage,
 							 self.autorangeStage,
@@ -567,20 +609,50 @@ class ImportListener():
 		self.backgroundStage.resetButtons()
 
 	def setTitle(self, title):
-		""" Adds the project title to the name of the program's window """
+		"""
+		Adds the project title to the name of the program's window
+
+		Parameters
+		----------
+		title : str
+			The project title
+		"""
 		self.mainWindow.setProjectTitle(title)
 
 	def setStageIndex(self, index):
-		""" Jumps to a particular stage when loading a project """
+		"""
+		Jumps to a particular stage when loading a project
+
+		Parameters
+		----------
+		index : int
+			The index of the stage to jump to
+		"""
 		self.stageTabs.setStage(index)
 
 	def loadStage(self, index):
-		""" Tells a stage to load the saved stage parameter info, based on an identifying stage index """
+		"""
+		Tells a stage to load the saved stage parameter info, based on an identifying stage index
+
+		Parameters
+		----------
+		index : int
+			The index of the stage to load
+		"""
 		self.stageObjects[index].loadValues()
 		self.progressPane.progressUpdater.reset()
 
 	def enterPressed(self, main, stage):
-		""" Determines which screen the enter command should be sent to """
+		"""
+		Determines which screen the enter command should be sent to
+
+		Parameters
+		----------
+		main : int
+			0 = we're on the title screen, 1 = we're currently in the analysis stages
+		stage : int
+			The index of the stage we're currently in
+		"""
 		if main == 0:
 			self.titleScreen.enterPressed()
 		elif main == 1:
@@ -588,6 +660,16 @@ class ImportListener():
 			self.stageObjects[stage].enterPressed()
 
 	def loadFilters(self, filters, filterOnOff):
+		"""
+		The filter information from the save file which is currently being loaded is sent to the filtering stage
+
+		Parameters
+		----------
+		filters : list
+			The filter calls that need to be loaded
+		filterOnOff : list
+			The filter on or off calls that need to be loaded
+		"""
 		self.filteringStage.stageControls.loadFilters(filters, filterOnOff)
 
 	def makeConfiguration(self):
@@ -596,12 +678,28 @@ class ImportListener():
 		self.mainWindow.configWindow.show()
 
 	def updateExport(self, stage=""):
+		"""
+		When an analysis stage is completed we update the export stage so that the most recent focus stage is known
+
+		Parameters
+		----------
+		stage : str
+			The stage that has been completed. We only need this info for particular stages
+		"""
 		self.exportStage.updateFocus(stage)
 	
 	def updateRatio(self):
+		"""
+		When the user goes back and changes the ratio stage after completing the calibration stage,
+		the calibration stage needs to know about it, to reset.
+		"""
 		self.calibrationStage.updateRatio()
 
 	def blockReImport(self):
+		"""
+		After a certain point in the analysis the user cannot go back and reimport data, because the amount of
+		things that would need to be reset gets too complicated. It's easier for them to start a new project.
+		"""
 		self.importStage.blockReImport()
 
 # This is where the GUI is actually created and run.

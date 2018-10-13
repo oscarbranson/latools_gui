@@ -34,6 +34,12 @@ class FilterControls:
 			The layout for the entire stage screen, that the Controls Pane will add itself to.
 		project : RunningProject
 			A copy of the project info, used for getting the list of analytes
+		graphPaneObj : GraphPane
+			The graph pane that handles displaying of graphs
+		links : (str, str, str)
+			links[0] = The User guide website domain
+			links[1] = The web link for reporting an issue
+			links[2] = The tooltip for the report issue button
 		"""
 
 		# A list of all of the available filter types
@@ -133,7 +139,16 @@ class FilterControls:
 		self.summaryTab.addElements(self.project.eg.analytes)
 
 	def updateDescription(self, title, description):
-		""" Populates the info in the Add Filter tab description box """
+		"""
+		Populates the info in the Add Filter tab description box
+
+		Parameters
+		----------
+		title : str
+			The title of the selected filter
+		description : str
+			The description of the selected filter
+		"""
 
 		self.plusDescription.setHtml("<span style=\"color:#779999; "
 										   "font-size:14px;\"><b>" + title + "</b></span><br><br>" + description)
@@ -193,7 +208,19 @@ class FilterControls:
 			self.plusAddButton.setEnabled(False)
 
 	def loadFilters(self, filters, filterOnOff):
+		"""
+		Creates all of the filters based on information in the save file
 
+		Parameters
+		----------
+		filters : [(str, dict)]
+			A list containing a tuple for each filter with ("filter name", {filter params})
+		filterOnOff : [(str, (str, [str]))]
+			a list of tuples containing: ("filter_on" or "filter_off", (The filter's technical name, The analyte name or not)
+		"""
+
+		# For each filter in the list we go through the steps of loading that filter by updating options and
+		# clicking buttons as though a user were creating them.
 		for f in filters:
 
 			if f[0] == "filter_threshold":
@@ -262,6 +289,8 @@ class FilterControls:
 				self.addTab()
 				self.tabsList[-1].filterType.loadFilter(f[1])
 
+		# For calls to turn the filters on or off we send each of them to each filter tab.
+		# When that tab happens to have a filter with the correct unique name, it will update based on the on/off call
 		for f in filterOnOff:
 			for tab in self.tabsList:
 				tab.filtOnOff(f)
@@ -271,6 +300,22 @@ class SummaryTab:
 	""" The tab that lists all of the created filters and can activate the filtering process """
 
 	def __init__(self, project, links, graphPaneObj, tabsArea):
+		"""
+		Creates the summary tab, which will always be the first tab.
+
+		Parameters
+		----------
+		project : RunningProject
+			A copy of the project info, used for getting the list of analytes
+		links : (str, str, str)
+			links[0] = The User guide website domain
+			links[1] = The web link for reporting an issue
+			links[2] = The tooltip for the report issue button
+		graphPaneObj : GraphPane
+			The graph pane that handles displaying of graphs
+		tabsArea : QTabWidget
+			The tabs widget that comprises the filter stage
+		"""
 
 		# We use a special widget purely to help with resizing the scrollable area to the window width
 		self.summary = QWidget()
@@ -339,7 +384,14 @@ class SummaryTab:
 		self.scroll.setWidget(self.innerWidget)
 
 	def addElements(self, analytes):
-		""" When the analytes are available at run time, they are populated in the table """
+		"""
+		When the analytes are available at run time, they are populated in the table
+
+		Parameters
+		----------
+		analytes : [str]
+			The list of analytes to populate the summary tab with after import
+		"""
 
 		# If the data has already been imported we need to remove the existing elements
 		for i in range(len(self.header_items)):
@@ -367,6 +419,7 @@ class SummaryTab:
 		QDesktopServices.openUrl(url)
 
 	def createPressed(self):
+		""" When the create button is pressed we simply switch to the Create Filter tab """
 		self.tabsArea.setCurrentIndex(self.tabsArea.count() - 1)
 
 	def reportPressed(self):
@@ -378,6 +431,28 @@ class FilterTab:
 	""" Creates the controls tab for a filter """
 
 	def __init__(self, name, filterName, summaryTab, filterInfo, project, graphPaneObj, tabsArea, tabsList):
+		"""
+		Makes a new tab to display the options for creating a particular filter type.
+
+		Parameters
+		----------
+		name : str
+			The name given by the user (this is not currently being used)
+		filterName : str
+			The type of filter being created. eg: "Threshold"
+		summaryTab : SummaryTab
+			A reference to the summary tab
+		filterInfo : dict
+			A dictionary of the information from this filter's JSON file
+		project : RunningProject
+			A copy of the project info, used for getting the list of analytes
+		graphPaneObj : GraphPane
+			The graph pane that handles displaying of graphs
+		tabsArea : QTabWidget
+			The tabs widget that comprises the filter stage pane
+		tabsList : [QWidget]
+			The list of tabs currently in the filter stage
+		"""
 
 		# The name given by the user
 		self.name = name
@@ -443,13 +518,19 @@ class FilterTab:
 		self.crossPlotButton.clicked.connect(self.crossPlotClick)
 		#self.controlButtonsLayout.addWidget(self.crossPlotButton)
 
+
+		# --- Uncomment the below section to enable the Plot button
+
 		#self.plotButton = QPushButton("Plot")
 		#self.plotButton.clicked.connect(self.plotClick)
 		#self.controlButtonsLayout.addWidget(self.plotButton)
 
+		# ---
+
 		# We add a stretch to push down the buttons
 		self.controlButtonsLayout.addStretch(1)
 
+		# We add a delete filter button
 		self.deleteButton = QPushButton("Delete filter")
 		self.deleteButton.clicked.connect(self.deleteClick)
 		self.controlButtonsLayout.addWidget(self.deleteButton)
@@ -503,11 +584,18 @@ class FilterTab:
 		if self.filterName == "Signal Optimiser":
 			self.filterType = SignalFilter(self)
 
-		# Stops the checkboxes from registering programmatic changes
+		# An attribute to stop the checkboxes from registering programmatic changes
 		self.updatingCheckboxes = False
 
 	def updateName(self, index):
+		"""
+		Updates the name of this filter tab with details from the created filter
 
+		Parameters
+		----------
+		index : int
+			The index of this tab in the tabsArea, so that we can tell which tab's name needs to be updated
+		"""
 		self.tabsArea.setTabText(index, self.name)
 
 		# We also take the opportunity of changing back to the Summary tab
@@ -517,31 +605,64 @@ class FilterTab:
 		self.project.progressBar.reset()
 
 	def addButton(self, buttonWidget):
-		""" Adds a given button to the right-most Options section """
+		"""
+		Adds a given button to the right-most Options section.
+		Used so that the unique filter object can supply their own 'create filter' button
+
+		Parameters
+		----------
+		buttonWidget : QPushButton
+			A button to add
+		"""
 		self.controlButtonsLayout.addWidget(buttonWidget)
 
 	def filtOnOff(self, f):
+		"""
+		All filter on or filter off calls when loading are passed to all filter tabs to see if they are the
+		correct filter to turn on or off.
 
+		Parameters
+		----------
+		f : tuple
+			("filter_on" or "filter_off", (The filter's technical name, The analyte name or not) )
+		"""
+
+		# The on/off call is sent to each row of check-boxes to process.
 		for checks in self.checkBoxes:
 			checks.filtOnOff(f)
 
 	def createFilter(self, name):
+		"""
+		When a filter row is created, we make a corresponding object to take care of the row of checkboxes
+
+		Parameters
+		----------
+		name : str
+			 The technical name for this filter row, as defined by LAtools
+		"""
+
+		# We create a checkbox row object and add it to the list
 		self.checkBoxes.append(AnalyteCheckBoxes(name, self, self.summaryTab))
 
 	def deleteClick(self):
+		""" What happens when the delete filter button is pressed """
 
-		# A popup message is created to ask to save the project
+		# A popup message is created to ask if they're sure they want to delete the filter
 		reply = QMessageBox.question(self.filter, 'Message',
 									 "Are you sure you want to delete this filter?", QMessageBox.Yes |
 									 QMessageBox.No, QMessageBox.No)
 
 		if reply == QMessageBox.Yes:
 			# If yes
+
+			# We take the user back to the summary tab
 			self.tabsArea.setCurrentIndex(0)
 
+			# We delete all of the filter checkbox rows
 			for row in self.checkBoxes:
 				row.deleteRow()
 
+			# We disconnect this filter tab from the list of tabs
 			self.filter.setParent(None)
 
 	def updateOptions(self):
@@ -554,7 +675,7 @@ class FilterTab:
 
 	def plotClick(self):
 		""" Activates when the Plot button is pressed. Creates the filter plot window """
-		self.plot = filterPlot.FilterPlot(self, self.project)
+		self.plot = filterPlot.FilterPlot(self, self.project, self.graphPaneObj)
 		self.plot.show()
 
 
@@ -563,9 +684,17 @@ class AnalyteCheckBoxes:
 
 	def __init__(self, filterName, filterTab, summaryTab):
 		"""
-		:param filterName: The technical name that LA Tools gives the filter row
-		:param filterTab: A reference to the Filter's tab object
-		:param summaryTab: A reference to the Summary tab
+		A row of checkboxes that appear in both the summary tab, and the filter's tab, representing
+		one row of a filter
+
+		Parameters
+		----------
+		filterName : str
+			 The technical name that LA Tools gives the filter row
+		filterTab: FilterTab
+			A reference to the Filter's tab object
+		summaryTab: SummaryTab
+			A reference to the Summary tab
 		"""
 		self.name = filterName
 		self.filterTab = filterTab
@@ -614,9 +743,15 @@ class AnalyteCheckBoxes:
 		self.summaryTab.table.addWidget(self.selectAllCheckBox, row, self.summaryTab.table.columnCount() - 1)
 
 	def updateCheckBox(self, i, ID):
-		""" Activates when a checkbox is clicked
-		i: The index of the checkbox in the list (same as the list of analytes)
-		ID: 0 = controls tab was clicked. 1 == summary tab was clicked
+		"""
+		Activates when a checkbox is clicked
+
+		Parameters
+		----------
+		i : int
+			The index of the checkbox in the list (same as the list of analytes)
+		ID : int
+			0 = controls tab was clicked. 1 = summary tab was clicked
 		"""
 
 		# If the change was the result of user input (rather than us updating the checkbox via the program)
@@ -625,9 +760,11 @@ class AnalyteCheckBoxes:
 			self.updatingCheckboxes = True
 
 			if ID == 0:
+				# The updated checkbox is in the controls tab
 				selfBox = self.controlsBoxes[i]
 				otherBox = self.summaryBoxes[i]
 			else:
+				# The updated checkbox is in the summary tab
 				otherBox = self.controlsBoxes[i]
 				selfBox = self.summaryBoxes[i]
 
@@ -643,6 +780,7 @@ class AnalyteCheckBoxes:
 				self.filterTab.project.eg.filter_off(self.name, self.filterTab.project.eg.analytes[i])
 				self.selectAllCheckBox.setChecked(False)
 
+			# We flag that we are now finished updating the checkboxes, and they can now respond to being changed
 			self.updatingCheckboxes = False
 
 	def selectAllClicked(self):
@@ -670,8 +808,13 @@ class AnalyteCheckBoxes:
 			self.updatingCheckboxes = False
 
 	def filtOnOff(self, f):
-		""" When loading a file any line about filter being turned on or off is sent here.
-		f: a tuple containing: ("filter_on" or "filter_off", (The filter's technical name, The analyte name or not)
+		"""
+		When loading a file any line about filter being turned on or off is sent here.
+
+		Parameters
+		----------
+		f : tuple
+			("filter_on" or "filter_off", (The filter's technical name, The analyte name or not)
 		"""
 
 		# We check all filter on/off calls with all rows, and just update when the names match

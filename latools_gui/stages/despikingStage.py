@@ -288,6 +288,10 @@ class DespikingStage():
 		# The stage parameters are stored in project as dictionaries
 		params = self.project.getStageParams("despike")
 
+		# If the stage isn't in the save file, we don't load it.
+		if params is None:
+			return
+
 		# The stage parameters are applied to the input fields
 		self.fillValues(params)
 

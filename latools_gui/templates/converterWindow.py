@@ -120,19 +120,19 @@ class ConverterWindow(QWidget):
 		self.infer_date_checkbox.setEnabled(False)
 		self.infer_date_checkbox.setChecked(True)
 
-		"""
+
 		# A Yes button to respond to the display text
-		self.yesButton = QPushButton("Yes")
-		self.mainGrid.addWidget(self.yesButton, 6, 3)
-		self.yesButton.clicked.connect(self.yesClicked)
-		self.yesButton.setEnabled(False)
+		# self.yesButton = QPushButton("Yes")
+		# self.mainGrid.addWidget(self.yesButton, 6, 3)
+		# self.yesButton.clicked.connect(self.yesClicked)
+		# self.yesButton.setEnabled(False)
 
 		# A No button to respond to the display text
-		self.noButton = QPushButton("No")
-		self.mainGrid.addWidget(self.noButton, 6, 2)
-		self.noButton.clicked.connect(self.noClicked)
-		self.noButton.setEnabled(False)
-		"""
+		# self.noButton = QPushButton("No")
+		# self.mainGrid.addWidget(self.noButton, 6, 2)
+		# self.noButton.clicked.connect(self.noClicked)
+		# self.noButton.setEnabled(False)
+
 
 	def findDataButtonClicked(self):
 		""" Opens a dialog to save a file path to the file location text box """
@@ -173,6 +173,7 @@ class ConverterWindow(QWidget):
 				"You must provide a name for the new file.")
 			return
 
+		# If we're operating on a file rather than a folder:
 		if self.type_combo.currentText() == "file":
 
 			# We check the last characters of the import file to see if it's a csv:
@@ -210,6 +211,7 @@ class ConverterWindow(QWidget):
 					# Otherwise the program is running in a normal python environment
 					infoFile = inFile
 
+				# File_list is a list of all files found in the given folder
 				file_list = os.listdir(inFile)
 
 			except:
@@ -218,10 +220,18 @@ class ConverterWindow(QWidget):
 
 			for file in file_list:
 
+				# We check each file in the folder and run the converter if it is a .csv or .txt
+
 				if file[-4:] == ".csv":
+
+					# We set simply input the file name and location into the converter option fields as though
+					# they were set manually to run on a single file
 					self.fileLocationLine.setText(os.path.join(inFile, file))
 					self.nameEdit.setText(file[:-4])
+
 					self.run_csv(self.fileLocationLine.text())
+
+					# We set the name and location fields back to blank
 					self.nameEdit.setText("")
 					self.fileLocationLine.setText("")
 
@@ -302,8 +312,9 @@ class ConverterWindow(QWidget):
 									 self.exportLocationLine.text(),
 									 self.nameEdit.text())
 
+		# For converting a txt file, we first convert the txt to a csv, then run the csv parser on that.
 		self.run_csv(self.parser_txt.outPath)
-
+		# We remove the temporary csv file that we made
 		os.remove(self.parser_txt.outPath)
 
 class Parser_csv:
@@ -360,6 +371,7 @@ class Parser_csv:
 			return
 
 		# Pre-processing of the lines. Currently this just removes trailing commas
+		# ** Could also get it to remove empty cells if that is useful **
 		self.clean_lines()
 
 		# We want to find the correct column count for this data to us in parsing things later
@@ -494,7 +506,7 @@ class Parser_csv:
 
 	def get_header_row(self):
 		""" To find the header row we look for a row with the right column count, and where each cell except for
-			first one (typically Time) has an appropriate length for an analyte string, and either begins or
+			the first one (typically Time) has an appropriate length for an analyte string, and either begins or
 			ends with a digit.
 		"""
 		for row in self.other_rows:
@@ -734,7 +746,7 @@ class Parser_txt:
 			new = row.replace("	", ",")
 
 			# TO DO: replace other white-space characters with commas
-			# new = row.replace("	", ",")
+			# new = new.replace("	", ",")
 
 			# We make csv cells from the row
 			splits = new.split(",")
@@ -775,7 +787,7 @@ class Parser_txt:
 				new_cell = cell.replace("(", ",").replace(")", ",")
 				cell_split = new_cell.split(",")
 
-				# For each bit of the cell we are looking for something that resembles and analyte name
+				# For each bit of the cell we are looking for something that resembles an analyte name
 				for bit in cell_split:
 
 					# We look for strings between 3 and 5 characters long

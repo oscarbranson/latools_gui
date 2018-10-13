@@ -14,12 +14,16 @@ class ProgressPane:
 
 		Parameters
 		----------
-		stagesStack : QStackedWidget
-			The stack for the stage screens, used for switching from one stage to the next.
 		STAGES : [str]
 			A list of the stages to be displayed and moved between
-		navPane : NavigationPane
-			The Pane that runs across the top with the stage names, so that the current stage can be highlighted
+		graphPaneObj : GraphPane
+			A reference to the Graph Pane that will sit at the bottom of the stage screen and display
+			updates t the graph, produced by the processing defined in the stage.
+		project : RunningProject
+			A reference to the project object which contains all of the information unique to this project,
+			including the latools analyse object that the stages will update.
+		stageTabs : StageTabs
+			The object that displays and controls movement between the tabs that comprise each stage of analysis
 		"""
 
 		self.STAGES = STAGES
@@ -60,13 +64,14 @@ class ProgressPane:
 		self.rightButton.setEnabled(False)
 
 	def addToLayout(self, stageLayout):
-		""" Adds the progress pane to the stage layout. It is a function so that this can occur after the Controls
-		 	Pane is built.
+		"""
+		Adds the progress pane to the stage layout. It is a function so that this can occur after the Controls
+		Pane is built.
 
-			Parameters
-			----------
-			stagelayout : QVBoxLayout
-				The layout for the stage screen that the graph pane will be added to the bottom of.
+		Parameters
+		----------
+		stagelayout : QVBoxLayout
+			The layout for the stage screen that the graph pane will be added to the bottom of.
 		"""
 		stageLayout.addWidget(self.progressWidget)
 
@@ -148,7 +153,6 @@ class ProgressPane:
 		else:
 			ranges = False
 
-		#print(currentStage)
 		# If the new stage has already been applied, the graph is updated
 		if currentStage in self.project.eg.stages_complete or currentStage == 'filtering':
 			stageIndex = 0

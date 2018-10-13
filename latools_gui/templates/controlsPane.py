@@ -89,9 +89,19 @@ class ControlsPane():
 		self.controlStandardsLayout.addWidget(button)
 
 	def getDefaultParameters(self, sig):
+		"""
+		Get the default parameters for this stage. Turns the signature object into an actual dictionary
+
+		Parameters
+		----------
+		sig : signature object, sin
+			Contains the default parameters for the keyword arguments for this stage's analyse object function call.
+		"""
+
 		params = {}
 		for key in sig.parameters:
 			params[key] = sig.parameters.get(key).default
+			# We need to convert None into an empty string, to go in the stage input edit boxes
 			if (params[key] == None):
 				params[key] = ""
 			else:

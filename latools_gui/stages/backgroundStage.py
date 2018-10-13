@@ -469,6 +469,11 @@ class BackgroundStage():
 
 		# The stage parameters are stored in project as dictionaries
 		params = self.project.getStageParams("bkg_calc_weightedmean")
+		params2 = self.project.getStageParams("bkg_calc_interp1d")
+
+		# If neither stage parameters exist we don't load this stage
+		if params is None and params2 is None:
+			return
 
 		# The stage parameters are applied to the input fields
 		# bkg_calc_weightedmean, or bkg_calc_interp1d will be in stageParams dictionary, but not both.
