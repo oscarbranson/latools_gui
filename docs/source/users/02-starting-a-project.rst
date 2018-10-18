@@ -4,19 +4,21 @@
 Beginners Guide
 ###############
 
+This short tutorial will guide you through an entire analysis session using sample ablation data included with ``latools``. We highly recommend working through this tutorial to understand the mechanics of the software before working on your own data.
+
+
 Starting a project
 ******************
 
-This short tutorial will guide you through an entire analysis session using sample ablation data included with ``latools``. We highly recommend working through this tutorial to understand the mechanics of the software before working on your own data.
 
 Project Options
 ===============
-``latools`` allows you to create new projects, or open existing projects that you or someone else has created. In this tutorial, we will be creating a new project.
+LAtools GUI allows you to create new projects, or open existing projects that you or someone else has created. In this tutorial, we will be creating a new project.
 
 
 Creating a new project
 ----------------------
-To create a new project, click :guilabel:`&New project`. Type the name of your new project in the :guilabel:`&Project name` dialogue box - in this example, we are going to call the project **LAtools_Demo**. Click :guilabel:`&Begin` to start.
+To create a new project, click :guilabel:`&New project`. Type the name of your new project in the :guilabel:`&Project name` input field - in this example, we are going to call the project **LAtools_Demo**. Then click :guilabel:`&Begin` to start.
 
 .. image:: gifs/02-createproject.gif
         :width: 689px

@@ -36,3 +36,7 @@ class FilteringStage():
 		""" Updates the stage after data is imported at runtime """
 		self.stageControls.updateStageInfo()
 
+	# @logged
+	def enterPressed(self):
+		""" When enter is pressed on this stage """
+		pass

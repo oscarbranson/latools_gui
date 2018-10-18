@@ -20,12 +20,15 @@ class ProgressUpdater:
 		self.progressBar = progressBar
 
 	def __enter__(self):
+		""" A function that is required for this object to be interchangeable with other progress bars """
 		return self
 
 	def __exit__(self, exc_type, exc_val, exc_tb):
+		""" A function that is required for this object to be interchangeable with other progress bars """
 		pass
 
 	def __str__(self):
+		""" A function that is required for this object to be interchangeable with other progress bars """
 		return "LAtools GUI progress bar"
 
 	def set(self, total, desc):

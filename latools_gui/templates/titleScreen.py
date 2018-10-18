@@ -23,6 +23,13 @@ class TitleScreen():
 		----------
 		stack : QStackedWidget
 			The stack for the main program, used for switching from the title screen to the stage screen.
+		project : RunningProject
+			A reference to the project object which contains all of the information unique to this project,
+			including the latools analyse object that the stages will update.
+		links : (str, str, str)
+			links[0] = The User guide website domain
+			links[1] = The web link for reporting an issue
+			links[2] = The tooltip for the report issue button
 		"""
 		# We create a widget to hold the entire screen
 		self.mainWidget = QWidget()
@@ -366,7 +373,16 @@ class RecentProjects:
 					break
 
 	def addNew(self, name, location):
-		""" Adding a new project to the recent projects list """
+		"""
+		Adding a new project to the recent projects list
+
+		Parameters
+		----------
+		name : str
+			The name of the new project
+		location : str
+			The file location for the new project
+		"""
 
 		# Open the file
 		if getattr(sys, 'frozen', False):
@@ -390,7 +406,14 @@ class RecentProjects:
 		recentFile.close()
 
 	def reorderDropdown(self, index):
-		""" Moves a particular past project to the top of the list """
+		"""
+		Moves a particular past project to the top of the list
+
+		Parameters
+		----------
+		index : int
+			The index of the past project in the list currently
+		"""
 
 		if getattr(sys, 'frozen', False):
 			# If the program is running as a bundle, then get the relative directory
@@ -415,6 +438,13 @@ class RecentProjects:
 		"""
 		When a project is loaded, if it is in the recent projects list it is moved to the top of the list,
 		otherwise it is added to the top of the list.
+
+		Parameters
+		----------
+		name : str
+			The name of the new project
+		location : str
+			The file location for the new project
 		"""
 		for i in range(len(self.fileContent)):
 			if self.fileContent[i] == name + "*" + location:
@@ -424,12 +454,27 @@ class RecentProjects:
 		self.addNew(name, location)
 
 	def getLocation(self, index):
-		""" Given the index of a project in the recent list, returns the file location """
+		"""
+		Given the index of a project in the recent list, returns the file location
+
+		Parameters
+		----------
+		index : int
+			The index of the past project in the list currently
+		"""
 		return self.fileContent[index].split('*')[1]
 
 	def updateLocation(self, name, location):
-		""" When a new project is saved it will currently have a name but no location.
-			The location is added and saved in the file
+		"""
+		When a new project is saved it will currently have a name but no location.
+		The location is added and saved in the file
+
+		Parameters
+		----------
+		name : str
+			The name of the new project
+		location : str
+			The file location for the new project
 		"""
 		# The new file is added to the end of the list, the list is then reordered and saved
 		self.fileContent.append(name + "*" + location)

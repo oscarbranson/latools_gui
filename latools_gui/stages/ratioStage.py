@@ -156,10 +156,13 @@ class RatioStage():
 		# The stage parameters are stored in project as dictionaries
 		params = self.project.getStageParams("ratio")
 
+		# If the stage isn't in the save file, we don't load it.
+		if params is None:
+			return
+
 		# The stage parameters are applied to the input fields
-		if params is not None:
-			self.internal_standardOption.setCurrentText(params.get("internal_standard", " "))
-			self.internal_standardClicked()
+		self.internal_standardOption.setCurrentText(params.get("internal_standard", " "))
+		self.internal_standardClicked()
 
 		# The loading process then activates the stage's apply command
 		self.pressedApplyButton()

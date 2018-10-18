@@ -19,21 +19,21 @@ To use any of them, simply select the method from the drop down menu, change any
 .. warning:: Use extreme caution with polynomial backgrounds of order>1. You should only use this if you know you have significant non-linear drift in your background, which you understand but cannot be dealt with by changing your analytical procedure. In all tested cases the weighted mean background outperformed the polynomial background calculation method.
 
 
-In this tutorial, we will be using the first method, 1D interpolation. Change the :guilabel:`&Gaussian FWHM` to 5 minutes (300 seconds), and then change :guilabel:`&Minimum Points` to 20.
+In this tutorial, we will be using the first method, 1D interpolation. Change the :guilabel:`&Gaussian FWHM` to 5 minutes (300 seconds), and then change :guilabel:`&Minimum Points` to 10.
 
 .. image:: gifs/06-backgroundcalculate.gif
-        :width: 689px
-        :height: 496px
-        :scale: 100 %
+        :width: 1275px
+        :height: 760px
+        :scale: 50 %
         :alt: calculate background
         :align: center
 
-To view the plot of the resulting background, click :guilabel:`&Plot in popup`. If you are having trouble navigating this plot panel, click here :ref:`Navigating the plotting panels`.
+To view the plot of the resulting background, click :guilabel:`&Plot in popup`.
 
 .. image:: gifs/06-backgroundpopup.gif
-        :width: 689px
-        :height: 496px
-        :scale: 100 %
+        :width: 1275px
+        :height: 760px
+        :scale: 50 %
         :alt: background popup
         :align: center
 
@@ -42,8 +42,8 @@ Removing background
 To subtract the background from the signal regions, simply click :guilabel:`&Subtract background`. The plot panel will now show your background corrected data.
 
 .. image:: gifs/06-backgroundsubtract.gif
-        :width: 689px
-        :height: 496px
-        :scale: 100 %
+        :width: 1275px
+        :height: 760px
+        :scale: 50 %
         :alt: subtract background
         :align: center

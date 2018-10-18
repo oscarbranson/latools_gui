@@ -1,0 +1,16 @@
+# LATOOLS analysis log saved at 2018:10:12 10:57:41
+data_folder :: C:\Users\zaner\Desktop\LaTools\latools_gui\latools_gui\data
+# Analysis Log Start: 
+__init__ :: args=() kwargs={'data_folder': './data/', 'errorhunt': False, 'config': 'DEFAULT', 'dataformat': None, 'srm_identifier': 'STD', 'cmap': None, 'time_format': None, 'internal_standard': 'Ca43', 'names': 'file_names', 'srm_file': None, 'extension': '.csv'}
+despike :: args=() kwargs={'expdecay_despiker': False, 'exponent': None, 'noise_despiker': True, 'win': 3.0, 'nlim': 12.0, 'exponentplot': False, 'maxiter': 4}
+autorange :: args=() kwargs={'analyte': 'total_counts', 'gwin': 5, 'swin': 3, 'win': 20, 'on_mult': [1.0, 1.5], 'off_mult': [1.5, 1.0], 'transform': False}
+bkg_calc_weightedmean :: args=() kwargs={'analytes': None, 'weight_fwhm': None, 'n_min': 20, 'n_max': None, 'cstep': None, 'bkg_filter': False, 'f_win': 7, 'f_n_lim': 3}
+bkg_subtract :: args=() kwargs={'analytes': None, 'errtype': 'stderr', 'focus_stage': 'despiked'}
+ratio :: args=() kwargs={'internal_standard': 'Ca43'}
+ratio :: args=() kwargs={'internal_standard': 'Ca43'}
+calibrate :: args=() kwargs={'analytes': None, 'drift_correct': True, 'srms_used': ['NIST610', 'NIST612', 'NIST614'], 'n_min': 10}
+set_focus :: args=('calibrated',) kwargs={}
+filter_correlation :: args=() kwargs={'x_analyte': 'Mn55', 'y_analyte': 'Al27', 'window': None, 'r_threshold': 0.9, 'p_threshold': 0.05, 'filt': True}
+filter_on :: args=('0_Mn55_Al27_corr',) kwargs={}
+sample_stats :: args=() kwargs={'analytes': ['Mg24', 'Mg25', 'Al27', 'Ca43', 'Ca44', 'Mn55', 'Sr88', 'Ba137', 'Ba138'], 'filt': False, 'stats': ['mean', 'std']}
+getstats :: args=() kwargs={'save': False}

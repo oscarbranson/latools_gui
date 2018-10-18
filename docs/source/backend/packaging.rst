@@ -17,7 +17,7 @@ The step by step procedure for building an executable file for LAtools GUI is as
   3. With PyInstaller installed, run the following command:
 ::
 
-    pyinstaller --onedir latoolsgui.SPEC
+    pyinstaller --windowed --onedir latoolsgui.SPEC
 
 This will create a new folder at "latools_gui/latools_gui/dist" called "latoolsgui". This folder contains an executable
 file "latoolsgui.exe" at the top level, as well as all the necessary files to run the executable without a native
@@ -56,8 +56,12 @@ various modules that need to be manually included in the build.
 
 Mac OS Specific Instructions
 ============================
-The Mac OS build of LAtools GUI stumbles on a Python module called Jedi. As of the writing of this documentation the
-PyInstaller hook for Jedi is not installed by default.
+When PyInstaller builds the Mac package, it creates a bundled app alongside the package directory.
+This app can be used to run the program as a standalone item, but it is incomplete. By default
+PyInstaller does not copy all the necessary content into the bundle, but this can be done manually.
+Copy and paste the entire directory of the packaged latoolsgui into the bundle "Contents/MacOS/",
+overwriting the existing files in the MacOS directory.
+Right click on the bundle, and select "Show package contents" to view the app's contents.
 
 
 LAtools Config and Resource Files

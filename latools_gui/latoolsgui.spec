@@ -67,9 +67,10 @@ if sys.platform == 'darwin':
 # Package the executable file into .app if on OS X
 if sys.platform == 'darwin':
    app = BUNDLE(exe,
-                name='latoolsgui.app',
+                name='LAtools GUI.app',
                 info_plist={
-                  'NSHighResolutionCapable': 'True'
+                  'NSHighResolutionCapable': 'True',
+                  'LSBackgroundOnly': 'False'
                 },
                 icon='graphics/latools-logo-icon.icns')
 
