@@ -326,18 +326,24 @@ class MainWindow(QMainWindow):
 		""" Runs the command to zip the error logs and save them to the LAtools directory """
 
 		try:
+
+			saveLocation = QFileDialog.getExistingDirectory(self.mainWidget, 'Open file')
+			if saveLocation == '':
+				# Cancel was pressed
+				return
+
 			if getattr(sys, 'frozen', False):
 				# If the program is running as a bundle, then get the relative directory
 				logFolder = os.path.join(os.path.dirname(sys.executable), "logs/")
 				logFolder = logFolder.replace('\\', '/')
 
-				parentFolder = os.path.dirname(sys.executable)
-				parentFolder = parentFolder.replace('\\', '/')
-				outputZip = os.path.join(parentFolder, 'Logs.zip')
+				#parentFolder = os.path.dirname(sys.executable)
+				#parentFolder = parentFolder.replace('\\', '/')
+				outputZip = os.path.join(saveLocation, 'Logs.zip')
 			else:
 				# Otherwise the program is running in a normal python environment
 				logFolder = "logs/"
-				outputZip = 'Logs.zip'
+				outputZip = os.path.join(saveLocation, 'Logs.zip')
 
 			# We create an empty zip folder
 			zipf = zipfile.ZipFile(outputZip, 'w', zipfile.ZIP_DEFLATED)
@@ -349,7 +355,7 @@ class MainWindow(QMainWindow):
 			zipf.close()
 
 			infoBox = QMessageBox.information(self.mainWidget, "Export logs",
-											  "Your error log files have been saved to 'Logs.zip' in the LAtools directory",
+											  "Your error log files have been saved to 'Logs.zip' in the specified directory",
 											  QMessageBox.Ok)
 		except:
 			infoBox = QMessageBox.information(self.mainWidget, "Export logs",
