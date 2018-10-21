@@ -201,6 +201,7 @@ class DespikingStage():
 		# We process each text entry field by converting blank to the value None, and checking for errors
 		localExponent = None
 		self.logger.info('Pressed button')
+		
 		if (self.pane1Exponent.text() != ""):
 			try:
 				localExponent = float(self.pane1Exponent.text())
@@ -246,9 +247,10 @@ class DespikingStage():
 								exponentplot=False,
 								maxiter=localMaxiter)
 		except:
-			for l in self.eg.log:
-				self.logger.error(self.eg.log(l))
-			self.logger.error('Executing despiking stage with stage variables: [expdecay_despiker]:'
+			try:
+				for l in self.project.eg.log:
+					self.logger.error(l)
+				self.logger.error('Executing despiking stage with stage variables: [expdecay_despiker]:'
 							 '{}\n[exponent]:{}\n[noise_despiker]:{}\n[win]:{}\n[nlim]:{}\n[maxiter]'
 							 ':{}\n'.format( self.pane1expdecayOption.isChecked(),
 											 localExponent,
@@ -256,7 +258,10 @@ class DespikingStage():
 											 localWin,
 											 localNlim,
 											 localMaxiter))
-			self.logger.exception("Problem occured in despiking stage:")
+				self.logger.exception("Problem occured in despiking stage:")
+			except:
+				self.logger.exception("Problem occured in despiking stage:")
+
 			self.raiseError("A problem occurred. There may be a problem with the input values.")
 			return
 
