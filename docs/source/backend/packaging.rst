@@ -43,11 +43,26 @@ overwriting the existing files in the MacOS directory.
 
 Right click on the bundle, and select "Show package contents" to view the app's contents.
 
-The app bundle
+App bundles are conventionally distributed with DMG Disk Installer files, which can be created using the standard
+Disk Utility on Mac computers.
+
+1. Open Disk Utility from Applications.
+2. Click "New Image" and change the name to "LAtools GUI". Set the size to be as large as the LAtools GUI app bundle and click "Create".
+3. Open the new Disk Image.
+4. Copy the LAtools GUI app bundle into the Disk Image.
+5. Create an Alias of the Applications folder and copy it into the Disk Image next to the app bundle.
+6. Close and eject the Disk Image.
+7. Right click on the Disk Image and click "Open With -> Disk Utility".
+8. Click the "Convert" button and select "Compressed" under "Image Format".
+9. Click "Save".
+
+This compressed Disk Image can now be distributed to users who can install LAtools GUI on their Mac computers.
+The Disk Image allows users to easily drag the LAtools GUI app bundle into their Applications folder where it can
+be quickly launched.
 
 
 Windows Specific Instructions
-============================
+=============================
 
 Windows applications are conventionally distributed as .msi files which execute installer wizards. There exist
 many third-party applications for converting programs into .msi files, but
@@ -61,20 +76,13 @@ simple package which can be customised to your needs.
 3. Press the "Create Project" button
 4. Open the "Product Details" window under "Product Information" from the panel on the left.
 5. Fill out the Name, Publisher, and any other relevant fields. Most fields can be left as default.
-6. Still under "Product Details", add a "Control Panel icon". The icon used for Windows is in the graphics folder of the
-repository, "latools_gui\latools_gui\graphics\latools-logo-icon.ico".
+6. Still under "Product Details", add a "Control Panel icon". The icon used for Windows is in the graphics folder of the repository, "latools_gui\latools_gui\graphics\latools-logo-icon.ico".
 7. Open the "Files and Folders" window under "Resources" from the panel on the left.
-8. Copy and paste the entire dist directory created by PyInstaller into the "Application Folder". This represents the
-files that will be installed by the wizard.
-9. In the "Application Folder", find the LAtools GUI.exe file and select it by clicking on it, then click on the "New
-Shortcut" toolbar button. This will open a new dialog for customising the shortcut.
-10. In the "New Shortcut" dialog, set the name to "LAtools GUI", tick "Run as Administrator", and set the icon as
-you did for the "Control Panel icon". Click "OK" and the new shortcut will be added to the "Application Shortcut
-Folder". It will be installed in the Start menu of the target computer.
-11. To create a shortcut on the target computer's desktop, select the "Desktop" folder in the "Folders" tree and click
-the "New Shortcut" button. A file picker dialog will open up for selecting the target of the shortcut.
-12. Select the LATools GUI.exe file in the "Application Folder" and click "OK". A "New Shortcut" dialog will open.
-Fill it out just as you did for the Start menu shortcut and click "OK".
+8. Copy and paste the entire dist directory created by PyInstaller into the "Application Folder". This represents the files that will be installed by the wizard.
+9. In the "Application Folder", find the LAtools GUI.exe file and select it by clicking on it, then click on the "New Shortcut" toolbar button. This will open a new dialog for customising the shortcut.
+10. In the "New Shortcut" dialog, set the name to "LAtools GUI", tick "Run as Administrator", and set the icon as you did for the "Control Panel icon". Click "OK" and the new shortcut will be added to the "Application Shortcut Folder". It will be installed in the Start menu of the target computer.
+11. To create a shortcut on the target computer's desktop, select the "Desktop" folder in the "Folders" tree and click the "New Shortcut" button. A file picker dialog will open up for selecting the target of the shortcut.
+12. Select the LATools GUI.exe file in the "Application Folder" and click "OK". A "New Shortcut" dialog will open. Fill it out just as you did for the Start menu shortcut and click "OK".
 13. Click on the "Build" toolbar button, select a destination for the build files and wait for the project to build.
 
 Building the Advanced Installer project will create multiple files. The parent directory will contain an Advanced
