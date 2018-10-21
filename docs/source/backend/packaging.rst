@@ -19,12 +19,68 @@ The step by step procedure for building an executable file for LAtools GUI is as
 
     pyinstaller --windowed --onedir latoolsgui.SPEC
 
+It is important to note that PyInstaller creates a package for whichever system it is executed from (i.e. packaging
+LAtools GUI on a Windows computer will create a Windows only executable). To create distributables for multiple
+operating systems you should repeat these steps on separate computers for each system you wish to deploy to.
+
 This will create a new folder at "latools_gui/latools_gui/dist" called "latoolsgui". This folder contains an executable
 file "latoolsgui.exe" at the top level, as well as all the necessary files to run the executable without a native
-Python installation. When distributing to users, this whole folder should be compressed and then delivered.
+Python installation. This folder can be compressed and distributed to users as is, however there are system specific
+instructions below for creating a more professional distribution package.
 
 This command also creates a directory called "build" which stores information about the built executable. This folder
 is not necessary for distribution to users. Its purpose is to make rebuilding the executable more efficient.
+
+
+Mac OS Specific Instructions
+============================
+
+When PyInstaller builds the Mac package, it creates a bundled app alongside the package directory.
+This app can be used to run the program as a standalone item, but it is incomplete. By default
+PyInstaller does not copy all the necessary content into the bundle, but this can be done manually.
+Copy and paste the entire directory of the packaged latoolsgui into the bundle "Contents/MacOS/",
+overwriting the existing files in the MacOS directory.
+
+Right click on the bundle, and select "Show package contents" to view the app's contents.
+
+The app bundle
+
+
+Windows Specific Instructions
+============================
+
+Windows applications are conventionally distributed as .msi files which execute installer wizards. There exist
+many third-party applications for converting programs into .msi files, but
+`Advanced Installer <https://www.advancedinstaller.com/>`_ is free. Basic instructions for using it in the context of
+LAtools GUIwill be outlined below. and the Advanced Installer website has
+`abundant documentation <https://www.advancedinstaller.com/user-guide/tutorial-simple.html/>`_ for creating a
+simple package which can be customised to your needs.
+
+1. Open Advanced Installer
+2. Under New -> Installer -> Generic, select a "Simple" Installer Project
+3. Press the "Create Project" button
+4. Open the "Product Details" window under "Product Information" from the panel on the left.
+5. Fill out the Name, Publisher, and any other relevant fields. Most fields can be left as default.
+6. Still under "Product Details", add a "Control Panel icon". The icon used for Windows is in the graphics folder of the
+repository, "latools_gui\latools_gui\graphics\latools-logo-icon.ico".
+7. Open the "Files and Folders" window under "Resources" from the panel on the left.
+8. Copy and paste the entire dist directory created by PyInstaller into the "Application Folder". This represents the
+files that will be installed by the wizard.
+9. In the "Application Folder", find the LAtools GUI.exe file and select it by clicking on it, then click on the "New
+Shortcut" toolbar button. This will open a new dialog for customising the shortcut.
+10. In the "New Shortcut" dialog, set the name to "LAtools GUI", tick "Run as Administrator", and set the icon as
+you did for the "Control Panel icon". Click "OK" and the new shortcut will be added to the "Application Shortcut
+Folder". It will be installed in the Start menu of the target computer.
+11. To create a shortcut on the target computer's desktop, select the "Desktop" folder in the "Folders" tree and click
+the "New Shortcut" button. A file picker dialog will open up for selecting the target of the shortcut.
+12. Select the LATools GUI.exe file in the "Application Folder" and click "OK". A "New Shortcut" dialog will open.
+Fill it out just as you did for the Start menu shortcut and click "OK".
+13. Click on the "Build" toolbar button, select a destination for the build files and wait for the project to build.
+
+Building the Advanced Installer project will create multiple files. The parent directory will contain an Advanced
+Installer project which can be reopened with Advanced Installer for modifying the project at later dates. There
+will also be a folder named "LAtools GUI-SetupFiles" and within will be a single .msi Windows Installer file.
+This file can be sent to any other Windows computer and executed to install LAtools GUI with shortcuts.
 
 
 The SPEC File
@@ -52,17 +108,6 @@ calls to the file should work whether the program is running from an executable 
 PyInstaller is not necessarily able to detect all the module dependencies for a given program so it is sometimes
 required to manually import these modules. Hidden imports is a list of strings "hiddenimports=['']" which describe
 various modules that need to be manually included in the build.
-
-
-Mac OS Specific Instructions
-============================
-When PyInstaller builds the Mac package, it creates a bundled app alongside the package directory.
-This app can be used to run the program as a standalone item, but it is incomplete. By default
-PyInstaller does not copy all the necessary content into the bundle, but this can be done manually.
-Copy and paste the entire directory of the packaged latoolsgui into the bundle "Contents/MacOS/",
-overwriting the existing files in the MacOS directory.
-Right click on the bundle, and select "Show package contents" to view the app's contents.
-
 
 LAtools Config and Resource Files
 ============================
