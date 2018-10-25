@@ -47,14 +47,14 @@ App bundles are conventionally distributed with DMG Disk Installer files, which 
 Disk Utility on Mac computers.
 
 1. Open Disk Utility from Applications.
-2. Click "New Image" and change the name to "LAtools GUI". Set the size to be as large as the LAtools GUI app bundle and click "Create".
+2. Click "New Image" and change the name to "LAtools GUI". Set the size to be as large as the LAtools GUI app bundle and click "Save".
 3. Open the new Disk Image.
 4. Copy the LAtools GUI app bundle into the Disk Image.
 5. Create an Alias of the Applications folder and copy it into the Disk Image next to the app bundle.
-6. Close and eject the Disk Image.
-7. Right click on the Disk Image and click "Open With -> Disk Utility".
-8. Click the "Convert" button and select "Compressed" under "Image Format".
-9. Click "Save".
+6. Edit the appearance of the disk image as desired (i.e. increase icon size). This can be done by right clicking in the disk image, and selecting "Show View Options".
+7. Close and eject the Disk Image.
+8. From Disk Utility, in the toolbar select "Images -> Convert" and select the LAtools GUI disk image.
+9. Select "Compressed" under "Image Format" and click "Save".
 
 This compressed Disk Image can now be distributed to users who can install LAtools GUI on their Mac computers.
 The Disk Image allows users to easily drag the LAtools GUI app bundle into their Applications folder where it can
